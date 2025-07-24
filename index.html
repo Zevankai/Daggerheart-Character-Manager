@@ -17,14 +17,14 @@
    </div>
 
    <div class="name-box" data-color-target="name-box">
-    <input type="text" value="Garret the Brave" />
-    <div class="subtitle">Ridgeborne Human Warrior (Berserker)</div>
+    <input type="text" value="Character Name" />
+    <div class="subtitle" contenteditable="true">Community Ancestry Class (Subclass)</div>
     <div class="domain-row">
-     <span class="domain-badge">Blade</span>
+     <span class="domain-badge" contenteditable="true">Domain 1</span>
      <span class="domain-divider">||</span>
      <span class="level-display" id="charLevel" contenteditable="true">5</span>
      <span class="domain-divider">||</span>
-     <span class="domain-badge">Bone</span>
+     <span class="domain-badge" contenteditable="true">Domain 2</span>
     </div>
     
     <div class="hope-tracker-inline">
@@ -235,10 +235,35 @@
      <div id="long-rest-projects-container" class="long-term-projects" style="display: none;">
       <div class="projects-header">
        <h4>Long-Term Projects</h4>
-       <button class="button" id="add-project-btn">＋ New Project</button>
-      </div>
-      <div id="project-list">
+       <div class="project-action-buttons">
+        <button class="button" onclick="window.showCompletedProjects()">View Completed Projects</button>
+        <button class="button" onclick="window.showActiveProjects()">View Active Projects</button>
+        <button class="button" onclick="window.showCreateNewProject()">Create New Project</button>
        </div>
+      </div>
+      <div id="project-view-area">
+       <div id="completed-projects-view" style="display: none;">
+        <h5>Completed Projects</h5>
+        <div id="completed-projects-list"></div>
+       </div>
+       <div id="active-projects-view" style="display: none;">
+        <h5>Active Projects - Select one to advance</h5>
+        <div id="active-projects-list"></div>
+        <div id="selected-project-info" style="display: none;">
+         <p>Selected: <span id="selected-project-name"></span></p>
+        </div>
+       </div>
+       <div id="create-project-view" style="display: none;">
+        <h5>Create New Project</h5>
+        <input type="text" id="new-project-name" placeholder="Project Name">
+        <label for="new-project-segments">Number of segments (1-12):</label>
+        <input type="number" id="new-project-segments" min="1" max="12" value="4">
+        <div class="modal-buttons">
+         <button class="button" onclick="window.createNewProject()">Create Project</button>
+         <button class="button" onclick="window.hideProjectViews()">Cancel</button>
+        </div>
+       </div>
+      </div>
      </div>
 
      <div id="rest-summary-area" class="rest-summary-area" style="display: none;">
@@ -270,18 +295,6 @@
   <input type="color" id="sectionColorPicker" class="color-picker-input">
  </div>
 
- <div id="project-modal" class="modal-overlay">
-  <div class="modal">
-   <h3>Create New Project</h3>
-   <input type="text" id="project-name-input" placeholder="Project Name (e.g., Build a Stronghold)">
-   <label for="project-segments-input" style="display: block; margin-top: 15px;">Progress Segments (1-12):</label>
-   <input type="number" id="project-segments-input" value="4" min="1" max="12">
-   <div class="modal-buttons">
-    <button class="button" onclick="window.createProject()">Create Project</button>
-    <button class="button" onclick="window.closeProjectModal()">Cancel</button>
-   </div>
-  </div>
- </div>
 
  <div id="journal-entry-modal" class="modal-overlay">
     <div class="modal">
@@ -298,6 +311,17 @@
         <div class="modal-buttons">
             <button class="button" onclick="window.saveJournalEntry()">Save Entry</button>
             <button class="button" onclick="window.closeJournalEntryModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div id="prepare-choice-modal" class="modal-overlay">
+    <div class="modal glassmorphic">
+        <h3>Prepare</h3>
+        <p>Are you preparing with a party member?</p>
+        <div class="modal-buttons">
+            <button class="button" onclick="window.handlePrepareWithParty(true)">Yes (Gain 2 Hope)</button>
+            <button class="button" onclick="window.handlePrepareWithParty(false)">No (Gain 1 Hope)</button>
         </div>
     </div>
 </div>
