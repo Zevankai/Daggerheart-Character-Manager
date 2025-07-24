@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8" />
+ <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+ <title>Zevi Character Sheet</title>
+ <link rel="stylesheet" href="style.css">
+</head>
+<body>
+ <div class="glass" data-color-target="main-glass">
+  <header>
+   <div class="char-img-wrapper">
+    <div class="char-img-border" data-color-target="char-image-border"></div>
+    <img src="" alt="Character Portrait" id="charImage" onclick="document.getElementById('charUpload').click();">
+    <div class="placeholder" id="charPlaceholder">Click to add character image</div>
+    <input type="file" id="charUpload" accept="image/*" style="display:none;" onchange="uploadCharacterImage(event)">
+   </div>
+
+   <div class="name-box" data-color-target="name-box">
+    <input type="text" value="Garret the Brave" />
+    <div class="subtitle">Ridgeborne Human Warrior (Berserker)</div>
+    <div class="domain-row">
+     <span class="domain-badge">Blade</span>
+     <span class="domain-divider">||</span>
+     <span class="level-display" id="charLevel" contenteditable="true">5</span>
+     <span class="domain-divider">||</span>
+     <span class="domain-badge">Bone</span>
+    </div>
+    
+    <div class="hope-tracker-inline">
+     <h4>Hope</h4>
+     <div class="trackers-wrapper">
+      <div class="tracker-btn" id="hope-decrement">-</div>
+      <div class="trackers" id="hope-tracker">
+       </div>
+      <div class="tracker-btn" id="hope-increment">+</div>
+     </div>
+    </div>
+   </div>
+
+   <div class="right-info">
+    <span id="toggleTheme" style="cursor: pointer;">Character Code: <strong>YWSAFHB</strong></span><br />
+    <a href="https://drive.google.com/file/d/1KPD_jt2jaNn2Okd9dDbQNRVdk5PAk2R2/view?usp=drivesdk" target="_blank">Official Rulebook</a><br/>
+   </div>
+  </header>
+
+  <div class="divider"></div>
+
+  <div class="flex-row" id="draggable-sections">
+   <div class="column section" data-id="ability" data-color-target="ability-scores">
+    <h3>Ability Scores</h3>
+    <div class="attributes-grid">
+     <div class="attribute-box">
+      <h4>Agility</h4>
+      <input type="number" class="attribute-value" data-attribute="agility" value="0">
+      <p class="attribute-text">Sprint || Dodge || Leap</p>
+     </div>
+     <div class="attribute-box">
+      <h4>Strength</h4>
+      <input type="number" class="attribute-value" data-attribute="strength" value="0">
+      <p class="attribute-text">Lift || Smash || Grapple</p>
+     </div>
+     <div class="attribute-box">
+      <h4>Finesse</h4>
+      <input type="number" class="attribute-value" data-attribute="finesse" value="0">
+      <p class="attribute-text">Control || Hide || Tinker</p>
+     </div>
+     <div class="attribute-box">
+      <h4>Instinct</h4>
+      <input type="number" class="attribute-value" data-attribute="instinct" value="0">
+      <p class="attribute-text">Perceive || Sense || Navigate</p>
+     </div>
+     <div class="attribute-box">
+      <h4>Presence</h4>
+      <input type="number" class="attribute-value" data-attribute="presence" value="0">
+      <p class="attribute-text">Charm || Perform || Deceive</p>
+     </div>
+     <div class="attribute-box">
+      <h4>Knowledge</h4>
+      <input type="number" class="attribute-value" data-attribute="knowledge" value="0">
+      <p class="attribute-text">Recall || Analyze || Comprehend</p>
+     </div>
+    </div>
+   </div>
+   <div class="column section" data-id="hp" data-color-target="hp-stress">
+    <h3>Hit Points & Stress</h3>
+    <div class="damage-control-row">
+     <button class="damage-btn" id="minor-damage-btn">
+      <span>Minor</span>
+      <span>Damage</span>
+     </button>
+     <input type="number" class="damage-value-input" id="minor-damage-value" min="0" onchange="window.updateDamageValue(this, 'minor')">
+
+     <button class="damage-btn" id="major-damage-btn">
+      <span>Major</span>
+      <span>Damage</span>
+     </button>
+     <input type="number" class="damage-value-input" id="major-damage-value" min="0" onchange="window.updateDamageValue(this, 'major')">
+
+     <button class="damage-btn" id="severe-damage-btn">
+      <span>Severe</span>
+      <span>Damage</span>
+     </button>
+    </div>
+    <div class="trackers-wrapper">
+     <button class="tracker-btn remove-hp">-</button>
+     <div class="trackers" id="hp-tracker">
+      </div>
+     <button class="tracker-btn add-hp">+</button>
+    </div>
+    <div class="divider"></div>
+    <div class="trackers-wrapper">
+     <button class="tracker-btn remove-stress">-</button>
+     <div class="trackers" id="stress-tracker">
+      </div>
+     <button class="tracker-btn add-stress">+</button>
+    </div>
+   </div>
+   <div class="column section" data-id="weapons" data-color-target="active-weapons">
+    <h3>Active Weapons</h3>
+    <p>Primary: Longsword (Strength, d8+1)</p>
+    <p>Secondary: Hand Axe (Finesse, d6)</p>
+    <p>Proficiency: ⚫ ⚫ ⚫ ⚪ ⚪ ⚪</p>
+   </div>
+   <div class="column section" data-id="armor" data-color-target="armor-section">
+    <h3>Armor</h3>
+    <div class="trackers-wrapper">
+     <button class="tracker-btn remove-armor">-</button>
+     <div class="trackers" id="armor-tracker">
+      </div>
+     <button class="tracker-btn add-armor">+</button>
+    </div>
+    <div class="divider"></div>
+    <h4>Active Armor</h4>
+    <div id="active-armor-display">
+     <p class="no-entries-message">No active armor equipped.</p>
+     </div>
+   </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <nav class="tabs">
+   <button data-target="domain-vault-tab-content">Domain Vault</button>
+   <button data-target="effects-features-tab-content">Effects & Features</button>
+   <button data-target="equipment-tab-content">Equipment</button>
+   <button data-target="details-tab-content">Details</button>
+   <button data-target="experiences-tab-content">Experiences</button>
+   <button data-target="journal-tab-content">Journal</button>
+   <button data-target="downtime-tab-content" class="active">Downtime</button>
+   <button data-target="characters-tab-content">Characters</button>
+   <button data-target="settings-tab-content">Settings</button>
+  </nav>
+
+  <div class="divider"></div>
+
+  <div class="tab-content-area">
+   <div id="domain-vault-tab-content" class="tab-panel">
+    <p style="text-align: center;">Content for Domain Vault will go here.</p>
+   </div>
+   <div id="effects-features-tab-content" class="tab-panel">
+    <p style="text-align: center;">Content for Effects & Features will go here.</p>
+   </div>
+   <div id="equipment-tab-content" class="tab-panel">
+    <div class="section">
+        <h3>Inventory</h3>
+        <textarea id="inventory-text" rows="10" placeholder="List your items here..."></textarea>
+    </div>
+    <div class="section">
+        <h3>Weapons</h3>
+        <textarea id="weapons-text" rows="6" placeholder="List your weapons here..."></textarea>
+    </div>
+    <div class="section">
+        <h3>Active Armor (Equipment)</h3>
+        <textarea id="equipment-active-armor-text" rows="3" placeholder="Describe your active armor..."></textarea>
+        <p><em>(This field is for descriptive purposes here; the Armor section above manages actual points.)</em></p>
+    </div>
+   </div>
+   <div id="details-tab-content" class="tab-panel">
+    <p style="text-align: center;">Content for Details will go here.</p>
+   </div>
+   <div id="experiences-tab-content" class="tab-panel">
+    <button id="show-create-experience-modal-btn" class="button" onclick="window.showCreateExperienceModal()">Create New Experience</button>
+    <div id="experiences-list-container" class="experiences-list-container">
+    </div>
+
+    <div id="experience-detail-container" class="experience-detail-container" style="display: none;">
+     <h4 id="detail-experience-title"></h4>
+     <p id="detail-experience-description"></p>
+     <p>Modifier: <input type="number" id="detail-experience-modifier" class="mini-input" min="-2" max="2" onchange="window.updateExperienceModifier(this)"></p>
+     <button class="button" onclick="window.closeExperienceDetail()">Back to Experiences</button>
+    </div>
+   </div>
+   <div id="journal-tab-content" class="tab-panel">
+    <div class="journal-category-buttons">
+     <button class="button active" data-journal-category="all">All Entries</button>
+     <button class="button" data-journal-category="downtime">Downtime</button>
+     <button class="button" data-journal-category="combat">Combat</button>
+     <button class="button" data-journal-category="exploration">Exploration</button>
+     <button class="button" data-journal-category="social">Social</button>
+     <button class="button" data-journal-category="other">Other</button>
+    </div>
+    <div id="journal-entries-list" class="journal-entries-list">
+    </div>
+    <div id="journal-entry-detail" class="journal-entry-detail" style="display: none;">
+     <div class="journal-detail-header">
+      <h4 id="journal-detail-title"></h4>
+      <span id="journal-detail-date"></span>
+      <span id="journal-detail-category"></span>
+     </div>
+     <div id="journal-detail-content" class="journal-detail-content"></div>
+     <button class="button" onclick="window.closeJournalDetail()">Back to Entries</button>
+    </div>
+    <button class="button" onclick="window.showJournalEntryModal()">Add New Entry</button>
+   </div>
+
+   <div id="downtime-tab-content" class="tab-panel active">
+    <div id="rest-type-selector">
+     <h2>Choose Rest Type</h2>
+     <div class="button-group">
+      <button class="button" onclick="window.startRest('short')">Short Rest (1 Hour)</button>
+      <button class="button" onclick="window.startRest('long')">Long Rest (6 Hours)</button>
+     </div>
+    </div>
+
+    <div id="rest-options-container" style="display: none;">
+     <h3 id="rest-title"></h3>
+     <div class="gm-notification" id="gm-notification"></div>
+     <div class="notification-area" id="downtime-notification-area"></div>
+     <div id="rest-options-list" class="rest-options-list">
+      </div>
+     <button class="button" onclick="window.confirmRest()">Confirm Rest</button>
+     <button class="button" onclick="window.resetDowntimeView()">Cancel Rest</button>
+
+     <div id="long-rest-projects-container" class="long-term-projects" style="display: none;">
+      <div class="projects-header">
+       <h4>Long-Term Projects</h4>
+       <button class="button" id="add-project-btn">＋ New Project</button>
+      </div>
+      <div id="project-list">
+       </div>
+     </div>
+
+     <div id="rest-summary-area" class="rest-summary-area" style="display: none;">
+      <h4>Rest Summary</h4>
+      <ul id="rest-summary-list">
+       </ul>
+      <button class="button" onclick="window.acknowledgeRest()">Okay</button>
+     </div>
+    </div>
+   </div>
+
+   <div id="characters-tab-content" class="tab-panel">
+    <p style="text-align: center;">Content for Characters will go here.</p>
+   </div>
+   <div id="settings-tab-content" class="tab-panel">
+    <p style="text-align: center;">Content for Settings will go here.</p>
+   </div>
+
+  </div>
+ </div>
+
+ <div class="background-icon">
+  <label for="bgUpload">🏞️</label>
+  <input type="file" id="bgUpload" accept="image/*" onchange="uploadBackground(event)">
+ </div>
+
+ <div class="color-picker-container">
+  <span class="color-picker-toggle">🎨</span>
+  <input type="color" id="sectionColorPicker" class="color-picker-input">
+ </div>
+
+ <div id="project-modal" class="modal-overlay">
+  <div class="modal">
+   <h3>Create New Project</h3>
+   <input type="text" id="project-name-input" placeholder="Project Name (e.g., Build a Stronghold)">
+   <label for="project-segments-input" style="display: block; margin-top: 15px;">Progress Segments (1-12):</label>
+   <input type="number" id="project-segments-input" value="4" min="1" max="12">
+   <div class="modal-buttons">
+    <button class="button" onclick="window.createProject()">Create Project</button>
+    <button class="button" onclick="window.closeProjectModal()">Cancel</button>
+   </div>
+  </div>
+ </div>
+
+ <div id="journal-entry-modal" class="modal-overlay">
+    <div class="modal">
+        <h3>New Journal Entry</h3>
+        <input type="text" id="journal-entry-title-input" placeholder="Entry Title (e.g., Encounter with Goblins)">
+        <select id="journal-entry-category-select">
+            <option value="downtime">Downtime</option>
+            <option value="combat">Combat</option>
+            <option value="exploration">Exploration</option>
+            <option value="social">Social</option>
+            <option value="other">Other</option>
+        </select>
+        <textarea id="journal-entry-content-input" placeholder="What happened?"></textarea>
+        <div class="modal-buttons">
+            <button class="button" onclick="window.saveJournalEntry()">Save Entry</button>
+            <button class="button" onclick="window.closeJournalEntryModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div id="create-experience-modal" class="modal-overlay">
+    <div class="modal">
+        <h3>Create New Experience</h3>
+        <input type="text" id="experience-title-input" placeholder="Experience Title">
+        <textarea id="experience-description-input" placeholder="Describe this experience..."></textarea>
+        <label for="experience-modifier-input">Modifier (-2 to +2):</label>
+        <input type="number" id="experience-modifier-input" value="0" min="-2" max="2">
+        <div class="modal-buttons">
+            <button class="button" onclick="window.saveNewExperience()">Save Experience</button>
+            <button class="button" onclick="window.closeCreateExperienceModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+ <script src="hpStress.js"></script>
+ <script src="hope.js"></script>
+ <script src="script.js"></script>
+ <script src="downtime.js"></script>
+ <script src="journal.js"></script>
+ <script src="experiences.js"></script>
+</html>
