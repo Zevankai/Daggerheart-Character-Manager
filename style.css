@@ -93,7 +93,11 @@ header {
    margin-bottom: 20px;
    text-align: center;
    width: 100%;
-  max-width: 350px;
+   max-width: 350px;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
 }
 
 .hope-section {
@@ -319,7 +323,7 @@ header {
 
 /* Armor Active/Filled State - Glassy Silver/Gray */
 .armor-circle.active {
-   background: rgba(192, 192, 192, 0.6); /* Silver with some transparency for glassy effect */
+   background: rgba(3, 221, 58, 0.6); /* Silver with some transparency for glassy effect */
    border: 1px solid rgba(192, 192, 192, 0.9);
    box-shadow: 0 0 8px rgba(192, 192, 192, 0.7); /* Subtle glow */
 }
@@ -647,6 +651,81 @@ nav.tabs button.active {
    width: 90%;
    text-align: center;
    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); /* Add subtle shadow */
+}
+
+/* Glassmorphic styling for the prepare choice modal */
+.modal.glassmorphic {
+   background: var(--glass-background-color);
+   border: 1px solid rgba(255, 255, 255, 0.2);
+   backdrop-filter: blur(15px);
+   -webkit-backdrop-filter: blur(15px);
+   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* More transparent overlay for glassmorphic modals */
+#prepare-choice-modal.modal-overlay {
+   background: rgba(0, 0, 0, 0.4);
+}
+
+/* Project interface styles */
+.project-action-buttons {
+   display: flex;
+   gap: 10px;
+   flex-wrap: wrap;
+   justify-content: center;
+   margin-bottom: 15px;
+}
+
+.project-item.selectable {
+   cursor: pointer;
+   transition: background-color 0.2s ease;
+}
+
+.project-item.selectable:hover {
+   background: rgba(255, 255, 255, 0.1);
+}
+
+.project-item.selectable.selected {
+   background: rgba(255, 215, 0, 0.2);
+   border: 1px solid rgba(255, 215, 0, 0.5);
+}
+
+.project-item.completed {
+   opacity: 0.8;
+}
+
+#project-view-area {
+   margin-top: 15px;
+}
+
+#project-view-area h5 {
+   color: var(--accent-color);
+   margin-bottom: 10px;
+}
+
+#selected-project-info {
+   margin-top: 10px;
+   padding: 10px;
+   background: rgba(255, 215, 0, 0.1);
+   border-radius: 8px;
+   border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+#create-project-view input,
+#create-project-view label {
+   display: block;
+   margin: 10px 0;
+}
+
+#create-project-view input[type="text"],
+#create-project-view input[type="number"] {
+   width: 100%;
+   padding: 8px;
+   background: rgba(255, 255, 255, 0.1);
+   border: 1px solid rgba(255, 255, 255, 0.3);
+   border-radius: 6px;
+   color: var(--text-color);
+   box-sizing: border-box;
 }
 .modal h3 {
    margin-top: 0;
