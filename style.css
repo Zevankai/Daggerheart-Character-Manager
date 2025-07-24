@@ -777,49 +777,6 @@ body[data-theme="light"] {
    --text-color: #000;
 }
 
-
-/* Color Picker Styles */
-.color-picker-container {
-   position: absolute;
-   top: 10px;
-   left: 10px;
-   display: flex;
-   align-items: center;
-   gap: 5px;
-}
-
-.color-picker-toggle {
-   font-size: 18px; /* Made icon smaller */
-   color: var(--text-color);
-   cursor: pointer;
-   opacity: 0.5; /* Always visible, but subtle */
-   transition: opacity 0.3s ease; /* Smooth transition for hover */
-   user-select: none;
-}
-
-
-/* When the container is hovered, make the toggle more prominent */
-.color-picker-container:hover .color-picker-toggle {
-   opacity: 1;
-}
-
-
-.color-picker-input {
-   width: 40px;
-   height: 40px;
-   padding: 0;
-   border: none;
-   background: none;
-   cursor: pointer;
-   transition: opacity 0.3s ease; /* Smooth transition for appearance (less relevant with display:none) */
-}
-
-
-/* When the container is hovered, show the color input */
-.color-picker-container:hover .color-picker-input {
-   display: block !important; /* Force display block on hover */
-}
-
 /* NEW STYLES FOR DAMAGE CONTROL (INTEGRATED) */
 .damage-control-row {
    display: flex;
@@ -1081,4 +1038,136 @@ body[data-theme="light"] {
    font-style: italic;
    opacity: 0.7;
    margin-top: 20px;
+}
+
+/* === DETAILS TAB STYLES === */
+.details-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.details-section {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.details-section h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: var(--accent-color);
+    border-bottom: 2px solid var(--accent-color);
+    padding-bottom: 8px;
+}
+
+.detail-field {
+    margin-bottom: 15px;
+}
+
+.detail-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.detail-field input[type="text"],
+.detail-field textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-color);
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+}
+
+.detail-field input[type="text"]:focus,
+.detail-field textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(184, 134, 11, 0.3);
+}
+
+.detail-field textarea {
+    min-height: 60px;
+    line-height: 1.4;
+}
+
+.detail-field input::placeholder,
+.detail-field textarea::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+}
+
+.details-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.details-actions .button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    background: var(--accent-color);
+    color: #000;
+}
+
+.details-actions .button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.details-actions .button.secondary {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--text-color);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.details-actions .button.secondary:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Dark theme adjustments for details */
+[data-theme="dark"] .detail-field input[type="text"],
+[data-theme="dark"] .detail-field textarea {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .detail-field input::placeholder,
+[data-theme="dark"] .detail-field textarea::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* Responsive design for details */
+@media (max-width: 768px) {
+    .details-container {
+        padding: 10px;
+    }
+    
+    .details-section {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .details-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .details-actions .button {
+        margin-bottom: 10px;
+    }
 }
