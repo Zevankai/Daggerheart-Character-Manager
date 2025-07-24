@@ -141,14 +141,10 @@ function applySavedColors() {
 document.addEventListener('DOMContentLoaded', () => {
     // Restore theme from local storage
     const savedTextColor = localStorage.getItem('zevi-text-color');
-    const savedAccentColor = localStorage.getItem('zevi-accent-color');
     const savedTheme = localStorage.getItem('zevi-theme');
 
     if (savedTextColor) {
         document.documentElement.style.setProperty('--text-color', savedTextColor);
-    }
-    if (savedAccentColor) {
-        document.documentElement.style.setProperty('--accent-color', savedAccentColor);
     }
     if (savedTheme) {
         document.body.setAttribute('data-theme', savedTheme);
@@ -156,6 +152,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Apply saved colors (including the new CSS variable ones)
     applySavedColors();
+    
+    // Apply custom accent colors (this will be handled by settings.js)
+    // Note: Don't set accent color here anymore, let settings.js handle it
 
     // Toggle theme on click
     document.getElementById('toggleTheme').addEventListener('click', toggleTextColor);

@@ -11,14 +11,23 @@ function initializeAccentColorPicker() {
     const accentColorPreview = document.getElementById('accentColorPreview');
     const resetAccentBtn = document.getElementById('resetAccentColor');
     
-    // Load current accent color
-    const root = document.documentElement;
-    const currentAccentColor = getComputedStyle(root).getPropertyValue('--accent-color').trim();
+    // Load current accent color - prioritize saved custom color
+    const savedAccentBase = localStorage.getItem('zevi-custom-accent-base');
+    let hexColor;
     
-    // Convert RGB to hex if needed
-    let hexColor = currentAccentColor;
-    if (currentAccentColor.startsWith('rgb')) {
-        hexColor = rgbToHex(currentAccentColor);
+    if (savedAccentBase) {
+        hexColor = savedAccentBase;
+    } else {
+        // Get current computed accent color
+        const root = document.documentElement;
+        const currentAccentColor = getComputedStyle(root).getPropertyValue('--accent-color').trim();
+        
+        // Convert RGB to hex if needed
+        if (currentAccentColor.startsWith('rgb')) {
+            hexColor = rgbToHex(currentAccentColor);
+        } else {
+            hexColor = currentAccentColor;
+        }
     }
     
     accentColorPicker.value = hexColor;
@@ -416,6 +425,11 @@ function applySavedCustomColors() {
         if (finalAccentColor) {
             updateAccentColorTransparencies(finalAccentColor);
         }
+    } else {
+        // No custom colors saved, use defaults and set up transparent versions
+        const defaultColor = currentTheme === 'light' ? '#b8860b' : '#ffd700';
+        root.style.setProperty('--accent-color', defaultColor);
+        updateAccentColorTransparencies(defaultColor);
     }
     
     // Apply saved glass color
@@ -430,8 +444,8 @@ function applySavedCustomColors() {
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    // Small delay to ensure other scripts have loaded
-    setTimeout(initializeSettings, 100);
+    // Small delay to ensure other scripts have loaded and theme is set
+    setTimeout(initializeSettings, 200);
 });
 
 // Export functions for global access
