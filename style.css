@@ -1091,6 +1091,7 @@ body[data-theme="light"] {
     font-family: inherit;
     font-size: 14px;
     resize: vertical;
+    box-sizing: border-box;
 }
 
 .detail-field input[type="text"]:focus,
