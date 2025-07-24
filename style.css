@@ -321,9 +321,9 @@ header {
 }
 
 .hope-circle.active {
-   background: var(--accent-color-50); /* Accent color with transparency for glassy effect */
-   border: 1px solid var(--accent-color-80);
-   box-shadow: 0 0 8px var(--accent-color-70); /* Subtle glow */
+   background: rgba(255, 215, 0, 0.5); /* Fixed yellow with transparency for glassy effect */
+   border: 1px solid rgba(255, 215, 0, 0.8);
+   box-shadow: 0 0 8px rgba(255, 215, 0, 0.7); /* Subtle yellow glow */
 }
 
 /* Armor Active/Filled State - Glassy Silver/Gray */
@@ -345,7 +345,7 @@ header {
 .circle.red.active { background: red; }
 .circle.green.active { background: green; }
 .circle.blue.active { background: #3399ff; }
-.circle.gold.active { background: var(--accent-color); }
+.circle.gold.active { background: #ffd700; }
 
 nav.tabs {
    display: flex;
