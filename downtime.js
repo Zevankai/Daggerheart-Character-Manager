@@ -46,6 +46,80 @@ function rollD4() {
     return Math.floor(Math.random() * 4) + 1;
 }
 
+// Variables to track prepare choices and rest state
+let pendingPrepareChoices = [];
+let currentRestSummaryLog = [];
+let currentRestChoices = [];
+let selectedProjectForRest = null;
+
+// Helper function to show prepare choice modal
+function showPrepareChoiceModal() {
+    document.getElementById('prepare-choice-modal').style.display = 'flex';
+}
+
+// Helper function to handle prepare choice with party member selection
+function handlePrepareWithParty(isWithParty) {
+    const hopeGained = isWithParty ? 2 : 1;
+    
+    // Get current hope and add the gained amount
+    const currentHope = parseInt(localStorage.getItem('zevi-hope')) || 0;
+    const newHope = currentHope + hopeGained;
+    
+    // Use the proper hope update function
+    if (window.updateActiveHope) {
+        window.updateActiveHope(newHope);
+    }
+    
+    const resultText = `✨ Prepared: <strong>Gained ${hopeGained} Hope</strong>${isWithParty ? ' (with party member)' : ''}.`;
+    currentRestSummaryLog.push(`<li>${resultText}</li>`);
+    
+    // Hide the modal
+    document.getElementById('prepare-choice-modal').style.display = 'none';
+    
+    // Remove one pending prepare choice
+    pendingPrepareChoices.pop();
+    
+    // If there are more prepare choices, show the modal again
+    if (pendingPrepareChoices.length > 0) {
+        showPrepareChoiceModal();
+    } else {
+        // All prepare choices handled, show the summary
+        showRestSummary();
+    }
+}
+
+// Function to show the rest summary
+function showRestSummary() {
+    const summaryList = document.getElementById('rest-summary-list');
+    summaryList.innerHTML = currentRestSummaryLog.join('');
+    document.getElementById('rest-summary-area').style.display = 'block';
+
+    document.getElementById('rest-options-list').style.display = 'none';
+    document.getElementById('long-rest-projects-container').style.display = 'none';
+    document.getElementById('gm-notification').style.display = 'none';
+    
+    // Hide confirm and cancel buttons while summary is displayed
+    document.querySelector('#rest-options-container .button:nth-of-type(1)').style.display = 'none'; // Confirm button
+    document.querySelector('#rest-options-container .button:nth-of-type(2)').style.display = 'none'; // Cancel button
+
+    showNotification('Review your rest results below, then click "Okay" to acknowledge.', 'success');
+
+    // Save the rest summary to the journal (if there are other rest choices besides just project)
+    // Only save if there's actual content beyond just the project log if project was selected
+    const restSummaryTitle = `${currentRestType.charAt(0).toUpperCase() + currentRestType.slice(1)} Rest Summary`;
+    const restSummaryContent = `<h4>Rest Outcomes:</h4><ul>${currentRestSummaryLog.join('')}</ul>`;
+
+    // Only add a journal entry for the rest summary if it's not empty, and if the project entry wasn't the sole entry.
+    // The explicit project advancement entry is handled above if project was chosen.
+    const isProjectOnlyChoice = currentRestChoices.length === 1 && currentRestChoices[0] === 'project';
+
+    if (currentRestSummaryLog.length > 0 && !isProjectOnlyChoice) {
+        if (window.addJournalEntry) {
+            window.addJournalEntry(restSummaryTitle, restSummaryContent, 'downtime', true);
+        }
+    }
+}
+
 // Main functions for rest initiation and confirmation
 function startRest(type) {
     currentRestType = type;
@@ -55,33 +129,14 @@ function startRest(type) {
     optionsList.innerHTML = '';
     
     restOptions[type].forEach(opt => {
-        let optionHtml = '';
-        if (opt.id === 'project' && type === 'long') {
-            optionHtml = `
-                <div class="rest-option">
-                    <input type="checkbox" id="opt-${opt.id}" name="rest-choice" value="${opt.id}">
-                    <label for="opt-${opt.id}">
-                        ${opt.text}
-                        <select id="project-selection-for-rest" style="margin-left: 10px; padding: 5px; border-radius: 5px; background: rgba(255,255,255,0.1); color: #000 !important; border: 1px solid rgba(255,255,255,0.2);">
-                            </select>
-                    </label>
-                </div>
-            `;
-        } else {
-            optionHtml = `
-                <div class="rest-option">
-                    <input type="checkbox" id="opt-${opt.id}" name="rest-choice" value="${opt.id}">
-                    <label for="opt-${opt.id}">${opt.text}</label>
-                </div>
-            `;
-        }
+        const optionHtml = `
+            <div class="rest-option">
+                <input type="checkbox" id="opt-${opt.id}" name="rest-choice" value="${opt.id}">
+                <label for="opt-${opt.id}">${opt.text}</label>
+            </div>
+        `;
         optionsList.innerHTML += optionHtml;
     });
-
-    // Populate project dropdown only for long rests
-    if (type === 'long') {
-        populateProjectDropdown();
-    }
 
     document.querySelectorAll('input[name="rest-choice"]').forEach(checkbox => {
         checkbox.addEventListener('change', () => {
@@ -91,6 +146,18 @@ function startRest(type) {
                 showNotification(`You can only choose ${MAX_CHOICES} options.`, 'error');
             } else {
                 document.getElementById('downtime-notification-area').style.display = 'none';
+            }
+            
+            // Show/hide project section based on project checkbox for long rests
+            if (checkbox.value === 'project' && type === 'long') {
+                const projectContainer = document.getElementById('long-rest-projects-container');
+                if (checkbox.checked) {
+                    projectContainer.style.display = 'block';
+                    hideProjectViews(); // Reset project views when shown
+                } else {
+                    projectContainer.style.display = 'none';
+                    selectedProjectForRest = null; // Clear selection
+                }
             }
         });
     });
@@ -106,30 +173,116 @@ function startRest(type) {
     showNotification('Select your rest options.', 'info');
 }
 
-function populateProjectDropdown() {
-    const select = document.getElementById('project-selection-for-rest');
-    if (!select) return; // Exit if not in long rest mode
+// New project management functions for rest interface
+function hideProjectViews() {
+    document.getElementById('completed-projects-view').style.display = 'none';
+    document.getElementById('active-projects-view').style.display = 'none';
+    document.getElementById('create-project-view').style.display = 'none';
+    document.getElementById('selected-project-info').style.display = 'none';
+    selectedProjectForRest = null;
+}
 
-    select.innerHTML = '<option value="">Select Project</option>'; // Default option
-    if (projects.length === 0) {
-        select.innerHTML = '<option value="">No Projects Available</option>';
-        select.disabled = true;
-        // Optionally disable the checkbox if no projects
-        const projectCheckbox = document.getElementById('opt-project');
-        if (projectCheckbox) projectCheckbox.disabled = true;
-        return;
+function showCompletedProjects() {
+    hideProjectViews();
+    const completedProjects = projects.filter(p => p.progress >= p.segments);
+    const completedProjectsList = document.getElementById('completed-projects-list');
+    
+    if (completedProjects.length === 0) {
+        completedProjectsList.innerHTML = '<p style="text-align: center; opacity: 0.7;">No completed projects yet.</p>';
     } else {
-        select.disabled = false;
-        const projectCheckbox = document.getElementById('opt-project');
-        if (projectCheckbox) projectCheckbox.disabled = false;
+        completedProjectsList.innerHTML = completedProjects.map(project => `
+            <div class="project-item completed">
+                <div class="project-header">
+                    <div class="project-info">
+                        <strong>${project.name}</strong> (Completed)
+                    </div>
+                </div>
+                <div class="progress-clock">
+                    ${Array.from({ length: project.segments }).map(() => `
+                        <div class="progress-segment active"></div>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('');
     }
+    
+    document.getElementById('completed-projects-view').style.display = 'block';
+}
 
-    projects.forEach((project, index) => {
-        const option = document.createElement('option');
-        option.value = index; // Store index to easily retrieve the project object
-        option.textContent = project.name;
-        select.appendChild(option);
-    });
+function showActiveProjects() {
+    hideProjectViews();
+    const activeProjects = projects.filter(p => p.progress < p.segments);
+    const activeProjectsList = document.getElementById('active-projects-list');
+    
+    if (activeProjects.length === 0) {
+        activeProjectsList.innerHTML = '<p style="text-align: center; opacity: 0.7;">No active projects. Create a new project to get started!</p>';
+    } else {
+        activeProjectsList.innerHTML = activeProjects.map(project => `
+            <div class="project-item selectable" onclick="window.selectProjectForRest(${project.id})">
+                <div class="project-header">
+                    <div class="project-info">
+                        <strong>${project.name}</strong> (${project.progress}/${project.segments})
+                    </div>
+                </div>
+                <div class="progress-clock">
+                    ${Array.from({ length: project.segments }).map((_, i) => `
+                        <div class="progress-segment ${i < project.progress ? 'active' : ''}"></div>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    document.getElementById('active-projects-view').style.display = 'block';
+}
+
+function selectProjectForRest(projectId) {
+    const project = projects.find(p => p.id === projectId);
+    if (project) {
+        selectedProjectForRest = project;
+        document.getElementById('selected-project-name').textContent = project.name;
+        document.getElementById('selected-project-info').style.display = 'block';
+        
+        // Update visual selection
+        document.querySelectorAll('.project-item.selectable').forEach(item => {
+            item.classList.remove('selected');
+        });
+        event.target.closest('.project-item').classList.add('selected');
+    }
+}
+
+function showCreateNewProject() {
+    hideProjectViews();
+    document.getElementById('new-project-name').value = '';
+    document.getElementById('new-project-segments').value = '4';
+    document.getElementById('create-project-view').style.display = 'block';
+}
+
+function createNewProject() {
+    const name = document.getElementById('new-project-name').value.trim();
+    const segments = parseInt(document.getElementById('new-project-segments').value);
+    
+    if (!name) {
+        showNotification('Project name cannot be empty.', 'error');
+        return;
+    }
+    
+    if (isNaN(segments) || segments < 1 || segments > 12) {
+        showNotification('Segments must be a number between 1 and 12.', 'error');
+        return;
+    }
+    
+    const newProject = {
+        id: Date.now(),
+        name: name,
+        segments: segments,
+        progress: 0
+    };
+    
+    projects.push(newProject);
+    saveProjects();
+    showNotification(`Project "${name}" created successfully!`, 'success');
+    hideProjectViews();
 }
 
 
@@ -140,10 +293,20 @@ function confirmRest() {
         return;
     }
 
-    const tier = getTier();
-    let summaryLog = [];
+    // Reset state variables
+    currentRestSummaryLog = [];
+    pendingPrepareChoices = [];
+    currentRestChoices = choices;
 
+    const tier = getTier();
+
+    // First, handle all non-prepare choices
     choices.forEach(choice => {
+        if (choice === 'prepare') {
+            pendingPrepareChoices.push(choice);
+            return; // Skip prepare for now, handle separately
+        }
+
         if (currentRestType === 'short') {
             const d4Roll = rollD4();
             const total = d4Roll + tier;
@@ -169,74 +332,80 @@ function confirmRest() {
                 window.renderStressCircles();
                 resultText = `😌 Stress: Dice Roll (${d4Roll}) + Tier (${tier}) = <strong>${total}</strong> recovered.`;
             } else if (choice === 'armor') {
-                const armorCircles = document.querySelectorAll('#armor-tracker .circle');
-                let activatedCount = 0;
-                for (let i = 0; i < armorCircles.length && activatedCount < total; i++) {
-                    if (!armorCircles[i].classList.contains('active')) {
-                        armorCircles[i].classList.add('active');
-                        activatedCount++;
+                // For short rest armor repair: remove filled circles (make them unfilled)
+                let repairedCount = 0;
+                if (window.armorCircles && window.saveArmorState && window.renderArmorCircles) {
+                    // Count how many active circles we have before repair
+                    const activeCount = window.armorCircles.filter(c => c.active).length;
+                    // Start from the end to remove the rightmost filled circles first
+                    for (let i = window.armorCircles.length - 1; i >= 0 && repairedCount < total && repairedCount < activeCount; i--) {
+                        if (window.armorCircles[i].active) {
+                            window.armorCircles[i].active = false;
+                            repairedCount++;
+                        }
+                    }
+                    window.saveArmorState();
+                    window.renderArmorCircles();
+                } else {
+                    // Fallback to DOM manipulation if the proper functions aren't available
+                    const armorCircles = document.querySelectorAll('#armor-tracker .circle');
+                    const activeCircles = Array.from(armorCircles).filter(c => c.classList.contains('active'));
+                    for (let i = armorCircles.length - 1; i >= 0 && repairedCount < total && repairedCount < activeCircles.length; i--) {
+                        if (armorCircles[i].classList.contains('active')) {
+                            armorCircles[i].classList.remove('active');
+                            repairedCount++;
+                        }
                     }
                 }
-                resultText = `🛡️ Armor: Dice Roll (${d4Roll}) + Tier (${tier}) = <strong>${total}</strong> slots repaired.`;
-            } else if (choice === 'prepare') {
-                const hopeCircles = document.querySelectorAll('#hope-tracker .circle');
-                let gainedHope = false;
-                for (const circle of hopeCircles) {
-                    if (!circle.classList.contains('active')) {
-                        circle.classList.add('active');
-                        gainedHope = true;
-                        break;
-                    }
-                }
-                resultText = `✨ Prepared: <strong>Gained Hope.</strong>`;
+                resultText = `🛡️ Armor: Dice Roll (${d4Roll}) + Tier (${tier}) = <strong>${repairedCount}</strong> slots repaired.`;
             }
-            summaryLog.push(`<li>${resultText}</li>`);
+            currentRestSummaryLog.push(`<li>${resultText}</li>`);
         } else { // Long Rest
             if (choice === 'wounds') {
                 window.hpCircles.forEach(c => c.active = false);
                 window.saveHPState();
                 window.renderHPCircles();
-                summaryLog.push('<li>🩹 HP: <strong>All HP</strong> cleared.</li>');
+                currentRestSummaryLog.push('<li>🩹 HP: <strong>All HP</strong> cleared.</li>');
             } else if (choice === 'stress') {
                 window.stressCircles.forEach(c => c.active = false);
                 window.saveStressState();
                 window.renderStressCircles();
-                summaryLog.push('<li>😌 Stress: <strong>All Stress</strong> cleared.</li>');
+                currentRestSummaryLog.push('<li>😌 Stress: <strong>All Stress</strong> cleared.</li>');
             } else if (choice === 'armor') {
-                document.querySelectorAll('#armor-tracker .circle').forEach(slot => slot.classList.add('active'));
-                summaryLog.push('<li>🛡️ Armor: <strong>All armor slots</strong> repaired.</li>');
-            } else if (choice === 'prepare') {
-                const hopeCircles = document.querySelectorAll('#hope-tracker .circle');
-                let gainedHope = false;
-                for (const circle of hopeCircles) {
-                    if (!circle.classList.contains('active')) {
-                        circle.classList.add('active');
-                        gainedHope = true;
-                        break;
-                    }
+                // For long rest armor repair: clear all filled circles
+                let repairedCount = 0;
+                if (window.armorCircles && window.saveArmorState && window.renderArmorCircles) {
+                    repairedCount = window.armorCircles.filter(c => c.active).length; // Count active before clearing
+                    window.armorCircles.forEach(circle => circle.active = false);
+                    window.saveArmorState();
+                    window.renderArmorCircles();
+                } else {
+                    // Fallback to DOM manipulation if the proper functions aren't available
+                    const armorCircles = document.querySelectorAll('#armor-tracker .circle');
+                    repairedCount = Array.from(armorCircles).filter(c => c.classList.contains('active')).length;
+                    armorCircles.forEach(slot => slot.classList.remove('active'));
                 }
-                summaryLog.push(`<li>✨ Prepared: <strong>Gained Hope.</strong></li>`);
+                currentRestSummaryLog.push(`<li>🛡️ Armor: <strong>${repairedCount > 0 ? 'All' : 'No'} armor slots</strong> repaired.</li>`);
             } else if (choice === 'project') {
-                const projectSelect = document.getElementById('project-selection-for-rest');
-                const selectedProjectIndex = projectSelect.value;
-
-                if (selectedProjectIndex === "" || projects.length === 0) {
-                    showNotification('Please select a project to advance, or uncheck the project option.', 'error');
-                    // Prevent rest confirmation if project option is checked but no project is selected
-                    document.querySelector('#rest-options-container .button:nth-of-type(1)').style.display = 'inline-block';
-                    document.querySelector('#rest-options-container .button:nth-of-type(2)').style.display = 'inline-block';
+                if (!selectedProjectForRest) {
+                    showNotification('Please select a project to advance from the Long-Term Projects section, or uncheck the project option.', 'error');
                     return;
                 }
 
-                const project = projects[selectedProjectIndex];
+                const projectIndex = projects.findIndex(p => p.id === selectedProjectForRest.id);
+                if (projectIndex === -1) {
+                    showNotification('Selected project not found.', 'error');
+                    return;
+                }
+
+                const project = projects[projectIndex];
                 if (project.progress < project.segments) {
                     project.progress++; // Advance progress by one segment
                     saveProjects(); // Save the updated project progress
                     const projectName = project.name;
                     const newProgress = `${project.progress}/${project.segments}`;
-                    summaryLog.push(`<li>🛠️ Project: Advanced "<strong>${projectName}</strong>" to <strong>${newProgress}</strong>.</li>`);
-                    // Call renderProjects to update the visual representation immediately
-                    renderProjects();
+                    currentRestSummaryLog.push(`<li>🛠️ Project: Advanced "<strong>${projectName}</strong>" to <strong>${newProgress}</strong>.</li>`);
+                    
                     // Also add a separate journal entry for the project advancement
                     if (window.addJournalEntry) {
                         window.addJournalEntry(
@@ -248,44 +417,26 @@ function confirmRest() {
                     }
 
                 } else {
-                    summaryLog.push(`<li>🛠️ Project: "<strong>${project.name}</strong>" is already completed.</li>`);
+                    currentRestSummaryLog.push(`<li>🛠️ Project: "<strong>${project.name}</strong>" is already completed.</li>`);
                     showNotification(`Project "${project.name}" is already completed!`, 'info');
                 }
             }
         }
     });
 
-    const summaryList = document.getElementById('rest-summary-list');
-    summaryList.innerHTML = summaryLog.join('');
-    document.getElementById('rest-summary-area').style.display = 'block';
-
-    document.getElementById('rest-options-list').style.display = 'none';
-    document.getElementById('long-rest-projects-container').style.display = 'none';
-    document.getElementById('gm-notification').style.display = 'none';
-    
-    // Hide confirm and cancel buttons while summary is displayed
-    document.querySelector('#rest-options-container .button:nth-of-type(1)').style.display = 'none'; // Confirm button
-    document.querySelector('#rest-options-container .button:nth-of-type(2)').style.display = 'none'; // Cancel button
-
-    showNotification('Review your rest results below, then click "Okay" to acknowledge.', 'success');
-
-    // Save the rest summary to the journal (if there are other rest choices besides just project)
-    // Only save if there's actual content beyond just the project log if project was selected
-    const restSummaryTitle = `${currentRestType.charAt(0).toUpperCase() + currentRestType.slice(1)} Rest Summary`;
-    const restSummaryContent = `<h4>Rest Outcomes:</h4><ul>${summaryLog.join('')}</ul>`;
-
-    // Only add a journal entry for the rest summary if it's not empty, and if the project entry wasn't the sole entry.
-    // The explicit project advancement entry is handled above if project was chosen.
-    const isProjectOnlyChoice = choices.length === 1 && choices[0] === 'project';
-
-    if (summaryLog.length > 0 && !isProjectOnlyChoice) {
-        if (window.addJournalEntry) {
-            window.addJournalEntry(restSummaryTitle, restSummaryContent, 'downtime', true);
-        }
+    // If there are prepare choices, show the modal, otherwise show summary directly
+    if (pendingPrepareChoices.length > 0) {
+        showPrepareChoiceModal();
+    } else {
+        showRestSummary();
     }
 }
 
 function acknowledgeRest() {
+    // Reset state variables
+    currentRestSummaryLog = [];
+    pendingPrepareChoices = [];
+    currentRestChoices = [];
     resetDowntimeView();
 }
 
@@ -295,6 +446,7 @@ function resetDowntimeView() {
     document.getElementById('rest-options-container').style.display = 'none';
     document.getElementById('rest-summary-area').style.display = 'none';
     document.getElementById('downtime-notification-area').style.display = 'none';
+    document.getElementById('prepare-choice-modal').style.display = 'none'; // Hide prepare modal
     document.getElementById('rest-type-selector').style.display = 'block';
 
     document.getElementById('rest-options-list').style.display = 'flex';
@@ -304,19 +456,30 @@ function resetDowntimeView() {
     document.querySelector('#rest-options-container .button:nth-of-type(1)').style.display = 'inline-block';
     document.querySelector('#rest-options-container .button:nth-of-type(2)').style.display = 'inline-block';
 
-
     currentRestType = '';
+    selectedProjectForRest = null;
 
     document.querySelectorAll('input[name="rest-choice"]').forEach(checkbox => {
         checkbox.checked = false;
     });
-    // Ensure projects are rendered if they were hidden by a rest cycle
-    renderProjects();
+    
+    // Hide project views and reset selection
+    hideProjectViews();
 }
 
 
 // --- PROJECT MANAGEMENT LOGIC ---
 let projects = JSON.parse(localStorage.getItem('zevi-projects')) || [];
+
+// Migrate existing projects to ensure they have IDs
+projects.forEach(project => {
+    if (!project.id) {
+        project.id = Date.now() + Math.random(); // Ensure unique IDs
+    }
+});
+if (projects.length > 0) {
+    saveProjects(); // Save migrated projects
+}
 
 
 function saveProjects() {
@@ -324,174 +487,14 @@ function saveProjects() {
 }
 
 
+// This function is no longer used in the rest interface but kept for compatibility
 function renderProjects() {
-    const projectListDiv = document.getElementById('project-list');
-    projectListDiv.innerHTML = '';
-    if (projects.length === 0) {
-        projectListDiv.innerHTML = '<p style="text-align: center; opacity: 0.7;">No long-term projects yet. Click "＋ New Project" to add one!</p>';
-        return;
-    }
-
-    projects.forEach((project, index) => {
-        const projectItem = document.createElement('div');
-        projectItem.className = 'project-item';
-        projectItem.innerHTML = `
-            <div class="project-header">
-                <div class="project-info">
-                    <input type="text" value="${project.name}" onchange="window.updateProjectName(${index}, this.value)">
-                </div>
-                <button class="delete-project-btn" onclick="window.deleteProject(${index})">✕</button>
-            </div>
-            <div class="progress-clock">
-                ${Array.from({ length: project.segments }).map((_, i) => `
-                    <div
-                        class="progress-segment ${i < project.progress ? 'active' : ''}"
-                        onclick="window.updateProjectProgress(${index}, ${i + 1})"
-                    ></div>
-                `).join('')}
-            </div>
-        `;
-        projectListDiv.appendChild(projectItem);
-    });
-    populateProjectDropdown(); // Re-populate dropdown when projects change
+    // This function is deprecated in favor of the new project view system
+    // but kept for any external references
 }
 
 
-function updateProjectName(index, newName) {
-    projects[index].name = newName;
-    saveProjects();
-    showNotification('Project name updated!', 'success');
-    populateProjectDropdown(); // Update dropdown if project name changes
-}
-
-
-function updateProjectProgress(index, segment) {
-    const project = projects[index];
-    const oldProgress = project.progress;
-    if (segment === oldProgress && segment > 0) {
-        project.progress = segment - 1; // Unfill a segment
-    } else {
-        project.progress = segment; // Fill up to this segment
-    }
-    saveProjects();
-    renderProjects();
-    if (project.progress === project.segments && oldProgress < project.segments) { // Only trigger if just completed
-        showNotification(`Project "${project.name}" completed!`, 'success');
-        if (window.addJournalEntry) {
-            window.addJournalEntry(
-                `Project Completed: ${project.name}`,
-                `The long-term project "${project.name}" has been successfully completed!`,
-                'downtime',
-                true
-            );
-        }
-    } else if (project.progress !== project.segments && oldProgress === project.segments) {
-        // If a completed project is now un-completed
-        showNotification(`Project "${project.name}" is no longer completed.`, 'info');
-    }
-     // Journal entry for any manual progress change outside of rest confirmation
-     // This prevents duplicate entries if it's already logged by confirmRest
-    const optProjectCheckbox = document.getElementById('opt-project');
-    const isPartOfRestConfirm = optProjectCheckbox && optProjectCheckbox.checked && currentRestType === 'long';
-
-    if (window.addJournalEntry && !isPartOfRestConfirm) {
-        window.addJournalEntry(
-            `Project Progress: ${project.name}`,
-            `Manually advanced "${project.name}" to ${project.progress}/${project.segments}.`,
-            'downtime',
-            false // Not auto-generated by a rest action, but manual click
-        );
-    }
-}
-
-
-function deleteProject(index) {
-    if (confirm(`Are you sure you want to delete project "${projects[index].name}"?`)) {
-        projects.splice(index, 1);
-        saveProjects();
-        renderProjects();
-        showNotification('Project deleted!', 'success');
-    }
-}
-
-
-function showProjectModal() {
-    document.getElementById('project-name-input').value = '';
-    document.getElementById('project-segments-input').value = '4';
-    document.getElementById('project-modal').style.display = 'flex';
-}
-
-
-function closeProjectModal() {
-    document.getElementById('project-modal').style.display = 'none';
-}
-
-
-function createProject() {
-    const nameInput = document.getElementById('project-name-input');
-    const segmentsInput = document.getElementById('project-segments-input');
-    const projectName = nameInput.value.trim();
-    const projectSegments = parseInt(segmentsInput.value);
-
-    if (!projectName) {
-        showNotification('Project name cannot be empty.', 'error');
-        return;
-    }
-    if (isNaN(projectSegments) || projectSegments < 1 || projectSegments > 12) {
-        showNotification('Segments must be a number between 1 and 12.', 'error');
-        return;
-    }
-
-    projects.push({
-        id: Date.now(), // Give new projects an ID
-        name: projectName,
-        segments: projectSegments,
-        progress: 0
-    });
-    saveProjects();
-    renderProjects(); // This will also re-populate the dropdown
-    closeProjectModal();
-    showNotification(`Project "${projectName}" created!`, 'success');
-}
-
-
-// Event Listeners for the Project Modal within downtime.js
-document.addEventListener('DOMContentLoaded', () => {
-    // Only add listeners if the elements exist (i.e., we are on the downtime tab)
-    const addProjectBtn = document.getElementById('add-project-btn');
-    if (addProjectBtn) {
-        addProjectBtn.addEventListener('click', showProjectModal);
-    }
-
-    const projectModal = document.getElementById('project-modal');
-    if (projectModal) {
-        projectModal.addEventListener('click', (e) => {
-            if (e.target.id === 'project-modal') {
-                closeProjectModal();
-            }
-        });
-    }
-
-    const projectNameInput = document.getElementById('project-name-input');
-    if (projectNameInput) {
-        projectNameInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                createProject();
-            }
-        });
-    }
-
-    // Close modal on Escape key if it's open
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && projectModal && projectModal.style.display === 'flex') {
-            closeProjectModal();
-        }
-    });
-
-    // Initial render of projects when downtime.js loads (might be before tab is visible)
-    renderProjects();
-});
+// Old project functions removed - now using the new rest-specific project interface
 
 
 // Expose functions to the global scope for access from HTML and script.js
@@ -499,10 +502,11 @@ window.startRest = startRest;
 window.confirmRest = confirmRest;
 window.acknowledgeRest = acknowledgeRest;
 window.resetDowntimeView = resetDowntimeView;
-window.showProjectModal = showProjectModal;
-window.closeProjectModal = closeProjectModal;
-window.createProject = createProject;
-window.updateProjectName = updateProjectName; // For inline onchange in project items
-window.updateProjectProgress = updateProjectProgress; // For inline onclick in project segments
-window.deleteProject = deleteProject; // For inline onclick on delete button
+window.handlePrepareWithParty = handlePrepareWithParty; // For prepare choice modal
+window.showCompletedProjects = showCompletedProjects; // New project interface
+window.showActiveProjects = showActiveProjects; // New project interface
+window.showCreateNewProject = showCreateNewProject; // New project interface
+window.createNewProject = createNewProject; // New project interface
+window.selectProjectForRest = selectProjectForRest; // New project interface
+window.hideProjectViews = hideProjectViews; // New project interface
 window.showNotification = showNotification; // Used by both downtime and project logic, exposed
