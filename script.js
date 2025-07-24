@@ -22,6 +22,8 @@ function toggleTextColor() {
     const current = getComputedStyle(root).getPropertyValue('--text-color').trim();
     const isLight = current === 'rgb(0, 0, 0)' || current === '#000';
 
+    let finalAccentColor;
+
     if (isLight) {
         // Switching to dark theme
         root.style.setProperty('--text-color', '#fff');
@@ -30,8 +32,10 @@ function toggleTextColor() {
         // Use custom accent color if available, otherwise default
         const customAccentDark = localStorage.getItem('zevi-custom-accent-dark');
         if (customAccentDark) {
+            finalAccentColor = customAccentDark;
             root.style.setProperty('--accent-color', customAccentDark);
         } else {
+            finalAccentColor = '#ffd700';
             root.style.setProperty('--accent-color', '#ffd700');
         }
     } else {
@@ -42,10 +46,17 @@ function toggleTextColor() {
         // Use custom accent color if available, otherwise default
         const customAccentLight = localStorage.getItem('zevi-custom-accent-light');
         if (customAccentLight) {
+            finalAccentColor = customAccentLight;
             root.style.setProperty('--accent-color', customAccentLight);
         } else {
+            finalAccentColor = '#b8860b';
             root.style.setProperty('--accent-color', '#b8860b');
         }
+    }
+
+    // Update transparent accent colors if the updateAccentColorTransparencies function is available
+    if (typeof window.updateAccentColorTransparencies === 'function') {
+        window.updateAccentColorTransparencies(finalAccentColor);
     }
 
     localStorage.setItem('zevi-text-color', root.style.getPropertyValue('--text-color'));

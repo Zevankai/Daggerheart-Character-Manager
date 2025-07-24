@@ -2,6 +2,10 @@
    --text-color: #fff;
    --accent-color: #ffd700;
    --accent-color-dark: #b8860b;
+   /* Accent color with different opacity levels */
+   --accent-color-50: rgba(255, 215, 0, 0.5);
+   --accent-color-70: rgba(255, 215, 0, 0.7);
+   --accent-color-80: rgba(255, 215, 0, 0.8);
    /* NEW: Default glass background color with alpha */
    --glass-background-color: rgba(255, 255, 255, 0.1);
    /* NEW: Default character image border color with alpha */
@@ -231,6 +235,7 @@ header {
 .section h3 {
    text-align: center;
    margin: 0;
+   color: var(--accent-color);
 }
 
 .section:hover {
@@ -316,9 +321,9 @@ header {
 }
 
 .hope-circle.active {
-   background: rgba(255, 215, 0, 0.5); /* Gold with some transparency for glassy effect */
-   border: 1px solid rgba(255, 215, 0, 0.8);
-   box-shadow: 0 0 8px rgba(255, 215, 0, 0.7); /* Subtle glow */
+   background: var(--accent-color-50); /* Accent color with transparency for glassy effect */
+   border: 1px solid var(--accent-color-80);
+   box-shadow: 0 0 8px var(--accent-color-70); /* Subtle glow */
 }
 
 /* Armor Active/Filled State - Glassy Silver/Gray */
@@ -340,7 +345,7 @@ header {
 .circle.red.active { background: red; }
 .circle.green.active { background: green; }
 .circle.blue.active { background: #3399ff; }
-.circle.gold.active { background: gold; }
+.circle.gold.active { background: var(--accent-color); }
 
 nav.tabs {
    display: flex;
@@ -368,7 +373,7 @@ nav.tabs button:hover {
 
 nav.tabs button.active {
    background: rgba(255,255,255,0.35);
-   border-bottom-color: gold;
+   border-bottom-color: var(--accent-color);
 }
 
 .mini-input {
@@ -550,7 +555,7 @@ nav.tabs button.active {
 }
 .rest-summary-area h4 {
    margin-top: 0;
-   color: gold;
+   color: var(--accent-color);
 }
 .rest-summary-area ul {
    margin: 0;

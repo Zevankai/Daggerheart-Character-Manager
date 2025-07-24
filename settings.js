@@ -44,15 +44,18 @@ function changeAccentColor(newColor) {
     const root = document.documentElement;
     const currentTheme = document.body.getAttribute('data-theme');
     
-    // Set the new accent color
-    root.style.setProperty('--accent-color', newColor);
-    
     // Calculate a darker version for light theme
     const darkerColor = adjustColorBrightness(newColor, -0.3);
     
-    // If we're in light theme, use the darker version
+    // Set the accent color based on current theme
+    const finalColor = (currentTheme === 'light') ? darkerColor : newColor;
+    root.style.setProperty('--accent-color', finalColor);
+    
+    // Update transparent versions of the accent color
+    updateAccentColorTransparencies(finalColor);
+    
+    // Save colors for theme switching
     if (currentTheme === 'light') {
-        root.style.setProperty('--accent-color', darkerColor);
         localStorage.setItem('zevi-custom-accent-light', darkerColor);
     } else {
         localStorage.setItem('zevi-custom-accent-dark', newColor);
@@ -60,6 +63,16 @@ function changeAccentColor(newColor) {
     
     // Save the base color for future theme switches
     localStorage.setItem('zevi-custom-accent-base', newColor);
+}
+
+function updateAccentColorTransparencies(accentColor) {
+    const root = document.documentElement;
+    const rgb = hexToRgb(accentColor);
+    
+    // Update transparent versions
+    root.style.setProperty('--accent-color-50', `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.5)`);
+    root.style.setProperty('--accent-color-70', `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.7)`);
+    root.style.setProperty('--accent-color-80', `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)`);
 }
 
 // ===== GLASSMORPHIC BACKGROUND TINT MANAGEMENT =====
@@ -390,10 +403,18 @@ function applySavedCustomColors() {
         const savedAccentLight = localStorage.getItem('zevi-custom-accent-light');
         const savedAccentDark = localStorage.getItem('zevi-custom-accent-dark');
         
+        let finalAccentColor;
         if (currentTheme === 'light' && savedAccentLight) {
+            finalAccentColor = savedAccentLight;
             root.style.setProperty('--accent-color', savedAccentLight);
         } else if (currentTheme === 'dark' && savedAccentDark) {
+            finalAccentColor = savedAccentDark;
             root.style.setProperty('--accent-color', savedAccentDark);
+        }
+        
+        // Update transparent versions if we have a final color
+        if (finalAccentColor) {
+            updateAccentColorTransparencies(finalAccentColor);
         }
     }
     
@@ -415,6 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Export functions for global access
 window.changeAccentColor = changeAccentColor;
+window.updateAccentColorTransparencies = updateAccentColorTransparencies;
 window.changeGlassBackgroundColor = changeGlassBackgroundColor;
 window.deleteCharacterData = deleteCharacterData;
 window.deleteAccountData = deleteAccountData;
