@@ -1,0 +1,1005 @@
+:root {
+   --text-color: #fff;
+   --accent-color: #ffd700;
+   --accent-color-dark: #b8860b;
+   /* NEW: Default glass background color with alpha */
+   --glass-background-color: rgba(255, 255, 255, 0.1);
+   /* NEW: Default character image border color with alpha */
+   --char-image-border-color: rgba(255, 255, 255, 0.12);
+}
+
+body {
+   margin: 0;
+   font-family: 'Segoe UI', sans-serif;
+   background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb') no-repeat center center fixed;
+   background-size: cover;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   padding: 20px;
+   color: var(--text-color);
+}
+
+.glass {
+   /* UPDATED: Now uses a CSS variable for its background color */
+   background: var(--glass-background-color);
+   border-radius: 12px;
+   border: 1px solid rgba(255, 255, 255, 0.2);
+   padding: 20px;
+   margin-bottom: 20px;
+   backdrop-filter: blur(15px);
+   -webkit-backdrop-filter: blur(15px);
+   width: 90%;
+   max-width: 1100px;
+   position: relative;
+   color: var(--text-color);
+}
+
+header {
+   display: flex;
+   flex-direction: row;
+   align-items: center;
+   justify-content: center;
+   gap: 40px;
+   position: relative;
+   flex-wrap: wrap;
+   padding: 20px;
+}
+
+.char-img-wrapper {
+   position: relative;
+   width: 300px;
+   height: 300px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   flex-shrink: 0;
+}
+
+.char-img-wrapper .char-img-border {
+   position: absolute;
+   width: 100%;
+   height: 100%;
+   border-radius: 50%;
+   /* UPDATED: Now uses a CSS variable for its background */
+   background: var(--char-image-border-color);
+   border: 2px solid rgba(255, 255, 255, 0.2);
+   backdrop-filter: blur(15px);
+   -webkit-backdrop-filter: blur(15px);
+   z-index: -1;
+}
+
+.char-img-wrapper img {
+   border-radius: 50%;
+   width: 90%;
+   height: 90%;
+   object-fit: cover;
+   cursor: pointer;
+}
+
+.char-img-wrapper .placeholder {
+   position: absolute;
+   color: var(--text-color);
+   font-size: 0.9rem;
+   text-align: center;
+   pointer-events: none;
+}
+
+.name-box {
+   background: rgba(255,255,255,0.12);
+   border: 1px solid rgba(255,255,255,0.2);
+   border-radius: 10px;
+   padding: 20px;
+   margin-bottom: 20px;
+   text-align: center;
+   width: 100%;
+  max-width: 350px;
+}
+
+.hope-section {
+   background: rgba(255,255,255,0.12);
+   border: 1px solid rgba(255,255,255,0.2);
+   border-radius: 10px;
+   padding: 20px;
+   margin-bottom: 20px;
+   text-align: center;
+   width: 100%;
+   max-width: 500px;
+}
+
+.hope-tracker-inline {
+   margin-top: 15px;
+   padding-top: 15px;
+   border-top: 1px solid rgba(255, 255, 255, 0.2);
+   text-align: center;
+}
+
+.hope-tracker-inline h4 {
+   margin: 0 0 10px 0;
+   font-size: 1rem;
+   color: var(--text-color);
+}
+
+.hope-tracker-inline .trackers-wrapper {
+  justify-content: center;
+}
+
+.name-box input {
+   font-size: 2rem;
+   font-weight: bold;
+   border: none;
+   background: transparent;
+   color: var(--text-color);
+   text-align: center;
+}
+
+.name-box .subtitle {
+   font-size: 0.9rem;
+   font-style: italic;
+   opacity: 0.85;
+}
+
+.domain-row {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   gap: 10px;
+   margin-top: 8px;
+}
+
+.domain-badge {
+   background: rgba(255,255,255,0.2);
+   padding: 5px 10px;
+   border-radius: 10px;
+   display: inline-block;
+   font-size: 0.85rem;
+}
+
+.domain-divider {
+   opacity: 0.5;
+}
+
+.level-display {
+   font-size: 1.8rem;
+   font-weight: bold;
+   cursor: pointer;
+   transition: transform 0.2s ease;
+}
+
+.level-display:hover {
+   transform: scale(1.1);
+}
+
+.right-info {
+   position: absolute;
+   right: 0;
+   top: 10px;
+   text-align: right;
+   padding-right: 20px;
+   font-size: 0.9rem;
+   color: var(--text-color);
+}
+
+.right-info a {
+   color: var(--text-color);
+   font-size: small;
+   text-decoration: none;
+}
+
+.button {
+   background: #ffffff20;
+   border: 1px solid #ffffff30;
+   padding: 8px 16px;
+   border-radius: 6px;
+   cursor: pointer;
+   color: var(--text-color);
+   margin-top: 10px;
+   transition: background-color 0.2s ease, transform 0.2s ease;
+   font-size: 1rem;
+}
+
+.button:hover {
+   background: #ffffff35;
+   transform: scale(1.05);
+}
+
+.flex-row {
+   display: grid;
+   grid-template-columns: 1fr 1fr;
+   grid-template-rows: 1fr 1fr;
+   gap: 20px;
+}
+
+.column {
+   /* Remove flex properties since we're using grid now */
+}
+
+.section {
+   margin-top: 1rem;
+   padding: 1rem;
+   background: rgba(255, 255, 255, 0.12);
+   border: none;
+   border-radius: 8px;
+   cursor: grab;
+   transition: transform 0.2s ease;
+}
+
+.section h3 {
+   text-align: center;
+   margin: 0;
+}
+
+.section:hover {
+   transform: scale(1.02);
+}
+
+.trackers {
+   display: flex;
+   gap: 10px;
+   margin-top: 10px;
+   flex-wrap: wrap; /* Allow circles to wrap */
+}
+
+/* NEW: Styles for the tracker wrapper and buttons */
+.trackers-wrapper {
+   display: flex;
+   align-items: center;
+   gap: 5px; /* Space between buttons and circles */
+   margin-top: 10px;
+}
+
+.tracker-btn {
+   background: rgba(255, 255, 255, 0.15);
+   border: 1px solid rgba(255, 255, 255, 0.25);
+   border-radius: 50%; /* Make them round */
+   width: 25px; /* Size of the button */
+   height: 25px; /* Size of the button */
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   font-size: 1.2rem;
+   font-weight: bold;
+   color: var(--text-color);
+   cursor: pointer;
+   transition: background-color 0.2s ease, transform 0.2s ease;
+   flex-shrink: 0; /* Prevent shrinking when content needs space */
+}
+
+.tracker-btn:hover {
+   background: rgba(255, 255, 255, 0.3);
+   transform: scale(1.1);
+}
+
+.tracker-btn:active {
+   transform: scale(0.95);
+}
+
+/* Base circle style - existing `circle` class is too general */
+/* We'll use specific classes for HP and Stress */
+.hp-circle, .stress-circle {
+   width: 20px;
+   height: 20px;
+   border-radius: 50%;
+   background: rgba(128, 128, 128, 0.5); /* Semi-transparent gray for unfilled */
+   border: 1px solid rgba(255, 255, 255, 0.3);
+   cursor: pointer;
+   transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+/* HP Active/Filled State - Glassy Red */
+.hp-circle.active {
+   background: rgba(255, 0, 0, 0.5); /* Red with some transparency for glassy effect */
+   border: 1px solid rgba(255, 0, 0, 0.8);
+   box-shadow: 0 0 8px rgba(255, 0, 0, 0.7); /* Subtle glow */
+}
+
+/* Stress Active/Filled State - Glassy Blue (similar to current blue circles) */
+.stress-circle.active {
+   background: rgba(51, 153, 255, 0.5); /* Blue with some transparency */
+   border: 1px solid rgba(51, 153, 255, 0.8);
+   box-shadow: 0 0 8px rgba(51, 153, 255, 0.7);
+}
+
+/* Hope Active/Filled State - Glassy Gold */
+.hope-circle {
+   width: 20px;
+   height: 20px;
+   border-radius: 50%;
+   background: rgba(128, 128, 128, 0.5); /* Semi-transparent gray for unfilled */
+   border: 1px solid rgba(255, 255, 255, 0.3);
+   cursor: pointer;
+   transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.hope-circle.active {
+   background: rgba(255, 215, 0, 0.5); /* Gold with some transparency for glassy effect */
+   border: 1px solid rgba(255, 215, 0, 0.8);
+   box-shadow: 0 0 8px rgba(255, 215, 0, 0.7); /* Subtle glow */
+}
+
+/* Armor Active/Filled State - Glassy Silver/Gray */
+.armor-circle.active {
+   background: rgba(192, 192, 192, 0.6); /* Silver with some transparency for glassy effect */
+   border: 1px solid rgba(192, 192, 192, 0.9);
+   box-shadow: 0 0 8px rgba(192, 192, 192, 0.7); /* Subtle glow */
+}
+
+/* Existing circle styles, keep for Armor and Hope but won't apply to HP/Stress now */
+.circle {
+   width: 20px;
+   height: 20px;
+   border-radius: 50%;
+   background: gray;
+   cursor: pointer;
+}
+
+.circle.red.active { background: red; }
+.circle.green.active { background: green; }
+.circle.blue.active { background: #3399ff; }
+.circle.gold.active { background: gold; }
+
+nav.tabs {
+   display: flex;
+   gap: 15px;
+   justify-content: center;
+   margin-top: 2rem;
+   flex-wrap: wrap;
+}
+
+nav.tabs button {
+   background: rgba(255,255,255,0.2);
+   border: none;
+   padding: 10px 15px;
+   color: var(--text-color);
+   border-radius: 6px;
+   cursor: pointer;
+   transition: all 0.2s ease;
+   border-bottom: 2px solid transparent;
+}
+
+nav.tabs button:hover {
+   transform: scale(1.05);
+   background: rgba(255,255,255,0.3);
+}
+
+nav.tabs button.active {
+   background: rgba(255,255,255,0.35);
+   border-bottom-color: gold;
+}
+
+.mini-input {
+   width: 30px;
+}
+
+.background-icon {
+   position: absolute;
+   bottom: 10px;
+   right: 10px;
+}
+
+.background-icon label {
+   font-size: 20px;
+   color: black;
+   opacity: 0.5;
+   cursor: pointer;
+   user-select: none;
+}
+
+.background-icon input {
+   display: none;
+}
+
+.divider {
+   border-top: 2px solid rgba(255, 255, 255, 0.2);
+   margin: 20px 0;
+}
+
+/* Ability Scores Section Styles */
+.attributes-grid {
+   display: grid;
+   grid-template-columns: repeat(2, 1fr); /* Now two columns, three rows */
+   gap: 6px; /* Reduced space between the attribute boxes */
+   margin-top: 6px; /* Reduced space from the section heading */
+   /* Updated for centering */
+   width: fit-content; /* Ensure the grid container only takes up needed space */
+   margin: 0 auto; /* NEW: This will center the block horizontally */
+}
+
+.attribute-box {
+   background: rgba(0, 0, 0, 0.2); /* Darker glassy look */
+   border: 1px solid rgba(255, 255, 255, 0.15);
+   border-radius: 8px;
+   padding: 2px; /* Very small padding */
+   text-align: center;
+   display: flex;
+   flex-direction: column;
+   justify-content: space-between;
+   align-items: center;
+}
+
+.attribute-box h4 {
+   margin: 0; /* Removed margin to pull title closer */
+   font-size: 0.65rem; /* Even smaller font size for attribute name */
+   color: var(--text-color); /* Now using --text-color (white/black) */
+}
+
+.attribute-value {
+   /* Styles for the new input type="number" */
+   font-size: 1.2rem;
+   font-weight: bold;
+   color: var(--text-color); /* Match main text color */
+   background: transparent;
+   border: none;
+   text-align: center;
+   width: 60px; /* Adjust width as needed */
+   padding: 0;
+   margin: 0;
+   -moz-appearance: textfield; /* Hide Firefox number input arrows */
+}
+
+/* Hide Chrome/Safari number input arrows */
+.attribute-value::-webkit-outer-spin-button,
+.attribute-value::-webkit-inner-spin-button {
+   -webkit-appearance: none;
+   margin: 0;
+}
+
+.attribute-text {
+   font-size: 0.5rem; /* Very small font for the text */
+   opacity: 0.8;
+   margin: 0; /* Removed margin */
+   line-height: 1; /* Tighten line height */
+   white-space: nowrap; /* Keep text on one line */
+   overflow: hidden; /* Hide overflow if text is too long */
+   text-overflow: ellipsis; /* Add ellipsis for overflowed text */
+}
+
+/* Tab Content & Downtime Styles */
+.tab-content-area {
+   margin-top: 1.5rem;
+}
+.tab-panel {
+   display: none;
+}
+.tab-panel.active {
+   display: block;
+}
+
+#downtime-content {
+   padding: 1.5rem;
+   background: rgba(0,0,0,0.1);
+   border-radius: 10px;
+   text-align: center;
+}
+.rest-type-selection, .rest-options {
+   padding: 1rem;
+}
+.rest-type-selection h2 {
+   margin-top: 0;
+}
+.rest-type-selection .button-group {
+   display: flex;
+   justify-content: center;
+   gap: 20px;
+}
+.rest-options h3 {
+   margin-top: 0;
+   margin-bottom: 1.5rem;
+}
+.rest-options-list {
+   display: flex;
+   flex-direction: column;
+   gap: 1rem;
+   text-align: left;
+   max-width: 600px;
+   margin: 0 auto 1.5rem auto;
+}
+.rest-option {
+   background: rgba(0,0,0,0.2);
+   padding: 15px;
+   border-radius: 8px;
+   display: flex;
+   align-items: center;
+   gap: 15px;
+}
+.rest-option input[type="checkbox"] {
+   width: 20px;
+   height: 20px;
+   flex-shrink: 0;
+}
+.rest-option label {
+   flex-grow: 1;
+}
+.rest-option label strong {
+   color: var(--accent-color);
+}
+.gm-notification {
+   background: rgba(0,0,0, 0.2);
+   border: 1px solid rgba(255, 255, 255, 0.2);
+   padding: 10px;
+   border-radius: 8px;
+   margin: 1.5rem auto;
+   max-width: 600px;
+}
+.notification-area {
+   padding: 10px;
+   border-radius: 8px;
+   margin: 0 auto 1.5rem auto;
+   font-weight: bold;
+   display: none;
+}
+.notification-area.error {
+   background-color: rgba(255, 82, 82, 0.5);
+   border: 1px solid rgba(255, 82, 82, 0.8);
+}
+.notification-area.success {
+   background-color: rgba(34, 197, 94, 0.5);
+   border: 1px solid rgba(34, 197, 94, 0.8);
+}
+.rest-summary-area {
+   text-align: left;
+   background: rgba(0, 20, 40, 0.3);
+   border: 1px solid rgba(173, 216, 230, 0.4);
+   padding: 1rem;
+   border-radius: 8px;
+   margin-top: 1.5rem;
+}
+.rest-summary-area h4 {
+   margin-top: 0;
+   color: gold;
+}
+.rest-summary-area ul {
+   margin: 0;
+   padding-left: 20px;
+}
+
+/* Long Term Project styles */
+.long-term-projects {
+   margin-top: 1.5rem;
+   padding-top: 1.5rem;
+   border-top: 1px solid rgba(255,255,255,0.2);
+}
+.projects-header {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   margin-bottom: 1rem;
+   flex-wrap: wrap;
+   gap: 1rem;
+   max-width: 600px;
+   margin: 0 auto 1.5rem auto;
+   text-align: left;
+}
+.project-item {
+   background: rgba(0,0,0,0.2);
+   padding: 15px;
+   border-radius: 8px;
+   margin: 0 auto 15px auto;
+   max-width: 600px;
+}
+.project-header {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   gap: 15px;
+   margin-bottom: 10px;
+}
+.project-info input {
+   width: 100%;
+   background: transparent;
+   border: none;
+   border-bottom: 1px solid rgba(255,255,255,0.3);
+   color: var(--text-color);
+   font-size: 1.1rem;
+   padding: 5px;
+}
+.delete-project-btn {
+   background: none;
+   border: none;
+   color: var(--text-color);
+   font-size: 1.5rem;
+   cursor: pointer;
+   opacity: 0.6;
+   transition: opacity 0.2s ease;
+}
+.delete-project-btn:hover {
+   opacity: 1;
+}
+.progress-clock {
+   display: flex;
+   gap: 3px;
+   flex-wrap: wrap;
+   margin-top: 5px;
+}
+.progress-segment {
+   width: 12px;
+   height: 12px;
+   background: rgba(255,255,255,0.2);
+   border: 1px solid rgba(255,255,255,0.3);
+   cursor: pointer;
+   border-radius: 2px;
+   transition: background-color 0.2s ease;
+}
+.progress-segment.active {
+   background-color: var(--accent-color);
+   border-color: var(--accent-color);
+}
+
+/* Project Creation Modal */
+.modal-overlay {
+   position: fixed;
+   top: 0;
+   left: 0;
+   width: 100%;
+   height: 100%;
+   background: rgba(0, 0, 0, 0.7);
+   display: none; /* Controlled by JS to show/hide */
+   justify-content: center;
+   align-items: center;
+   z-index: 1000;
+}
+.modal {
+   background: rgba(0, 0, 0, 0.9);
+   border: 1px solid rgba(255, 255, 255, 0.3);
+   border-radius: 12px;
+   padding: 2rem;
+   max-width: 400px;
+   width: 90%;
+   text-align: center;
+   box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); /* Add subtle shadow */
+}
+.modal h3 {
+   margin-top: 0;
+   color: var(--accent-color);
+   margin-bottom: 20px; /* Spacing for modal inputs */
+}
+.modal input, .modal select, .modal textarea { /* Added select and textarea */
+   width: calc(100% - 20px); /* Account for padding */
+   padding: 10px;
+   margin: 10px 0;
+   background: rgba(255, 255, 255, 0.1);
+   border: 1px solid rgba(255, 255, 255, 0.3);
+   border-radius: 6px;
+   color: var(--text-color);
+   font-size: 1rem;
+   box-sizing: border-box; /* Ensures padding doesn't increase total width */
+}
+
+.modal input[type="number"] {
+   -moz-appearance: textfield; /* Remove arrows in Firefox */
+   appearance: textfield; /* Remove arrows in modern browsers */
+   text-align: center;
+}
+.modal input[type="number"]::-webkit-outer-spin-button,
+.modal input[type="number"]::-webkit-inner-spin-button {
+   -webkit-appearance: none;
+   margin: 0;
+}
+
+.modal textarea {
+   min-height: 100px; /* Make textarea larger */
+   resize: vertical; /* Allow vertical resizing */
+}
+
+.modal-buttons {
+   display: flex;
+   gap: 10px;
+   justify-content: center;
+   margin-top: 1.5rem;
+}
+
+
+/* Theme-specific colors */
+body[data-theme="dark"] {
+   --accent-color: #ffd700;
+}
+body[data-theme="light"] {
+   --accent-color: #b8860b;
+   --text-color: #000;
+}
+
+
+/* Color Picker Styles */
+.color-picker-container {
+   position: absolute;
+   top: 10px;
+   left: 10px;
+   display: flex;
+   align-items: center;
+   gap: 5px;
+}
+
+.color-picker-toggle {
+   font-size: 18px; /* Made icon smaller */
+   color: var(--text-color);
+   cursor: pointer;
+   opacity: 0.5; /* Always visible, but subtle */
+   transition: opacity 0.3s ease; /* Smooth transition for hover */
+   user-select: none;
+}
+
+
+/* When the container is hovered, make the toggle more prominent */
+.color-picker-container:hover .color-picker-toggle {
+   opacity: 1;
+}
+
+
+.color-picker-input {
+   width: 40px;
+   height: 40px;
+   padding: 0;
+   border: none;
+   background: none;
+   cursor: pointer;
+   transition: opacity 0.3s ease; /* Smooth transition for appearance (less relevant with display:none) */
+}
+
+
+/* When the container is hovered, show the color input */
+.color-picker-container:hover .color-picker-input {
+   display: block !important; /* Force display block on hover */
+}
+
+/* NEW STYLES FOR DAMAGE CONTROL (INTEGRATED) */
+.damage-control-row {
+   display: flex;
+   justify-content: center; /* Center the entire row */
+   align-items: center;
+   gap: 10px; /* Space between each button-input pair */
+   margin-bottom: 10px; /* Space above HP circles */
+}
+
+.damage-btn {
+   background: rgba(255, 255, 255, 0.15);
+   border: 1px solid rgba(255, 255, 255, 0.25);
+   border-radius: 6px;
+   padding: 5px 10px; /* Adjust padding as needed */
+   color: var(--text-color);
+   cursor: pointer;
+   transition: background-color 0.2s ease, transform 0.2s ease;
+   display: flex; /* Enable flexbox for stacking text */
+   flex-direction: column; /* Stack text vertically */
+   align-items: center; /* Center text horizontally within button */
+   font-size: 0.85rem; /* Smaller font for stacked text */
+   line-height: 1.2; /* Adjust line height for stacked text */
+}
+
+.damage-btn:hover {
+   background: rgba(255, 255, 255, 0.3);
+   transform: scale(1.05);
+}
+
+.damage-btn span {
+   display: block; /* Ensure each line of text is on its own line */
+}
+
+/* Updated style for the damage value inputs */
+.damage-value-input {
+   width: 35px; /* **Smaller text box width** */
+   height: 35px; /* **Smaller text box height** */
+   text-align: center;
+   background-color: transparent; /* Make background transparent */
+   border: 1px solid transparent; /* Make border transparent */
+   color: inherit; /* Inherit text color from parent */
+   font-size: 1.7rem; /* **Bigger numbers** */
+   padding: 0; /* **Reduced padding to make box smaller** */
+   border-radius: 4px;
+   transition: background-color 0.2s ease, border-color 0.2s ease; /* Smooth transition */
+   -moz-appearance: textfield; /* Hide arrows in Firefox */
+   appearance: textfield; /* Hide arrows in modern browsers */
+   cursor: pointer; /* Indicate it's clickable */
+   line-height: 1; /* Helps vertically center the large number */
+}
+
+/* Hide arrows for Chrome, Safari, Edge */
+.damage-value-input::-webkit-outer-spin-button,
+.damage-value-input::-webkit-inner-spin-button {
+   -webkit-appearance: none;
+   margin: 0;
+}
+
+/* Style when the input is focused (clicked/tabbed into) */
+.damage-value-input:focus {
+   background-color: rgba(0, 0, 0, 0.2); /* Slight background on focus, matching original input style */
+   border: 1px solid rgba(255, 255, 255, 0.3); /* Visible border on focus */
+   outline: none; /* Remove default outline */
+   cursor: auto; /* Change cursor back to auto */
+}
+
+/* NEW JOURNAL STYLES */
+.journal-category-buttons {
+   display: flex;
+   flex-wrap: wrap;
+   justify-content: center;
+   gap: 10px;
+   margin-bottom: 20px;
+}
+
+.journal-category-buttons .button {
+   margin-top: 0; /* Override default button margin-top */
+   padding: 8px 12px;
+   font-size: 0.9rem;
+   background: rgba(255, 255, 255, 0.1);
+   border-bottom: 2px solid transparent;
+}
+
+.journal-category-buttons .button.active {
+   background: rgba(255, 255, 255, 0.2);
+   border-bottom-color: var(--accent-color);
+}
+
+.journal-entries-list {
+   max-height: 500px; /* Limit height and allow scrolling */
+   overflow-y: auto;
+   padding-right: 10px; /* Space for scrollbar */
+   margin-bottom: 20px;
+}
+
+.journal-entry-item {
+   background: rgba(0, 0, 0, 0.2);
+   border: 1px solid rgba(255, 255, 255, 0.15);
+   border-radius: 8px;
+   padding: 15px;
+   margin-bottom: 10px;
+   cursor: pointer;
+   transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.journal-entry-item:hover {
+   background: rgba(0, 0, 0, 0.3);
+   transform: translateY(-2px);
+}
+
+.journal-entry-item h4 {
+   margin: 0 0 5px 0;
+   color: var(--accent-color);
+   font-size: 1.1rem;
+}
+
+.journal-entry-item p {
+   margin: 0;
+   font-size: 0.9rem;
+   opacity: 0.8;
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+}
+
+.journal-entry-item .entry-meta {
+   font-size: 0.75rem;
+   opacity: 0.6;
+   display: flex;
+   justify-content: space-between;
+   margin-top: 5px;
+}
+
+.journal-entry-detail {
+   background: rgba(0, 0, 0, 0.3);
+   border: 1px solid rgba(255, 255, 255, 0.2);
+   border-radius: 8px;
+   padding: 20px;
+   margin-bottom: 20px;
+}
+
+.journal-detail-header {
+   display: flex;
+   flex-wrap: wrap;
+   justify-content: space-between;
+   align-items: baseline;
+   margin-bottom: 15px;
+   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+   padding-bottom: 10px;
+}
+
+.journal-detail-header h4 {
+   margin: 0;
+   color: var(--accent-color);
+   font-size: 1.4rem;
+   flex-basis: 100%; /* Take full width on smaller screens */
+   text-align: center;
+}
+
+.journal-detail-header span {
+   font-size: 0.85rem;
+   opacity: 0.7;
+   margin-top: 5px; /* Space below title */
+   flex-grow: 1;
+   text-align: left;
+}
+.journal-detail-header span:last-child {
+   text-align: right;
+}
+
+.journal-detail-content {
+   white-space: pre-wrap; /* Preserve whitespace and line breaks */
+   font-size: 0.95rem;
+   line-height: 1.6;
+   margin-bottom: 20px;
+   max-height: 400px;
+   overflow-y: auto;
+   padding-right: 5px;
+}
+
+/* Style for the Downtime summary content within journal detail */
+.journal-detail-content ul {
+   margin: 0;
+   padding-left: 20px;
+}
+.journal-detail-content ul li {
+   list-style-type: disc;
+   margin-bottom: 5px;
+}
+.journal-detail-content ul li strong {
+   color: var(--accent-color);
+}
+
+/* Experiences Tab Specific Styles */
+.experiences-list-container {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 10px; /* Space between experience buttons */
+   justify-content: center; /* Center the buttons */
+   margin-top: 15px;
+}
+
+.experience-button {
+   flex-grow: 1; /* Allow buttons to grow and fill space */
+   min-width: 120px; /* Minimum width for buttons */
+   max-width: 250px; /* Maximum width for buttons */
+   background: rgba(255, 255, 255, 0.15);
+   border: 1px solid rgba(255, 255, 255, 0.25);
+   padding: 10px 15px;
+   border-radius: 8px;
+   color: var(--text-color);
+   font-size: 1rem;
+   cursor: pointer;
+   transition: background-color 0.2s ease, transform 0.2s ease;
+   text-align: center;
+   white-space: nowrap; /* Prevent text wrapping */
+   overflow: hidden; /* Hide overflow */
+   text-overflow: ellipsis; /* Add ellipsis for overflow */
+}
+
+.experience-button:hover {
+   background: rgba(255, 255, 255, 0.3);
+   transform: translateY(-2px);
+}
+
+.experience-detail-container {
+   background: rgba(0, 0, 0, 0.2);
+   border: 1px solid rgba(255, 255, 255, 0.2);
+   border-radius: 10px;
+   padding: 20px;
+   margin-top: 20px;
+   text-align: center;
+}
+
+.experience-detail-container h4 {
+   margin-top: 0;
+   color: var(--accent-color);
+   font-size: 1.5rem;
+   margin-bottom: 10px;
+}
+
+.experience-detail-container p {
+   font-size: 0.95rem;
+   line-height: 1.6;
+   margin-bottom: 15px;
+}
+
+.experience-detail-container p:last-of-type { /* For the modifier line */
+   font-weight: bold;
+   color: var(--text-color);
+   font-size: 1.1rem;
+}
+
+.experience-detail-container .button {
+   margin-top: 15px;
+}
+
+.no-entries-message {
+   font-style: italic;
+   opacity: 0.7;
+   margin-top: 20px;
+}
