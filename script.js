@@ -23,13 +23,29 @@ function toggleTextColor() {
     const isLight = current === 'rgb(0, 0, 0)' || current === '#000';
 
     if (isLight) {
-      root.style.setProperty('--text-color', '#fff');
-      root.style.setProperty('--accent-color', '#ffd700');
-      document.body.setAttribute('data-theme', 'dark');
+        // Switching to dark theme
+        root.style.setProperty('--text-color', '#fff');
+        document.body.setAttribute('data-theme', 'dark');
+        
+        // Use custom accent color if available, otherwise default
+        const customAccentDark = localStorage.getItem('zevi-custom-accent-dark');
+        if (customAccentDark) {
+            root.style.setProperty('--accent-color', customAccentDark);
+        } else {
+            root.style.setProperty('--accent-color', '#ffd700');
+        }
     } else {
-      root.style.setProperty('--text-color', '#000');
-      root.style.setProperty('--accent-color', '#b8860b');
-      document.body.setAttribute('data-theme', 'light');
+        // Switching to light theme
+        root.style.setProperty('--text-color', '#000');
+        document.body.setAttribute('data-theme', 'light');
+        
+        // Use custom accent color if available, otherwise default
+        const customAccentLight = localStorage.getItem('zevi-custom-accent-light');
+        if (customAccentLight) {
+            root.style.setProperty('--accent-color', customAccentLight);
+        } else {
+            root.style.setProperty('--accent-color', '#b8860b');
+        }
     }
 
     localStorage.setItem('zevi-text-color', root.style.getPropertyValue('--text-color'));

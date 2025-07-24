@@ -279,7 +279,82 @@
     <p style="text-align: center;">Content for Characters will go here.</p>
    </div>
    <div id="settings-tab-content" class="tab-panel">
-    <p style="text-align: center;">Content for Settings will go here.</p>
+    <div class="settings-container">
+     <h2>Settings</h2>
+     
+     <!-- Accent Color Theme Section -->
+     <div class="settings-section">
+      <h3>Accent Color Theme</h3>
+      <p>Change the color of accent elements (currently yellow) throughout the character sheet.</p>
+      <div class="color-control">
+       <label for="accentColorPicker">Accent Color:</label>
+       <div class="color-picker-group">
+        <input type="color" id="accentColorPicker" value="#ffd700">
+        <div class="color-preview" id="accentColorPreview"></div>
+        <button type="button" id="resetAccentColor" class="reset-btn">Reset to Default</button>
+       </div>
+      </div>
+     </div>
+     
+     <!-- Glassmorphic Background Tint Section -->
+     <div class="settings-section">
+      <h3>Glassmorphic Background Tint</h3>
+      <p>Customize the color and opacity of the glassmorphic background effect.</p>
+      <div class="color-control">
+       <label for="glassColorPicker">Glass Tint Color:</label>
+       <div class="color-picker-group">
+        <input type="color" id="glassColorPicker" value="#ffffff">
+        <div class="color-preview glass-preview" id="glassColorPreview"></div>
+        <button type="button" id="resetGlassColor" class="reset-btn">Reset to Default</button>
+       </div>
+      </div>
+      <div class="slider-control">
+       <label for="glassOpacitySlider">Glass Opacity:</label>
+       <div class="slider-group">
+        <input type="range" id="glassOpacitySlider" min="5" max="30" value="10" step="1">
+        <span id="glassOpacityValue">10%</span>
+       </div>
+      </div>
+     </div>
+     
+     <!-- Character Deletion Section -->
+     <div class="settings-section danger-section">
+      <h3>Character Data</h3>
+      <p>Delete all character information and return to a fresh character sheet.</p>
+      <button type="button" id="deleteCharacterBtn" class="danger-btn">Delete Character</button>
+     </div>
+     
+     <!-- Account Deletion Section -->
+     <div class="settings-section danger-section">
+      <h3>Account Data</h3>
+      <p>Delete all account data including character information and settings.</p>
+      <button type="button" id="deleteAccountBtn" class="danger-btn">Delete Account</button>
+     </div>
+    </div>
+   </div>
+   
+   <!-- Character Delete Modal -->
+   <div id="characterDeleteModal" class="modal">
+    <div class="modal-content">
+     <h3>Delete Character</h3>
+     <p>Are you sure you want to delete all character data? This action cannot be undone.</p>
+     <div class="modal-buttons">
+      <button type="button" id="confirmCharacterDelete" class="confirm-delete-btn">Confirm Character Delete</button>
+      <button type="button" id="cancelCharacterDelete" class="cancel-btn">Cancel</button>
+     </div>
+    </div>
+   </div>
+   
+   <!-- Account Delete Modal -->
+   <div id="accountDeleteModal" class="modal">
+    <div class="modal-content">
+     <h3>Delete Account</h3>
+     <p>Are you sure you want to delete your entire account? This will remove all data and cannot be undone.</p>
+     <div class="modal-buttons">
+      <button type="button" id="confirmAccountDelete" class="confirm-delete-btn">Confirm Account Delete</button>
+      <button type="button" id="cancelAccountDelete" class="cancel-btn">Cancel</button>
+     </div>
+    </div>
    </div>
 
   </div>
@@ -341,4 +416,5 @@
  <script src="journal.js"></script>
  <script src="experiences.js"></script>
  <script src="details.js"></script>
+ <script src="settings.js"></script>
 </html>
