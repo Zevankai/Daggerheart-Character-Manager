@@ -9,31 +9,22 @@
 
 // ===== EQUIPMENT DATA STRUCTURE =====
 let equipmentData = {
-    // Equipped items
+    // Equipped items (visual slots on character silhouette)
     equipped: {
-        primaryWeapon: null,
-        secondaryWeapon: null,
-        armor: null,
-        clothes: null,
-        jewelry: [null, null, null], // 3 slots
-        gear: [null, null, null, null, null], // 5 slots
-        potions: [null, null, null, null, null], // 5 slots
-        canister: null,
-        food: [null, null], // 2 slots
-        questItems: [null, null] // 2 slots
+        primaryWeapon: null,    // Left hand
+        secondaryWeapon: null,  // Right hand
+        armor: null,            // Head/torso
+        clothing: null,         // Chest
+        jewelry: [null, null, null], // Neck area (3 slots)
+        belt: [null, null, null, null, null], // Waist area - consumables/quest items (5 slots)
     },
-    // All items inventory
+    // All items inventory organized by category
     inventory: {
-        weapons: [],
-        armor: [],
-        clothing: [],
-        jewelry: [],
-        gear: [],
-        potions: [],
-        canisters: [],
-        food: [],
-        questItems: [],
-        other: []
+        'Gear': [],
+        'Utility': [],
+        'Quest': [],
+        'Crafting': [],
+        'Personal': []
     },
     // Gold tracking
     gold: {
@@ -42,33 +33,159 @@ let equipmentData = {
         chest: 0, // 0-1
         equippedPouches: 0, // 0-2 (equipped on person)
         banks: [] // Array of {location: string, chests: number}
-    }
+    },
+    // Search and filter state
+    searchTerm: '',
+    selectedCategory: 'All',
+    selectedTags: []
 };
 
-// ===== ITEM TYPES AND ABILITIES =====
+// ===== ITEM TYPES AND CATEGORIES =====
+const itemCategories = {
+    'Gear': ['weapon', 'armor', 'potion', 'flask', 'ammunition'],
+    'Utility': ['adventure', 'tool', 'food', 'map', 'camp'],
+    'Quest': ['npc-item', 'evidence', 'literature', 'magical'],
+    'Crafting': ['materials', 'components'],
+    'Personal': ['personal'] // Items can be manually relocated here
+};
+
 const itemTypes = [
-    'weapon', 'armor', 'clothing', 'jewelry', 'gear',
-    'potion', 'canister', 'food', 'quest', 'other'
+    'weapon', 'armor', 'potion', 'flask', 'ammunition',
+    'adventure', 'tool', 'food', 'map', 'camp',
+    'npc-item', 'evidence', 'literature', 'magical',
+    'materials', 'components', 'personal'
 ];
+
+const additionalTags = [
+    'Rare', 'Tradable', 'Personal', 'Custom', 'Valuable', 'Consumable', 'Magical', 'Cursed'
+];
+
+const encumbranceWeights = {
+    'weapon': 3,
+    'armor': 10,
+    'clothing': 3,
+    'camp': 2,
+    'potion': 1,
+    'flask': 1,
+    'ammunition': 1,
+    'adventure': 1,
+    'tool': 1,
+    'food': 1,
+    'map': 1,
+    'npc-item': 1,
+    'evidence': 1,
+    'literature': 1,
+    'magical': 1,
+    'materials': 1,
+    'components': 1,
+    'personal': 1
+};
 
 const abilities = [
     'Agility', 'Strength', 'Finesse', 
     'Instinct', 'Presence', 'Knowledge'
 ];
 
+// ===== UTILITY FUNCTIONS =====
+function calculateEncumbrance() {
+    let totalWeight = 0;
+    
+    // Calculate equipped items weight
+    const equipped = equipmentData.equipped;
+    if (equipped.primaryWeapon) totalWeight += encumbranceWeights[equipped.primaryWeapon.type] || 1;
+    if (equipped.secondaryWeapon) totalWeight += encumbranceWeights[equipped.secondaryWeapon.type] || 1;
+    if (equipped.armor) totalWeight += encumbranceWeights[equipped.armor.type] || 1;
+    if (equipped.clothing) totalWeight += encumbranceWeights[equipped.clothing.type] || 1;
+    
+    equipped.jewelry.forEach(item => {
+        if (item) totalWeight += 1; // Jewelry is always 1 unit
+    });
+    
+    equipped.belt.forEach(item => {
+        if (item) totalWeight += encumbranceWeights[item.type] || 1;
+    });
+    
+    // Calculate carried (unequipped) items weight
+    Object.values(equipmentData.inventory).forEach(categoryItems => {
+        categoryItems.forEach(item => {
+            if (!isItemEquipped(item, item.type)) {
+                totalWeight += encumbranceWeights[item.type] || 1;
+            }
+        });
+    });
+    
+    return totalWeight;
+}
+
+function isEncumbered() {
+    return calculateEncumbrance() > 30;
+}
+
+function getItemCategory(itemType) {
+    for (const [category, types] of Object.entries(itemCategories)) {
+        if (types.includes(itemType)) {
+            return category;
+        }
+    }
+    return 'Personal'; // Default category
+}
+
+function getAllItems() {
+    let allItems = [];
+    Object.values(equipmentData.inventory).forEach(categoryItems => {
+        allItems = allItems.concat(categoryItems);
+    });
+    return allItems;
+}
+
+function searchItems(searchTerm, category = 'All', tags = []) {
+    let items = getAllItems();
+    
+    // Filter by search term
+    if (searchTerm) {
+        items = items.filter(item => 
+            item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (item.features && item.features.toLowerCase().includes(searchTerm.toLowerCase()))
+        );
+    }
+    
+    // Filter by category
+    if (category !== 'All') {
+        items = items.filter(item => getItemCategory(item.type) === category);
+    }
+    
+    // Filter by tags
+    if (tags.length > 0) {
+        items = items.filter(item => 
+            item.tags && tags.every(tag => item.tags.includes(tag))
+        );
+    }
+    
+    return items;
+}
+
 // ===== EQUIPMENT OVERVIEW =====
 function renderEquipmentOverview() {
     const equipmentTabContent = document.getElementById('equipment-tab-content');
+    
+    const encumbrance = calculateEncumbrance();
+    const isOverEncumbered = isEncumbered();
     
     equipmentTabContent.innerHTML = `
         <div class="equipment-container">
             <div class="equipment-header">
                 <h2>Equipment Overview</h2>
+                ${isOverEncumbered ? '<div class="encumbrance-warning">⚠️ ENCUMBERED - Carrying too much weight!</div>' : ''}
+                <div class="encumbrance-display">
+                    <span class="encumbrance-text">Encumbrance: ${encumbrance}/30 units</span>
+                    <div class="encumbrance-bar">
+                        <div class="encumbrance-fill" style="width: ${Math.min((encumbrance / 30) * 100, 100)}%"></div>
+                    </div>
+                </div>
                 <div class="equipment-nav">
                     <button class="equipment-nav-btn active" data-section="overview">Overview</button>
-                    <button class="equipment-nav-btn" data-section="gear">Gear & Weapons</button>
-                    <button class="equipment-nav-btn" data-section="consumables">Consumables</button>
-                    <button class="equipment-nav-btn" data-section="quest">Quest Items</button>
+                    <button class="equipment-nav-btn" data-section="inventory">Inventory</button>
                     <button class="equipment-nav-btn" data-section="gold">Gold Tracker</button>
                 </div>
             </div>
@@ -94,82 +211,95 @@ function renderOverviewContent() {
     
     return `
         <div class="overview-section">
-            <div class="equipped-items">
+            <div class="character-silhouette-container">
                 <h3>Currently Equipped</h3>
-                
-                <div class="equipped-grid">
-                    <div class="equipped-category">
-                        <h4>Combat</h4>
-                        <div class="equipped-slot">
-                            <label>Primary Weapon:</label>
-                            <span class="equipped-item">${equipped.primaryWeapon ? equipped.primaryWeapon.name : 'None'}</span>
-                        </div>
-                        <div class="equipped-slot">
-                            <label>Secondary Weapon:</label>
-                            <span class="equipped-item">${equipped.secondaryWeapon ? equipped.secondaryWeapon.name : 'None'}</span>
-                        </div>
-                        <div class="equipped-slot">
-                            <label>Armor:</label>
-                            <span class="equipped-item">${equipped.armor ? equipped.armor.name : 'None'}</span>
-                        </div>
-                    </div>
+                <div class="character-silhouette">
+                    <!-- Character outline -->
+                    <svg viewBox="0 0 200 300" class="character-svg">
+                        <!-- Head -->
+                        <circle cx="100" cy="40" r="25" fill="none" stroke="var(--text-color)" stroke-width="2" opacity="0.3"/>
+                        <!-- Armor slot (head/helmet) -->
+                        <circle cx="100" cy="40" r="30" fill="${equipped.armor ? 'var(--accent-color)' : 'none'}" 
+                                stroke="var(--accent-color)" stroke-width="2" opacity="${equipped.armor ? '0.7' : '0.3'}" 
+                                class="equipment-slot" data-slot="armor"/>
+                        
+                        <!-- Body -->
+                        <rect x="75" y="65" width="50" height="80" rx="10" fill="none" stroke="var(--text-color)" stroke-width="2" opacity="0.3"/>
+                        <!-- Clothing slot (chest) -->
+                        <rect x="80" y="70" width="40" height="30" rx="5" fill="${equipped.clothing ? 'var(--accent-color)' : 'none'}" 
+                              stroke="var(--accent-color)" stroke-width="2" opacity="${equipped.clothing ? '0.7' : '0.3'}" 
+                              class="equipment-slot" data-slot="clothing"/>
+                        
+                        <!-- Jewelry slots (neck area) -->
+                        <circle cx="85" cy="55" r="4" fill="${equipped.jewelry[0] ? 'var(--accent-color)' : 'none'}" 
+                                stroke="var(--accent-color)" stroke-width="1" opacity="${equipped.jewelry[0] ? '0.8' : '0.3'}" 
+                                class="equipment-slot jewelry-slot" data-slot="jewelry" data-index="0"/>
+                        <circle cx="100" cy="50" r="4" fill="${equipped.jewelry[1] ? 'var(--accent-color)' : 'none'}" 
+                                stroke="var(--accent-color)" stroke-width="1" opacity="${equipped.jewelry[1] ? '0.8' : '0.3'}" 
+                                class="equipment-slot jewelry-slot" data-slot="jewelry" data-index="1"/>
+                        <circle cx="115" cy="55" r="4" fill="${equipped.jewelry[2] ? 'var(--accent-color)' : 'none'}" 
+                                stroke="var(--accent-color)" stroke-width="1" opacity="${equipped.jewelry[2] ? '0.8' : '0.3'}" 
+                                class="equipment-slot jewelry-slot" data-slot="jewelry" data-index="2"/>
+                        
+                        <!-- Arms -->
+                        <rect x="45" y="70" width="20" height="50" rx="10" fill="none" stroke="var(--text-color)" stroke-width="2" opacity="0.3"/>
+                        <rect x="135" y="70" width="20" height="50" rx="10" fill="none" stroke="var(--text-color)" stroke-width="2" opacity="0.3"/>
+                        
+                        <!-- Weapon slots (hands) -->
+                        <circle cx="40" cy="125" r="8" fill="${equipped.primaryWeapon ? 'var(--accent-color)' : 'none'}" 
+                                stroke="var(--accent-color)" stroke-width="2" opacity="${equipped.primaryWeapon ? '0.8' : '0.3'}" 
+                                class="equipment-slot" data-slot="primaryWeapon"/>
+                        <circle cx="160" cy="125" r="8" fill="${equipped.secondaryWeapon ? 'var(--accent-color)' : 'none'}" 
+                                stroke="var(--accent-color)" stroke-width="2" opacity="${equipped.secondaryWeapon ? '0.8' : '0.3'}" 
+                                class="equipment-slot" data-slot="secondaryWeapon"/>
+                        
+                        <!-- Belt area (consumables/quest items) -->
+                        <rect x="70" y="140" width="60" height="10" rx="5" fill="none" stroke="var(--text-color)" stroke-width="1" opacity="0.3"/>
+                        ${equipped.belt.map((item, i) => `
+                            <rect x="${75 + (i * 10)}" y="142" width="8" height="6" rx="2" 
+                                  fill="${item ? 'var(--accent-color)' : 'none'}" 
+                                  stroke="var(--accent-color)" stroke-width="1" 
+                                  opacity="${item ? '0.8' : '0.3'}" 
+                                  class="equipment-slot belt-slot" data-slot="belt" data-index="${i}"/>
+                        `).join('')}
+                        
+                        <!-- Legs -->
+                        <rect x="80" y="150" width="15" height="60" rx="7" fill="none" stroke="var(--text-color)" stroke-width="2" opacity="0.3"/>
+                        <rect x="105" y="150" width="15" height="60" rx="7" fill="none" stroke="var(--text-color)" stroke-width="2" opacity="0.3"/>
+                    </svg>
                     
-                    <div class="equipped-category">
-                        <h4>Attire & Gear</h4>
-                        <div class="equipped-slot">
-                            <label>Clothes:</label>
-                            <span class="equipped-item">${equipped.clothes ? equipped.clothes.name : 'None'}</span>
+                    <!-- Equipment details -->
+                    <div class="equipment-details">
+                        <div class="equipment-slot-info">
+                            <h4>Primary Weapon</h4>
+                            <span>${equipped.primaryWeapon ? equipped.primaryWeapon.name : 'Empty'}</span>
                         </div>
-                        <div class="equipped-slot">
-                            <label>Jewelry:</label>
-                            <div class="jewelry-slots">
+                        <div class="equipment-slot-info">
+                            <h4>Secondary Weapon</h4>
+                            <span>${equipped.secondaryWeapon ? equipped.secondaryWeapon.name : 'Empty'}</span>
+                        </div>
+                        <div class="equipment-slot-info">
+                            <h4>Armor</h4>
+                            <span>${equipped.armor ? equipped.armor.name : 'Empty'}</span>
+                        </div>
+                        <div class="equipment-slot-info">
+                            <h4>Clothing</h4>
+                            <span>${equipped.clothing ? equipped.clothing.name : 'Empty'}</span>
+                        </div>
+                        <div class="equipment-slot-info">
+                            <h4>Jewelry</h4>
+                            <div class="jewelry-list">
                                 ${equipped.jewelry.map((item, i) => 
-                                    `<span class="equipped-item small">${item ? item.name : `Slot ${i+1}: Empty`}</span>`
+                                    `<span class="jewelry-item">${item ? item.name : `Slot ${i+1}: Empty`}</span>`
                                 ).join('')}
                             </div>
                         </div>
-                        <div class="equipped-slot">
-                            <label>Gear (${equipped.gear.filter(g => g).length}/5):</label>
-                            <div class="gear-slots">
-                                ${equipped.gear.map((item, i) => 
-                                    item ? `<span class="equipped-item small">${item.name}</span>` : ''
-                                ).join('') || '<span class="equipped-item">None</span>'}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="equipped-category">
-                        <h4>Consumables</h4>
-                        <div class="equipped-slot">
-                            <label>Potions (${equipped.potions.filter(p => p).length}/5):</label>
-                            <div class="consumable-slots">
-                                ${equipped.potions.map((item, i) => 
-                                    item ? `<span class="equipped-item small">${item.name}</span>` : ''
-                                ).join('') || '<span class="equipped-item">None</span>'}
-                            </div>
-                        </div>
-                        <div class="equipped-slot">
-                            <label>Canister:</label>
-                            <span class="equipped-item">${equipped.canister ? equipped.canister.name : 'None'}</span>
-                        </div>
-                        <div class="equipped-slot">
-                            <label>Food (${equipped.food.filter(f => f).length}/2):</label>
-                            <div class="consumable-slots">
-                                ${equipped.food.map((item, i) => 
-                                    item ? `<span class="equipped-item small">${item.name}</span>` : ''
-                                ).join('') || '<span class="equipped-item">None</span>'}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="equipped-category">
-                        <h4>Quest Items</h4>
-                        <div class="equipped-slot">
-                            <label>Quest Items (${equipped.questItems.filter(q => q).length}/2):</label>
-                            <div class="quest-slots">
-                                ${equipped.questItems.map((item, i) => 
-                                    item ? `<span class="equipped-item small">${item.name}</span>` : `<span class="equipped-item small">Slot ${i+1}: Empty</span>`
-                                ).join('')}
+                        <div class="equipment-slot-info">
+                            <h4>Belt Items</h4>
+                            <div class="belt-list">
+                                ${equipped.belt.map((item, i) => 
+                                    item ? `<span class="belt-item">${item.name}</span>` : ''
+                                ).join('') || '<span class="belt-item">No items</span>'}
                             </div>
                         </div>
                     </div>
@@ -199,53 +329,56 @@ function renderOverviewContent() {
     `;
 }
 
-// ===== GEAR & WEAPONS SECTION =====
-function renderGearSection() {
+// ===== INVENTORY SECTION =====
+function renderInventorySection() {
     return `
-        <div class="gear-section">
-            <div class="section-header">
-                <h3>Gear, Weapons & Clothing</h3>
-                <button class="add-item-btn" onclick="showAddItemModal('weapon')">+ Add Item</button>
+        <div class="inventory-section">
+            <div class="inventory-header">
+                <div class="search-controls">
+                    <input type="text" id="item-search" placeholder="Search items..." 
+                           value="${equipmentData.searchTerm}" onchange="updateSearch(this.value)">
+                    <select id="category-filter" onchange="updateCategoryFilter(this.value)">
+                        <option value="All">All Categories</option>
+                        ${Object.keys(itemCategories).map(category => 
+                            `<option value="${category}" ${equipmentData.selectedCategory === category ? 'selected' : ''}>${category}</option>`
+                        ).join('')}
+                    </select>
+                    <button class="add-item-btn" onclick="showAddItemModal()">+ Add Item</button>
+                </div>
             </div>
             
-            <div class="gear-categories">
-                <div class="gear-category">
-                    <h4>Weapons</h4>
-                    <div class="items-grid" id="weapons-grid">
-                        ${renderItemsGrid(equipmentData.inventory.weapons, 'weapon')}
-                    </div>
-                </div>
-                
-                <div class="gear-category">
-                    <h4>Armor</h4>
-                    <div class="items-grid" id="armor-grid">
-                        ${renderItemsGrid(equipmentData.inventory.armor, 'armor')}
-                    </div>
-                </div>
-                
-                <div class="gear-category">
-                    <h4>Clothing</h4>
-                    <div class="items-grid" id="clothing-grid">
-                        ${renderItemsGrid(equipmentData.inventory.clothing, 'clothing')}
-                    </div>
-                </div>
-                
-                <div class="gear-category">
-                    <h4>Jewelry</h4>
-                    <div class="items-grid" id="jewelry-grid">
-                        ${renderItemsGrid(equipmentData.inventory.jewelry, 'jewelry')}
-                    </div>
-                </div>
-                
-                <div class="gear-category">
-                    <h4>Gear</h4>
-                    <div class="items-grid" id="gear-grid">
-                        ${renderItemsGrid(equipmentData.inventory.gear, 'gear')}
-                    </div>
-                </div>
+            <div class="inventory-content">
+                ${renderInventoryCategories()}
             </div>
         </div>
     `;
+}
+
+function renderInventoryCategories() {
+    const categories = equipmentData.selectedCategory === 'All' ? 
+        Object.keys(itemCategories) : [equipmentData.selectedCategory];
+    
+    return categories.map(category => {
+        const items = equipmentData.inventory[category] || [];
+        const filteredItems = equipmentData.searchTerm ? 
+            items.filter(item => 
+                item.name.toLowerCase().includes(equipmentData.searchTerm.toLowerCase()) ||
+                (item.description && item.description.toLowerCase().includes(equipmentData.searchTerm.toLowerCase())) ||
+                (item.features && item.features.toLowerCase().includes(equipmentData.searchTerm.toLowerCase()))
+            ) : items;
+        
+        return `
+            <div class="inventory-category">
+                <h4>${category} (${filteredItems.length})</h4>
+                <div class="items-grid compact">
+                    ${filteredItems.length > 0 ? 
+                        filteredItems.map((item, index) => renderCompactItemCard(item, category, index)).join('') :
+                        '<div class="no-items">No items in this category</div>'
+                    }
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
 // ===== CONSUMABLES SECTION =====
@@ -414,14 +547,8 @@ function switchEquipmentSection(section) {
         case 'overview':
             contentDiv.innerHTML = renderOverviewContent();
             break;
-        case 'gear':
-            contentDiv.innerHTML = renderGearSection();
-            break;
-        case 'consumables':
-            contentDiv.innerHTML = renderConsumablesSection();
-            break;
-        case 'quest':
-            contentDiv.innerHTML = renderQuestSection();
+        case 'inventory':
+            contentDiv.innerHTML = renderInventorySection();
             break;
         case 'gold':
             contentDiv.innerHTML = renderGoldSection();
