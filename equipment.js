@@ -1137,6 +1137,49 @@ function loadEquipmentData() {
     } else {
         console.log('No saved equipment data found, using defaults');
     }
+    
+    // Ensure all required properties exist (for backward compatibility)
+    if (!equipmentData.equipped) {
+        equipmentData.equipped = {};
+    }
+    
+    // Ensure equipped has all required properties
+    if (!equipmentData.equipped.belt) {
+        equipmentData.equipped.belt = [null, null, null, null, null];
+    }
+    if (!equipmentData.equipped.jewelry) {
+        equipmentData.equipped.jewelry = [null, null, null];
+    }
+    if (!Array.isArray(equipmentData.equipped.belt)) {
+        equipmentData.equipped.belt = [null, null, null, null, null];
+    }
+    if (!Array.isArray(equipmentData.equipped.jewelry)) {
+        equipmentData.equipped.jewelry = [null, null, null];
+    }
+    
+    // Ensure inventory categories exist
+    if (!equipmentData.inventory) {
+        equipmentData.inventory = {};
+    }
+    const requiredCategories = ['Gear', 'Utility', 'Quest', 'Crafting', 'Personal'];
+    requiredCategories.forEach(category => {
+        if (!equipmentData.inventory[category]) {
+            equipmentData.inventory[category] = [];
+        }
+    });
+    
+    // Ensure gold data exists
+    if (!equipmentData.gold) {
+        equipmentData.gold = {
+            coins: 0,
+            pouches: 0,
+            chest: 0,
+            equippedPouches: 0,
+            banks: []
+        };
+    }
+    
+    console.log('Equipment data after ensuring required properties:', equipmentData);
 }
 
 // ===== INITIALIZATION =====
