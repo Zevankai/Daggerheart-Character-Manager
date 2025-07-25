@@ -569,25 +569,12 @@ function changeBagType(bagName) {
     saveEquipmentData();
     updateEncumbranceDisplay();
     
-    // Update bag info display
-    updateBagInfo();
-    
-    // Refresh overview
+    // Refresh overview section (this will re-render with updated bag info)
     const activeSection = document.querySelector('.equipment-nav-btn.active').dataset.section;
     switchEquipmentSection(activeSection);
 }
 
-function updateBagInfo() {
-    const bagInfo = document.querySelector('.bag-info');
-    if (bagInfo) {
-        const selectedBag = bagTypes[equipmentData.selectedBag];
-        bagInfo.innerHTML = `
-            <span class="bag-capacity">Capacity: ${selectedBag.capacity} units</span>
-            <span class="bag-consumables">Belt Slots: ${selectedBag.consumableSlots}</span>
-            ${selectedBag.bonus ? `<span class="bag-bonus">${selectedBag.bonus}</span>` : ''}
-        `;
-    }
-}
+
 
 function dropItem(category, index) {
     if (confirm('Are you sure you want to drop this item? It will be lost forever.')) {
