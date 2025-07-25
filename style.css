@@ -1589,7 +1589,8 @@ body[data-theme="light"] {
 
 .jewelry-slots,
 .consumable-slots,
-.quest-slots {
+.quest-slots,
+.gear-slots {
     display: flex;
     flex-direction: column;
     gap: 3px;
@@ -2050,8 +2051,14 @@ body[data-theme="light"] {
 }
 
 /* Active Weapons/Armor Integration */
+.equipped-weapons-display,
+.equipped-armor-display {
+    margin-top: 15px;
+}
+
 .active-weapon,
-.active-armor {
+.active-armor,
+.equipped-armor-info {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 6px;
@@ -2060,18 +2067,28 @@ body[data-theme="light"] {
 }
 
 .active-weapon h4,
-.active-armor h4 {
+.active-armor h4,
+.equipped-armor-info h4 {
     color: var(--accent-color);
     margin: 0 0 5px 0;
     font-size: 1rem;
 }
 
 .active-weapon p,
-.active-armor p {
+.active-armor p,
+.equipped-armor-info p {
     color: var(--text-color);
     opacity: 0.8;
     margin: 3px 0;
     font-size: 0.9rem;
+}
+
+.no-equipped-weapons,
+.no-equipped-armor {
+    color: var(--text-color);
+    opacity: 0.6;
+    font-style: italic;
+    margin: 10px 0;
 }
 
 /* Responsive Design */

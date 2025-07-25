@@ -16,6 +16,7 @@ let equipmentData = {
         armor: null,
         clothes: null,
         jewelry: [null, null, null], // 3 slots
+        gear: [null, null, null, null, null], // 5 slots
         potions: [null, null, null, null, null], // 5 slots
         canister: null,
         food: [null, null], // 2 slots
@@ -27,6 +28,7 @@ let equipmentData = {
         armor: [],
         clothing: [],
         jewelry: [],
+        gear: [],
         potions: [],
         canisters: [],
         food: [],
@@ -45,7 +47,7 @@ let equipmentData = {
 
 // ===== ITEM TYPES AND ABILITIES =====
 const itemTypes = [
-    'weapon', 'armor', 'clothing', 'jewelry', 
+    'weapon', 'armor', 'clothing', 'jewelry', 'gear',
     'potion', 'canister', 'food', 'quest', 'other'
 ];
 
@@ -113,7 +115,7 @@ function renderOverviewContent() {
                     </div>
                     
                     <div class="equipped-category">
-                        <h4>Attire</h4>
+                        <h4>Attire & Gear</h4>
                         <div class="equipped-slot">
                             <label>Clothes:</label>
                             <span class="equipped-item">${equipped.clothes ? equipped.clothes.name : 'None'}</span>
@@ -124,6 +126,14 @@ function renderOverviewContent() {
                                 ${equipped.jewelry.map((item, i) => 
                                     `<span class="equipped-item small">${item ? item.name : `Slot ${i+1}: Empty`}</span>`
                                 ).join('')}
+                            </div>
+                        </div>
+                        <div class="equipped-slot">
+                            <label>Gear (${equipped.gear.filter(g => g).length}/5):</label>
+                            <div class="gear-slots">
+                                ${equipped.gear.map((item, i) => 
+                                    item ? `<span class="equipped-item small">${item.name}</span>` : ''
+                                ).join('') || '<span class="equipped-item">None</span>'}
                             </div>
                         </div>
                     </div>
@@ -224,6 +234,13 @@ function renderGearSection() {
                     <h4>Jewelry</h4>
                     <div class="items-grid" id="jewelry-grid">
                         ${renderItemsGrid(equipmentData.inventory.jewelry, 'jewelry')}
+                    </div>
+                </div>
+                
+                <div class="gear-category">
+                    <h4>Gear</h4>
+                    <div class="items-grid" id="gear-grid">
+                        ${renderItemsGrid(equipmentData.inventory.gear, 'gear')}
                     </div>
                 </div>
             </div>
@@ -499,6 +516,7 @@ function addNewItem() {
                         type === 'armor' ? 'armor' :
                         type === 'clothing' ? 'clothing' :
                         type === 'jewelry' ? 'jewelry' :
+                        type === 'gear' ? 'gear' :
                         type === 'potion' ? 'potions' :
                         type === 'canister' ? 'canisters' :
                         type === 'food' ? 'food' :
@@ -527,6 +545,8 @@ function isItemEquipped(item, type) {
         return equipped.canister && equipped.canister.id === item.id;
     } else if (type === 'jewelry') {
         return equipped.jewelry.some(slot => slot && slot.id === item.id);
+    } else if (type === 'gear') {
+        return equipped.gear.some(slot => slot && slot.id === item.id);
     } else if (type === 'potion') {
         return equipped.potions.some(slot => slot && slot.id === item.id);
     } else if (type === 'food') {
@@ -543,6 +563,7 @@ function unequipItem(type, index) {
                         type === 'armor' ? 'armor' :
                         type === 'clothing' ? 'clothing' :
                         type === 'jewelry' ? 'jewelry' :
+                        type === 'gear' ? 'gear' :
                         type === 'potion' ? 'potions' :
                         type === 'canister' ? 'canisters' :
                         type === 'food' ? 'food' :
@@ -570,6 +591,11 @@ function unequipItem(type, index) {
         if (slotIndex !== -1) {
             equipped.jewelry[slotIndex] = null;
         }
+    } else if (type === 'gear') {
+        const slotIndex = equipped.gear.findIndex(slot => slot && slot.id === item.id);
+        if (slotIndex !== -1) {
+            equipped.gear[slotIndex] = null;
+        }
     } else if (type === 'potion') {
         const slotIndex = equipped.potions.findIndex(slot => slot && slot.id === item.id);
         if (slotIndex !== -1) {
@@ -593,9 +619,6 @@ function unequipItem(type, index) {
     // Refresh current section and overview
     const activeSection = document.querySelector('.equipment-nav-btn.active').dataset.section;
     switchEquipmentSection(activeSection);
-    if (activeSection === 'overview') {
-        switchEquipmentSection('overview');
-    }
 }
 
 function equipItem(type, index) {
@@ -603,6 +626,7 @@ function equipItem(type, index) {
                         type === 'armor' ? 'armor' :
                         type === 'clothing' ? 'clothing' :
                         type === 'jewelry' ? 'jewelry' :
+                        type === 'gear' ? 'gear' :
                         type === 'potion' ? 'potions' :
                         type === 'canister' ? 'canisters' :
                         type === 'food' ? 'food' :
@@ -626,6 +650,15 @@ function equipItem(type, index) {
             equipmentData.equipped.jewelry[emptySlot] = item;
         } else {
             alert('All jewelry slots are full. Unequip an item first.');
+            return;
+        }
+    } else if (type === 'gear') {
+        // Find empty gear slot
+        const emptySlot = equipmentData.equipped.gear.findIndex(slot => !slot);
+        if (emptySlot !== -1) {
+            equipmentData.equipped.gear[emptySlot] = item;
+        } else {
+            alert('All gear slots are full. Unequip an item first.');
             return;
         }
     } else if (type === 'potion') {
@@ -677,9 +710,6 @@ function equipItem(type, index) {
     // Refresh current section and overview
     const activeSection = document.querySelector('.equipment-nav-btn.active').dataset.section;
     switchEquipmentSection(activeSection);
-    if (activeSection === 'overview') {
-        switchEquipmentSection('overview');
-    }
 }
 
 function showWeaponSlotModal(weapon) {
@@ -731,6 +761,7 @@ function editItem(type, index) {
                         type === 'armor' ? 'armor' :
                         type === 'clothing' ? 'clothing' :
                         type === 'jewelry' ? 'jewelry' :
+                        type === 'gear' ? 'gear' :
                         type === 'potion' ? 'potions' :
                         type === 'canister' ? 'canisters' :
                         type === 'food' ? 'food' :
@@ -813,6 +844,7 @@ function deleteItem(type, index) {
                             type === 'armor' ? 'armor' :
                             type === 'clothing' ? 'clothing' :
                             type === 'jewelry' ? 'jewelry' :
+                            type === 'gear' ? 'gear' :
                             type === 'potion' ? 'potions' :
                             type === 'canister' ? 'canisters' :
                             type === 'food' ? 'food' :
@@ -910,11 +942,22 @@ function updateActiveWeaponsDisplay() {
     const activeWeaponsSection = document.querySelector('[data-color-target="active-weapons"]');
     if (!activeWeaponsSection) return;
     
-    const weaponsContainer = activeWeaponsSection.querySelector('.weapons-container') || 
-                           activeWeaponsSection.querySelector('div') ||
-                           activeWeaponsSection;
+    // Find or create the equipped weapons display area
+    let equippedWeaponsDiv = activeWeaponsSection.querySelector('.equipped-weapons-display');
+    if (!equippedWeaponsDiv) {
+        equippedWeaponsDiv = document.createElement('div');
+        equippedWeaponsDiv.className = 'equipped-weapons-display';
+        
+        // Find the h3 and insert after it, or append to section
+        const h3 = activeWeaponsSection.querySelector('h3');
+        if (h3) {
+            h3.insertAdjacentElement('afterend', equippedWeaponsDiv);
+        } else {
+            activeWeaponsSection.appendChild(equippedWeaponsDiv);
+        }
+    }
     
-    let weaponsHTML = '<h3>Active Weapons</h3>';
+    let weaponsHTML = '';
     
     if (equipmentData.equipped.primaryWeapon) {
         weaponsHTML += `
@@ -937,35 +980,36 @@ function updateActiveWeaponsDisplay() {
     }
     
     if (!equipmentData.equipped.primaryWeapon && !equipmentData.equipped.secondaryWeapon) {
-        weaponsHTML += '<p>No weapons equipped</p>';
+        weaponsHTML += '<p class="no-equipped-weapons">No weapons equipped</p>';
     }
     
-    weaponsContainer.innerHTML = weaponsHTML;
+    equippedWeaponsDiv.innerHTML = weaponsHTML;
 }
 
 function updateActiveArmorDisplay() {
     const activeArmorSection = document.querySelector('[data-color-target="armor-section"]');
     if (!activeArmorSection) return;
     
-    const armorContainer = activeArmorSection.querySelector('.armor-container') || 
-                          activeArmorSection.querySelector('div') ||
-                          activeArmorSection;
+    // Find or create the equipped armor display area
+    let equippedArmorDiv = activeArmorSection.querySelector('.equipped-armor-display');
+    if (!equippedArmorDiv) {
+        equippedArmorDiv = document.createElement('div');
+        equippedArmorDiv.className = 'equipped-armor-display';
+        activeArmorSection.appendChild(equippedArmorDiv);
+    }
     
-    let armorHTML = '<h3>Armor</h3>';
-    
+    // Update only the equipped armor display, leaving armor circles intact
     if (equipmentData.equipped.armor) {
-        armorHTML += `
-            <div class="active-armor">
-                <h4>${equipmentData.equipped.armor.name}</h4>
+        equippedArmorDiv.innerHTML = `
+            <div class="equipped-armor-info">
+                <h4>Equipped: ${equipmentData.equipped.armor.name}</h4>
                 ${equipmentData.equipped.armor.features ? `<p>Features: ${equipmentData.equipped.armor.features}</p>` : ''}
                 ${equipmentData.equipped.armor.ability ? `<p>Ability: ${equipmentData.equipped.armor.ability}</p>` : ''}
             </div>
         `;
     } else {
-        armorHTML += '<p>No armor equipped</p>';
+        equippedArmorDiv.innerHTML = '<p class="no-equipped-armor">No armor equipped</p>';
     }
-    
-    armorContainer.innerHTML = armorHTML;
 }
 
 // ===== UTILITY FUNCTIONS =====
