@@ -381,58 +381,50 @@ function renderInventoryCategories() {
     }).join('');
 }
 
-// ===== CONSUMABLES SECTION =====
-function renderConsumablesSection() {
+function renderCompactItemCard(item, category, index) {
+    const isEquipped = isItemEquipped(item, item.type);
+    const weight = encumbranceWeights[item.type] || 1;
+    
     return `
-        <div class="consumables-section">
-            <div class="section-header">
-                <h3>Consumables</h3>
-                <button class="add-item-btn" onclick="showAddItemModal('potion')">+ Add Item</button>
+        <div class="item-card compact ${isEquipped ? 'equipped' : ''}" data-item-id="${item.id}">
+            <div class="item-header">
+                <h5 class="item-name">${item.name}</h5>
+                <span class="item-weight">${weight}u</span>
+                ${isEquipped ? '<span class="equipped-indicator">✓</span>' : ''}
             </div>
-            
-            <div class="consumables-categories">
-                <div class="consumable-category">
-                    <h4>Potions</h4>
-                    <div class="items-grid" id="potions-grid">
-                        ${renderItemsGrid(equipmentData.inventory.potions, 'potion')}
-                    </div>
-                </div>
-                
-                <div class="consumable-category">
-                    <h4>Canisters</h4>
-                    <div class="items-grid" id="canisters-grid">
-                        ${renderItemsGrid(equipmentData.inventory.canisters, 'canister')}
-                    </div>
-                </div>
-                
-                <div class="consumable-category">
-                    <h4>Food</h4>
-                    <div class="items-grid" id="food-grid">
-                        ${renderItemsGrid(equipmentData.inventory.food, 'food')}
-                    </div>
-                </div>
+            <div class="item-type">${item.type}</div>
+            ${item.description ? `<div class="item-description">${item.description}</div>` : ''}
+            ${item.tags && item.tags.length > 0 ? `<div class="item-tags">${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>` : ''}
+            <div class="item-actions">
+                ${isEquipped ? 
+                    `<button class="equip-btn unequip" onclick="unequipItem('${item.type}', ${index})">Unequip</button>` :
+                    `<button class="equip-btn" onclick="equipItem('${item.type}', ${index})">Equip</button>`
+                }
+                <button class="edit-btn" onclick="editItem('${category}', ${index})">Edit</button>
+                <button class="delete-btn" onclick="deleteItem('${category}', ${index})">Delete</button>
             </div>
         </div>
     `;
 }
 
-// ===== QUEST ITEMS SECTION =====
-function renderQuestSection() {
-    return `
-        <div class="quest-section">
-            <div class="section-header">
-                <h3>Quest Items</h3>
-                <button class="add-item-btn" onclick="showAddItemModal('quest')">+ Add Quest Item</button>
-            </div>
-            
-            <div class="quest-items">
-                <div class="items-grid" id="quest-grid">
-                    ${renderItemsGrid(equipmentData.inventory.questItems, 'quest')}
-                </div>
-            </div>
-        </div>
-    `;
+// Search and filter functions
+function updateSearch(searchTerm) {
+    equipmentData.searchTerm = searchTerm;
+    saveEquipmentData();
+    if (document.querySelector('.inventory-section')) {
+        document.querySelector('.inventory-content').innerHTML = renderInventoryCategories();
+    }
 }
+
+function updateCategoryFilter(category) {
+    equipmentData.selectedCategory = category;
+    saveEquipmentData();
+    if (document.querySelector('.inventory-section')) {
+        document.querySelector('.inventory-content').innerHTML = renderInventoryCategories();
+    }
+}
+
+
 
 // ===== GOLD TRACKER SECTION =====
 function renderGoldSection() {
@@ -568,7 +560,7 @@ function showAddItemModal(defaultType = 'weapon') {
                     <label for="item-type">Item Type:</label>
                     <select id="item-type" required>
                         ${itemTypes.map(type => 
-                            `<option value="${type}" ${type === defaultType ? 'selected' : ''}>${type.charAt(0).toUpperCase() + type.slice(1)}</option>`
+                            `<option value="${type}" ${type === defaultType ? 'selected' : ''}>${type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ')}</option>`
                         ).join('')}
                     </select>
                 </div>
@@ -603,6 +595,17 @@ function showAddItemModal(defaultType = 'weapon') {
                     </select>
                 </div>
                 
+                <div class="form-group">
+                    <label for="item-tags">Tags (optional):</label>
+                    <div class="tags-selection">
+                        ${additionalTags.map(tag => `
+                            <label class="tag-checkbox">
+                                <input type="checkbox" value="${tag}"> ${tag}
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+                
                 <div class="modal-buttons">
                     <button type="submit" class="confirm-btn">Add Item</button>
                     <button type="button" class="cancel-btn" onclick="closeModal(this)">Cancel</button>
@@ -629,27 +632,27 @@ function addNewItem() {
     const diceRoll = document.getElementById('item-dice').value;
     const ability = document.getElementById('item-ability').value;
     
+    // Get selected tags
+    const tagCheckboxes = document.querySelectorAll('.tag-checkbox input:checked');
+    const tags = Array.from(tagCheckboxes).map(cb => cb.value);
+    
     const newItem = {
         name,
+        type,
         description: description || null,
         features: features || null,
         diceRoll: diceRoll || null,
         ability: ability || null,
+        tags: tags.length > 0 ? tags : null,
         id: Date.now() // Simple ID generation
     };
     
-    // Add to appropriate inventory
-    const inventoryKey = type === 'weapon' ? 'weapons' : 
-                        type === 'armor' ? 'armor' :
-                        type === 'clothing' ? 'clothing' :
-                        type === 'jewelry' ? 'jewelry' :
-                        type === 'gear' ? 'gear' :
-                        type === 'potion' ? 'potions' :
-                        type === 'canister' ? 'canisters' :
-                        type === 'food' ? 'food' :
-                        type === 'quest' ? 'questItems' : 'other';
-    
-    equipmentData.inventory[inventoryKey].push(newItem);
+    // Add to appropriate category
+    const category = getItemCategory(type);
+    if (!equipmentData.inventory[category]) {
+        equipmentData.inventory[category] = [];
+    }
+    equipmentData.inventory[category].push(newItem);
     saveEquipmentData();
     
     // Refresh current section
@@ -667,19 +670,12 @@ function isItemEquipped(item, type) {
     } else if (type === 'armor') {
         return equipped.armor && equipped.armor.id === item.id;
     } else if (type === 'clothing') {
-        return equipped.clothes && equipped.clothes.id === item.id;
-    } else if (type === 'canister') {
-        return equipped.canister && equipped.canister.id === item.id;
+        return equipped.clothing && equipped.clothing.id === item.id;
     } else if (type === 'jewelry') {
         return equipped.jewelry.some(slot => slot && slot.id === item.id);
-    } else if (type === 'gear') {
-        return equipped.gear.some(slot => slot && slot.id === item.id);
-    } else if (type === 'potion') {
-        return equipped.potions.some(slot => slot && slot.id === item.id);
-    } else if (type === 'food') {
-        return equipped.food.some(slot => slot && slot.id === item.id);
-    } else if (type === 'quest') {
-        return equipped.questItems.some(slot => slot && slot.id === item.id);
+    } else {
+        // For consumables, quest items, etc. - check belt slots
+        return equipped.belt.some(slot => slot && slot.id === item.id);
     }
     
     return false;
@@ -1063,6 +1059,20 @@ function updateActiveWeaponsAndArmor() {
     
     // Update Armor section
     updateActiveArmorDisplay();
+    
+    // Update encumbrance warning
+    updateEncumbranceWarning();
+}
+
+function updateEncumbranceWarning() {
+    const mainWarning = document.getElementById('encumbrance-warning-main');
+    if (mainWarning) {
+        if (isEncumbered()) {
+            mainWarning.style.display = 'block';
+        } else {
+            mainWarning.style.display = 'none';
+        }
+    }
 }
 
 function updateActiveWeaponsDisplay() {
@@ -1184,4 +1194,6 @@ window.removeBank = removeBank;
 window.updateBankLocation = updateBankLocation;
 window.adjustBankChests = adjustBankChests;
 window.closeModal = closeModal;
+window.updateSearch = updateSearch;
+window.updateCategoryFilter = updateCategoryFilter;
 window.initializeEquipment = initializeEquipment;
