@@ -167,34 +167,57 @@ function searchItems(searchTerm, category = 'All', tags = []) {
 
 // ===== EQUIPMENT OVERVIEW =====
 function renderEquipmentOverview() {
+    console.log('renderEquipmentOverview called');
     const equipmentTabContent = document.getElementById('equipment-tab-content');
+    console.log('equipmentTabContent element:', equipmentTabContent);
+    
+    if (!equipmentTabContent) {
+        console.error('Equipment tab content element not found!');
+        return;
+    }
     
     const encumbrance = calculateEncumbrance();
     const isOverEncumbered = isEncumbered();
+    console.log('Encumbrance calculated:', encumbrance, 'Over encumbered:', isOverEncumbered);
     
-    equipmentTabContent.innerHTML = `
-        <div class="equipment-container">
-            <div class="equipment-header">
-                <h2>Equipment Overview</h2>
-                ${isOverEncumbered ? '<div class="encumbrance-warning">⚠️ ENCUMBERED - Carrying too much weight!</div>' : ''}
-                <div class="encumbrance-display">
-                    <span class="encumbrance-text">Encumbrance: ${encumbrance}/30 units</span>
-                    <div class="encumbrance-bar">
-                        <div class="encumbrance-fill" style="width: ${Math.min((encumbrance / 30) * 100, 100)}%"></div>
+    try {
+        const overviewContent = renderOverviewContent();
+        console.log('Overview content generated:', overviewContent ? 'success' : 'failed');
+        
+        equipmentTabContent.innerHTML = `
+            <div class="equipment-container">
+                <div class="equipment-header">
+                    <h2>Equipment Overview</h2>
+                    ${isOverEncumbered ? '<div class="encumbrance-warning">⚠️ ENCUMBERED - Carrying too much weight!</div>' : ''}
+                    <div class="encumbrance-display">
+                        <span class="encumbrance-text">Encumbrance: ${encumbrance}/30 units</span>
+                        <div class="encumbrance-bar">
+                            <div class="encumbrance-fill" style="width: ${Math.min((encumbrance / 30) * 100, 100)}%"></div>
+                        </div>
+                    </div>
+                    <div class="equipment-nav">
+                        <button class="equipment-nav-btn active" data-section="overview">Overview</button>
+                        <button class="equipment-nav-btn" data-section="inventory">Inventory</button>
+                        <button class="equipment-nav-btn" data-section="gold">Gold Tracker</button>
                     </div>
                 </div>
-                <div class="equipment-nav">
-                    <button class="equipment-nav-btn active" data-section="overview">Overview</button>
-                    <button class="equipment-nav-btn" data-section="inventory">Inventory</button>
-                    <button class="equipment-nav-btn" data-section="gold">Gold Tracker</button>
+                
+                <div id="equipment-content">
+                    ${overviewContent}
                 </div>
             </div>
-            
-            <div id="equipment-content">
-                ${renderOverviewContent()}
+        `;
+        console.log('Equipment HTML set successfully');
+    } catch (error) {
+        console.error('Error rendering equipment overview:', error);
+        equipmentTabContent.innerHTML = `
+            <div class="equipment-container">
+                <h2>Equipment System</h2>
+                <p>Error loading equipment. Check console for details.</p>
+                <p>Error: ${error.message}</p>
             </div>
-        </div>
-    `;
+        `;
+    }
     
     // Add navigation listeners
     document.querySelectorAll('.equipment-nav-btn').forEach(btn => {
@@ -682,17 +705,9 @@ function isItemEquipped(item, type) {
 }
 
 function unequipItem(type, index) {
-    const inventoryKey = type === 'weapon' ? 'weapons' : 
-                        type === 'armor' ? 'armor' :
-                        type === 'clothing' ? 'clothing' :
-                        type === 'jewelry' ? 'jewelry' :
-                        type === 'gear' ? 'gear' :
-                        type === 'potion' ? 'potions' :
-                        type === 'canister' ? 'canisters' :
-                        type === 'food' ? 'food' :
-                        type === 'quest' ? 'questItems' : 'other';
-    
-    const item = equipmentData.inventory[inventoryKey][index];
+    // Find the item in the appropriate category
+    const category = getItemCategory(type);
+    const item = equipmentData.inventory[category][index];
     const equipped = equipmentData.equipped;
     
     // Remove item from equipped slots
@@ -706,33 +721,17 @@ function unequipItem(type, index) {
     } else if (type === 'armor') {
         equipped.armor = null;
     } else if (type === 'clothing') {
-        equipped.clothes = null;
-    } else if (type === 'canister') {
-        equipped.canister = null;
+        equipped.clothing = null;
     } else if (type === 'jewelry') {
         const slotIndex = equipped.jewelry.findIndex(slot => slot && slot.id === item.id);
         if (slotIndex !== -1) {
             equipped.jewelry[slotIndex] = null;
         }
-    } else if (type === 'gear') {
-        const slotIndex = equipped.gear.findIndex(slot => slot && slot.id === item.id);
+    } else {
+        // For all other items (consumables, quest items, etc.) - check belt slots
+        const slotIndex = equipped.belt.findIndex(slot => slot && slot.id === item.id);
         if (slotIndex !== -1) {
-            equipped.gear[slotIndex] = null;
-        }
-    } else if (type === 'potion') {
-        const slotIndex = equipped.potions.findIndex(slot => slot && slot.id === item.id);
-        if (slotIndex !== -1) {
-            equipped.potions[slotIndex] = null;
-        }
-    } else if (type === 'food') {
-        const slotIndex = equipped.food.findIndex(slot => slot && slot.id === item.id);
-        if (slotIndex !== -1) {
-            equipped.food[slotIndex] = null;
-        }
-    } else if (type === 'quest') {
-        const slotIndex = equipped.questItems.findIndex(slot => slot && slot.id === item.id);
-        if (slotIndex !== -1) {
-            equipped.questItems[slotIndex] = null;
+            equipped.belt[slotIndex] = null;
         }
     }
     
@@ -745,17 +744,9 @@ function unequipItem(type, index) {
 }
 
 function equipItem(type, index) {
-    const inventoryKey = type === 'weapon' ? 'weapons' : 
-                        type === 'armor' ? 'armor' :
-                        type === 'clothing' ? 'clothing' :
-                        type === 'jewelry' ? 'jewelry' :
-                        type === 'gear' ? 'gear' :
-                        type === 'potion' ? 'potions' :
-                        type === 'canister' ? 'canisters' :
-                        type === 'food' ? 'food' :
-                        type === 'quest' ? 'questItems' : 'other';
-    
-    const item = equipmentData.inventory[inventoryKey][index];
+    // Find the item in the appropriate category
+    const category = getItemCategory(type);
+    const item = equipmentData.inventory[category][index];
     
     // Check if item is already equipped
     if (isItemEquipped(item, type)) {
@@ -775,55 +766,28 @@ function equipItem(type, index) {
             alert('All jewelry slots are full. Unequip an item first.');
             return;
         }
-    } else if (type === 'gear') {
-        // Find empty gear slot
-        const emptySlot = equipmentData.equipped.gear.findIndex(slot => !slot);
-        if (emptySlot !== -1) {
-            equipmentData.equipped.gear[emptySlot] = item;
-        } else {
-            alert('All gear slots are full. Unequip an item first.');
+    } else if (type === 'armor') {
+        // Check if armor slot is already occupied
+        if (equipmentData.equipped.armor) {
+            alert('You already have armor equipped. Unequip it first.');
             return;
         }
-    } else if (type === 'potion') {
-        // Find empty potion slot
-        const emptySlot = equipmentData.equipped.potions.findIndex(slot => !slot);
-        if (emptySlot !== -1) {
-            equipmentData.equipped.potions[emptySlot] = item;
-        } else {
-            alert('All potion slots are full. Unequip an item first.');
+        equipmentData.equipped.armor = item;
+    } else if (type === 'clothing') {
+        // Check if clothing slot is already occupied
+        if (equipmentData.equipped.clothing) {
+            alert('You already have clothing equipped. Unequip it first.');
             return;
         }
-    } else if (type === 'food') {
-        // Find empty food slot
-        const emptySlot = equipmentData.equipped.food.findIndex(slot => !slot);
-        if (emptySlot !== -1) {
-            equipmentData.equipped.food[emptySlot] = item;
-        } else {
-            alert('All food slots are full. Unequip an item first.');
-            return;
-        }
-    } else if (type === 'quest') {
-        // Find empty quest slot
-        const emptySlot = equipmentData.equipped.questItems.findIndex(slot => !slot);
-        if (emptySlot !== -1) {
-            equipmentData.equipped.questItems[emptySlot] = item;
-        } else {
-            alert('All quest item slots are full. Unequip an item first.');
-            return;
-        }
+        equipmentData.equipped.clothing = item;
     } else {
-        // Single slot items
-        const slotKey = type === 'armor' ? 'armor' :
-                       type === 'clothing' ? 'clothes' :
-                       type === 'canister' ? 'canister' : null;
-        
-        if (slotKey) {
-            // Check if slot is already occupied
-            if (equipmentData.equipped[slotKey]) {
-                alert(`You already have ${type} equipped. Unequip it first.`);
-                return;
-            }
-            equipmentData.equipped[slotKey] = item;
+        // For all other items (consumables, quest items, etc.) - use belt slots
+        const emptySlot = equipmentData.equipped.belt.findIndex(slot => !slot);
+        if (emptySlot !== -1) {
+            equipmentData.equipped.belt[emptySlot] = item;
+        } else {
+            alert('All belt slots are full. Unequip an item first.');
+            return;
         }
     }
     
@@ -879,18 +843,8 @@ function equipWeaponToSlot(slot, weapon) {
     }
 }
 
-function editItem(type, index) {
-    const inventoryKey = type === 'weapon' ? 'weapons' : 
-                        type === 'armor' ? 'armor' :
-                        type === 'clothing' ? 'clothing' :
-                        type === 'jewelry' ? 'jewelry' :
-                        type === 'gear' ? 'gear' :
-                        type === 'potion' ? 'potions' :
-                        type === 'canister' ? 'canisters' :
-                        type === 'food' ? 'food' :
-                        type === 'quest' ? 'questItems' : 'other';
-    
-    const item = equipmentData.inventory[inventoryKey][index];
+function editItem(category, index) {
+    const item = equipmentData.inventory[category][index];
     
     // Show edit modal with pre-filled values
     const modal = document.createElement('div');
@@ -961,19 +915,9 @@ function editItem(type, index) {
     });
 }
 
-function deleteItem(type, index) {
+function deleteItem(category, index) {
     if (confirm('Are you sure you want to delete this item?')) {
-        const inventoryKey = type === 'weapon' ? 'weapons' : 
-                            type === 'armor' ? 'armor' :
-                            type === 'clothing' ? 'clothing' :
-                            type === 'jewelry' ? 'jewelry' :
-                            type === 'gear' ? 'gear' :
-                            type === 'potion' ? 'potions' :
-                            type === 'canister' ? 'canisters' :
-                            type === 'food' ? 'food' :
-                            type === 'quest' ? 'questItems' : 'other';
-        
-        equipmentData.inventory[inventoryKey].splice(index, 1);
+        equipmentData.inventory[category].splice(index, 1);
         saveEquipmentData();
         
         // Refresh current section
@@ -1170,9 +1114,13 @@ function loadEquipmentData() {
 
 // ===== INITIALIZATION =====
 function initializeEquipment() {
+    console.log('Initializing equipment system...');
     loadEquipmentData();
+    console.log('Equipment data loaded:', equipmentData);
     renderEquipmentOverview();
+    console.log('Equipment overview rendered');
     updateActiveWeaponsAndArmor();
+    console.log('Equipment initialization complete');
 }
 
 // Initialize when DOM is loaded
