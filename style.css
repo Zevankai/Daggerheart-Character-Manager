@@ -2201,6 +2201,57 @@ body[data-theme="light"] {
     transition: width 0.3s ease;
 }
 
+/* Bag Selector */
+.bag-selector {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.bag-selector label {
+    color: var(--accent-color);
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.bag-selector select {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-color);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.bag-selector select:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+.bag-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    font-size: 0.9rem;
+}
+
+.bag-capacity,
+.bag-consumables {
+    color: var(--text-color);
+    opacity: 0.8;
+}
+
+.bag-bonus {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
 /* Equipped Items Interface */
 .equipped-items-container {
     background: rgba(255, 255, 255, 0.05);
@@ -2555,10 +2606,16 @@ body[data-theme="light"] {
     color: #FFFF90;
 }
 
-.item-actions .delete-btn:hover {
-    background: rgba(255, 0, 0, 0.2);
-    border-color: rgba(255, 0, 0, 0.5);
-    color: #FF9090;
+.item-actions .drop-btn:hover {
+    background: rgba(255, 165, 0, 0.2);
+    border-color: rgba(255, 165, 0, 0.5);
+    color: #FFA500;
+}
+
+.item-actions .sell-btn:hover {
+    background: rgba(0, 255, 0, 0.2);
+    border-color: rgba(0, 255, 0, 0.5);
+    color: #90EE90;
 }
 
 /* Tags Selection in Modal */

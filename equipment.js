@@ -41,7 +41,9 @@ let equipmentData = {
     // Search and filter state
     searchTerm: '',
     selectedCategory: 'All',
-    selectedTags: []
+    selectedTags: [],
+    // Bag selection
+    selectedBag: 'Standard Backpack'
 };
 
 // ===== ITEM TYPES AND CATEGORIES =====
@@ -90,14 +92,44 @@ const abilities = [
     'Instinct', 'Presence', 'Knowledge'
 ];
 
+const bagTypes = {
+    'Standard Backpack': {
+        capacity: 30,
+        consumableSlots: 3,
+        bonus: null
+    },
+    'Adventurer\'s Backpack': {
+        capacity: 45,
+        consumableSlots: 2,
+        bonus: null
+    },
+    'Warrior\'s Backpack': {
+        capacity: 26,
+        consumableSlots: 6,
+        bonus: '+1 to Finesse rolls in combat'
+    },
+    'Arcane Satchel': {
+        capacity: 22,
+        consumableSlots: 8,
+        bonus: '+1 to Instinct rolls outside of combat'
+    },
+    'Tinker\'s Pack': {
+        capacity: 20,
+        consumableSlots: 12,
+        bonus: '+2 to Finesse rolls when crafting'
+    }
+};
+
 // ===== UTILITY FUNCTIONS =====
 function calculateEncumbrance() {
     let totalWeight = 0;
     
-    // Calculate weight of ALL items in inventory (equipped or not)
+    // Calculate weight of UNEQUIPPED items only
     Object.values(equipmentData.inventory).forEach(categoryItems => {
         categoryItems.forEach(item => {
-            totalWeight += encumbranceWeights[item.type] || 1;
+            if (!isItemEquipped(item, item.type)) {
+                totalWeight += encumbranceWeights[item.type] || 1;
+            }
         });
     });
     
@@ -105,7 +137,13 @@ function calculateEncumbrance() {
 }
 
 function isEncumbered() {
-    return calculateEncumbrance() > 30;
+    const selectedBag = bagTypes[equipmentData.selectedBag] || bagTypes['Standard Backpack'];
+    return calculateEncumbrance() > selectedBag.capacity;
+}
+
+function getMaxCapacity() {
+    const selectedBag = bagTypes[equipmentData.selectedBag] || bagTypes['Standard Backpack'];
+    return selectedBag.capacity;
 }
 
 function getItemCategory(itemType) {
@@ -176,12 +214,25 @@ function renderEquipmentOverview() {
                 <div class="equipment-header">
                     <h2>Equipment Overview</h2>
                     ${isOverEncumbered ? '<div class="encumbrance-warning">⚠️ ENCUMBERED - Carrying too much weight!</div>' : ''}
-                    <div class="encumbrance-display">
-                        <span class="encumbrance-text">Encumbrance: ${encumbrance}/30 units</span>
-                        <div class="encumbrance-bar">
-                            <div class="encumbrance-fill" style="width: ${Math.min((encumbrance / 30) * 100, 100)}%"></div>
-                        </div>
+                                    <div class="encumbrance-display">
+                    <span class="encumbrance-text">Encumbrance: ${encumbrance}/${getMaxCapacity()} units</span>
+                    <div class="encumbrance-bar">
+                        <div class="encumbrance-fill" style="width: ${Math.min((encumbrance / getMaxCapacity()) * 100, 100)}%"></div>
                     </div>
+                </div>
+                <div class="bag-selector">
+                    <label for="bag-select">Bag Type:</label>
+                    <select id="bag-select" onchange="changeBagType(this.value)">
+                        ${Object.keys(bagTypes).map(bagName => 
+                            `<option value="${bagName}" ${equipmentData.selectedBag === bagName ? 'selected' : ''}>${bagName}</option>`
+                        ).join('')}
+                    </select>
+                    <div class="bag-info">
+                        <span class="bag-capacity">Capacity: ${getMaxCapacity()} units</span>
+                        <span class="bag-consumables">Belt Slots: ${bagTypes[equipmentData.selectedBag].consumableSlots}</span>
+                        ${bagTypes[equipmentData.selectedBag].bonus ? `<span class="bag-bonus">${bagTypes[equipmentData.selectedBag].bonus}</span>` : ''}
+                    </div>
+                </div>
                     <div class="equipment-nav">
                         <button class="equipment-nav-btn active" data-section="overview">Overview</button>
                         <button class="equipment-nav-btn" data-section="inventory">Inventory</button>
@@ -309,7 +360,7 @@ function renderOverviewContent() {
                     <div class="equipment-category">
                         <h4>🎒 Belt & Consumables</h4>
                         <div class="belt-container">
-                            <div class="slot-label">Belt Items (${equipped.belt.filter(b => b).length}/5)</div>
+                            <div class="slot-label">Belt Items (${equipped.belt.filter(b => b).length}/${bagTypes[equipmentData.selectedBag].consumableSlots})</div>
                             <div class="belt-slots">
                                 ${equipped.belt.map((item, i) => `
                                     <div class="equipment-slot belt-slot ${item ? 'filled' : 'empty'}" data-slot="belt" data-index="${i}">
@@ -424,7 +475,8 @@ function renderCompactItemCard(item, category, index) {
                     `<button class="equip-btn" onclick="equipItem('${item.type}', ${index})">Equip</button>`
                 }
                 <button class="edit-btn" onclick="editItem('${category}', ${index})">Edit</button>
-                <button class="delete-btn" onclick="deleteItem('${category}', ${index})">Delete</button>
+                <button class="drop-btn" onclick="dropItem('${category}', ${index})">Drop</button>
+                <button class="sell-btn" onclick="sellItem('${category}', ${index})">Sell</button>
             </div>
         </div>
     `;
@@ -490,6 +542,143 @@ function unequipBeltItem(index) {
         if (activeSection === 'overview') {
             switchEquipmentSection('overview');
         }
+    }
+}
+
+function changeBagType(bagName) {
+    const oldBag = bagTypes[equipmentData.selectedBag];
+    const newBag = bagTypes[bagName];
+    
+    // If new bag has fewer belt slots, unequip excess items
+    if (newBag.consumableSlots < oldBag.consumableSlots) {
+        for (let i = newBag.consumableSlots; i < equipmentData.equipped.belt.length; i++) {
+            equipmentData.equipped.belt[i] = null;
+        }
+    }
+    
+    // Resize belt array to match new bag's consumable slots
+    equipmentData.equipped.belt = Array(newBag.consumableSlots).fill(null);
+    
+    // Copy over existing items up to the new limit
+    const currentBelt = equipmentData.equipped.belt.slice();
+    for (let i = 0; i < Math.min(newBag.consumableSlots, currentBelt.length); i++) {
+        equipmentData.equipped.belt[i] = currentBelt[i];
+    }
+    
+    equipmentData.selectedBag = bagName;
+    saveEquipmentData();
+    updateEncumbranceDisplay();
+    
+    // Refresh overview
+    const activeSection = document.querySelector('.equipment-nav-btn.active').dataset.section;
+    switchEquipmentSection(activeSection);
+}
+
+function dropItem(category, index) {
+    if (confirm('Are you sure you want to drop this item? It will be lost forever.')) {
+        const item = equipmentData.inventory[category][index];
+        
+        // Auto-unequip the item if it's equipped
+        if (isItemEquipped(item, item.type)) {
+            const equipped = equipmentData.equipped;
+            
+            if (item.type === 'weapon') {
+                if (equipped.primaryWeapon && equipped.primaryWeapon.id === item.id) {
+                    equipped.primaryWeapon = null;
+                }
+                if (equipped.secondaryWeapon && equipped.secondaryWeapon.id === item.id) {
+                    equipped.secondaryWeapon = null;
+                }
+            } else if (item.type === 'armor') {
+                equipped.armor = null;
+            } else if (item.type === 'clothing') {
+                equipped.clothing = null;
+            } else if (item.type === 'jewelry') {
+                const slotIndex = equipped.jewelry.findIndex(slot => slot && slot.id === item.id);
+                if (slotIndex !== -1) {
+                    equipped.jewelry[slotIndex] = null;
+                }
+            } else {
+                // For belt items
+                const slotIndex = equipped.belt.findIndex(slot => slot && slot.id === item.id);
+                if (slotIndex !== -1) {
+                    equipped.belt[slotIndex] = null;
+                }
+            }
+        }
+        
+        // Remove from inventory
+        equipmentData.inventory[category].splice(index, 1);
+        saveEquipmentData();
+        updateActiveWeaponsAndArmor();
+        updateEncumbranceDisplay();
+        
+        // Refresh current section
+        const activeSection = document.querySelector('.equipment-nav-btn.active').dataset.section;
+        switchEquipmentSection(activeSection);
+    }
+}
+
+function sellItem(category, index) {
+    const item = equipmentData.inventory[category][index];
+    const goldAmount = prompt(`How much gold did you sell "${item.name}" for?`, '1');
+    
+    if (goldAmount !== null && !isNaN(goldAmount) && parseInt(goldAmount) >= 0) {
+        const gold = parseInt(goldAmount);
+        
+        // Auto-unequip the item if it's equipped
+        if (isItemEquipped(item, item.type)) {
+            const equipped = equipmentData.equipped;
+            
+            if (item.type === 'weapon') {
+                if (equipped.primaryWeapon && equipped.primaryWeapon.id === item.id) {
+                    equipped.primaryWeapon = null;
+                }
+                if (equipped.secondaryWeapon && equipped.secondaryWeapon.id === item.id) {
+                    equipped.secondaryWeapon = null;
+                }
+            } else if (item.type === 'armor') {
+                equipped.armor = null;
+            } else if (item.type === 'clothing') {
+                equipped.clothing = null;
+            } else if (item.type === 'jewelry') {
+                const slotIndex = equipped.jewelry.findIndex(slot => slot && slot.id === item.id);
+                if (slotIndex !== -1) {
+                    equipped.jewelry[slotIndex] = null;
+                }
+            } else {
+                // For belt items
+                const slotIndex = equipped.belt.findIndex(slot => slot && slot.id === item.id);
+                if (slotIndex !== -1) {
+                    equipped.belt[slotIndex] = null;
+                }
+            }
+        }
+        
+        // Add gold to inventory
+        let currentGold = equipmentData.gold.coins + gold;
+        
+        // Convert coins to pouches/chests as needed
+        equipmentData.gold.coins = currentGold % 10;
+        const extraPouches = Math.floor(currentGold / 10);
+        
+        let totalPouches = equipmentData.gold.pouches + extraPouches;
+        equipmentData.gold.pouches = totalPouches % 10;
+        const extraChests = Math.floor(totalPouches / 10);
+        
+        equipmentData.gold.chest = Math.min(1, equipmentData.gold.chest + extraChests);
+        
+        // Remove from inventory
+        equipmentData.inventory[category].splice(index, 1);
+        saveEquipmentData();
+        updateActiveWeaponsAndArmor();
+        updateEncumbranceDisplay();
+        
+        // Refresh current section
+        const activeSection = document.querySelector('.equipment-nav-btn.active').dataset.section;
+        switchEquipmentSection(activeSection);
+        
+        alert(`Sold "${item.name}" for ${gold} gold!`);
     }
 }
 
@@ -1112,10 +1301,11 @@ function updateEncumbranceDisplay() {
     
     if (encumbranceText && encumbranceFill) {
         const encumbrance = calculateEncumbrance();
+        const maxCapacity = getMaxCapacity();
         const isOverEncumbered = isEncumbered();
         
-        encumbranceText.textContent = `Encumbrance: ${encumbrance}/30 units`;
-        encumbranceFill.style.width = `${Math.min((encumbrance / 30) * 100, 100)}%`;
+        encumbranceText.textContent = `Encumbrance: ${encumbrance}/${maxCapacity} units`;
+        encumbranceFill.style.width = `${Math.min((encumbrance / maxCapacity) * 100, 100)}%`;
         
         if (encumbranceWarning) {
             encumbranceWarning.style.display = isOverEncumbered ? 'block' : 'none';
@@ -1190,19 +1380,32 @@ function updateActiveArmorDisplay() {
         activeArmorSection.appendChild(equippedArmorDiv);
     }
     
-    // Update only the equipped armor display, leaving armor circles intact
+    // Update equipped armor and clothing display, leaving armor circles intact
+    let equippedHTML = '';
+    
     if (equipmentData.equipped.armor) {
         const armor = equipmentData.equipped.armor;
-        equippedArmorDiv.innerHTML = `
+        equippedHTML += `
             <div class="equipped-armor-info">
-                <h4>${armor.name}</h4>
+                <h4>Armor: ${armor.name}</h4>
                 ${armor.features ? `<p>Features: ${armor.features}</p>` : ''}
                 ${armor.ability ? `<p>Attribute: ${armor.ability}</p>` : ''}
             </div>
         `;
-    } else {
-        equippedArmorDiv.innerHTML = '';
     }
+    
+    if (equipmentData.equipped.clothing) {
+        const clothing = equipmentData.equipped.clothing;
+        equippedHTML += `
+            <div class="equipped-armor-info">
+                <h4>Clothing: ${clothing.name}</h4>
+                ${clothing.features ? `<p>Features: ${clothing.features}</p>` : ''}
+                ${clothing.ability ? `<p>Attribute: ${clothing.ability}</p>` : ''}
+            </div>
+        `;
+    }
+    
+    equippedArmorDiv.innerHTML = equippedHTML;
 }
 
 // ===== UTILITY FUNCTIONS =====
@@ -1349,4 +1552,7 @@ window.updateCategoryFilter = updateCategoryFilter;
 window.unequipSpecificItem = unequipSpecificItem;
 window.unequipJewelry = unequipJewelry;
 window.unequipBeltItem = unequipBeltItem;
+window.changeBagType = changeBagType;
+window.dropItem = dropItem;
+window.sellItem = sellItem;
 window.initializeEquipment = initializeEquipment;
