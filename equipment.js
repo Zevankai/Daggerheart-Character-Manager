@@ -9,22 +9,7 @@
 
 console.log('Equipment.js file loaded successfully');
 
-// Simple test function
-function testEquipmentTab() {
-    console.log('Testing equipment tab...');
-    const equipmentTabContent = document.getElementById('equipment-tab-content');
-    console.log('Equipment tab element:', equipmentTabContent);
-    
-    if (equipmentTabContent) {
-        equipmentTabContent.innerHTML = '<h2>Equipment System Test</h2><p>This is a test to see if we can write to the equipment tab.</p>';
-        console.log('Test content added to equipment tab');
-    } else {
-        console.error('Equipment tab content element not found!');
-    }
-}
 
-// Test immediately when script loads
-setTimeout(testEquipmentTab, 100);
 
 // ===== EQUIPMENT DATA STRUCTURE =====
 let equipmentData = {
@@ -248,8 +233,19 @@ function renderEquipmentOverview() {
 }
 
 function renderOverviewContent() {
+    console.log('renderOverviewContent called');
+    
+    // Safety checks
+    if (!equipmentData || !equipmentData.equipped || !equipmentData.gold) {
+        console.error('Equipment data is not properly initialized');
+        return '<div><p>Equipment data not loaded properly</p></div>';
+    }
+    
     const equipped = equipmentData.equipped;
     const gold = equipmentData.gold;
+    
+    console.log('Equipped items:', equipped);
+    console.log('Gold data:', gold);
     
     return `
         <div class="overview-section">
@@ -1125,9 +1121,21 @@ function saveEquipmentData() {
 }
 
 function loadEquipmentData() {
+    console.log('Loading equipment data...');
     const saved = localStorage.getItem('zevi-equipment');
+    console.log('Saved data from localStorage:', saved);
+    
     if (saved) {
-        equipmentData = { ...equipmentData, ...JSON.parse(saved) };
+        try {
+            const parsedData = JSON.parse(saved);
+            console.log('Parsed saved data:', parsedData);
+            equipmentData = { ...equipmentData, ...parsedData };
+            console.log('Equipment data after merge:', equipmentData);
+        } catch (error) {
+            console.error('Error parsing saved equipment data:', error);
+        }
+    } else {
+        console.log('No saved equipment data found, using defaults');
     }
 }
 
@@ -1141,17 +1149,31 @@ function initializeEquipment() {
         return;
     }
     
-    // Simple test content
-    equipmentTabContent.innerHTML = `
-        <div style="padding: 20px; text-align: center;">
-            <h2 style="color: var(--accent-color);">Equipment System</h2>
-            <p>Equipment system is working!</p>
-            <p>This is a basic test to ensure the tab is functional.</p>
-            <button onclick="alert('Equipment system loaded!')">Test Button</button>
-        </div>
-    `;
-    
-    console.log('Basic equipment content loaded');
+    try {
+        // Load equipment data
+        loadEquipmentData();
+        console.log('Equipment data loaded:', equipmentData);
+        
+        // Render the equipment overview
+        renderEquipmentOverview();
+        console.log('Equipment overview rendered successfully');
+        
+        // Update active weapons and armor
+        updateActiveWeaponsAndArmor();
+        console.log('Equipment initialization complete');
+        
+    } catch (error) {
+        console.error('Error during equipment initialization:', error);
+        equipmentTabContent.innerHTML = `
+            <div style="padding: 20px; text-align: center;">
+                <h2 style="color: var(--accent-color);">Equipment System Error</h2>
+                <p>There was an error loading the equipment system:</p>
+                <p style="color: #ff6464; font-family: monospace;">${error.message}</p>
+                <p>Check the console for more details.</p>
+                <button onclick="window.initializeEquipment()">Retry</button>
+            </div>
+        `;
+    }
 }
 
 // Initialize when DOM is loaded
