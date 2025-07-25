@@ -793,23 +793,7 @@ function renderGoldCircles(type, current, max) {
     let circles = '';
     for (let i = 0; i < max; i++) {
         const isActive = i < current;
-        let canClick = true;
-        
-        // Special logic for 10th circle (index 9)
-        if (i === 9) {
-            if (type === 'coins') {
-                // 10th coin can only be clicked if pouches are full (10)
-                canClick = equipmentData.gold.pouches >= 10;
-            } else if (type === 'pouches') {
-                // 10th pouch can only be clicked if chest is full (1)
-                canClick = equipmentData.gold.chest >= 1;
-            }
-        }
-        
-        const clickHandler = canClick ? `onclick="setGoldAmount('${type}', ${i + 1})"` : '';
-        const disabledClass = !canClick && i === 9 ? ' disabled' : '';
-        
-        circles += `<div class="gold-circle ${isActive ? 'active' : ''}${disabledClass}" ${clickHandler}></div>`;
+        circles += `<div class="gold-circle ${isActive ? 'active' : ''}" onclick="setGoldAmount('${type}', ${i + 1})"></div>`;
     }
     return circles;
 }
@@ -1241,25 +1225,25 @@ function setGoldAmount(type, amount) {
     } else {
         // Increasing
         equipmentData.gold[type] = amount;
-    }
-    
-    // Handle automatic conversions
-    if (type === 'coins' && equipmentData.gold.coins >= 10) {
-        // Only auto-convert if pouches can still be filled
-        if (equipmentData.gold.pouches < 10) {
-            equipmentData.gold.coins = 0;
-            equipmentData.gold.pouches = Math.min(equipmentData.gold.pouches + 1, 10);
+        
+        // Handle automatic conversions
+        if (type === 'coins' && equipmentData.gold.coins === 10) {
+            // Always try to auto-convert, but only if pouches can be filled
+            if (equipmentData.gold.pouches < 10) {
+                equipmentData.gold.coins = 0;
+                equipmentData.gold.pouches = Math.min(equipmentData.gold.pouches + 1, 10);
+            }
+            // If pouches are full (10/10), allow 10th coin to stay filled
         }
-        // If pouches are full, allow 10th coin to stay
-    }
-    
-    if (type === 'pouches' && equipmentData.gold.pouches >= 10) {
-        // Only auto-convert if chest can still be filled
-        if (equipmentData.gold.chest < 1) {
-            equipmentData.gold.pouches = 0;
-            equipmentData.gold.chest = 1;
+        
+        if (type === 'pouches' && equipmentData.gold.pouches === 10) {
+            // Always try to auto-convert, but only if chest can be filled
+            if (equipmentData.gold.chest < 1) {
+                equipmentData.gold.pouches = 0;
+                equipmentData.gold.chest = 1;
+            }
+            // If chest is full (1/1), allow 10th pouch to stay filled
         }
-        // If chest is full, allow 10th pouch to stay
     }
     
     // Adjust equipped pouches if necessary
