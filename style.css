@@ -1476,7 +1476,624 @@ body[data-theme="light"] {
         flex-direction: column;
     }
     
-    .confirm-delete-btn, .cancel-btn {
-        width: 100%;
+         .confirm-delete-btn, .cancel-btn {
+         width: 100%;
+     }
+ }
+
+/* ===== EQUIPMENT TAB STYLES ===== */
+.equipment-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.equipment-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.equipment-header h2 {
+    color: var(--accent-color);
+    margin-bottom: 20px;
+    font-size: 2rem;
+}
+
+.equipment-nav {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.equipment-nav-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-color);
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.equipment-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: var(--accent-color);
+}
+
+.equipment-nav-btn.active {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+/* Overview Section */
+.overview-section {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.equipped-items h3,
+.gold-summary h3 {
+    color: var(--accent-color);
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+}
+
+.equipped-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.equipped-category {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.equipped-category h4 {
+    color: var(--accent-color);
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+.equipped-slot {
+    margin-bottom: 10px;
+}
+
+.equipped-slot label {
+    display: block;
+    color: var(--text-color);
+    font-weight: 600;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+.equipped-item {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+}
+
+.equipped-item.small {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 0.8rem;
+}
+
+.jewelry-slots,
+.consumable-slots,
+.quest-slots {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+/* Gold Summary */
+.gold-summary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 20px;
+    height: fit-content;
+}
+
+.gold-display {
+    text-align: center;
+}
+
+.gold-amount {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.gold-icon {
+    font-size: 1.5rem;
+}
+
+.gold-text {
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.gold-equipped,
+.gold-banks {
+    margin-bottom: 10px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+
+/* Section Headers */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.section-header h3 {
+    color: var(--accent-color);
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.add-item-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-color);
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.add-item-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+/* Item Grids */
+.gear-categories,
+.consumables-categories {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.gear-category,
+.consumable-category {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.gear-category h4,
+.consumable-category h4 {
+    color: var(--accent-color);
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+.items-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.no-items {
+    color: rgba(255, 255, 255, 0.5);
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+}
+
+/* Item Cards */
+.item-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    padding: 15px;
+    transition: all 0.3s ease;
+}
+
+.item-card:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+
+.item-header h5 {
+    color: var(--accent-color);
+    margin: 0;
+    font-size: 1.1rem;
+    flex: 1;
+}
+
+.item-actions {
+    display: flex;
+    gap: 5px;
+    flex-shrink: 0;
+}
+
+.equip-btn,
+.edit-btn,
+.delete-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-color);
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+}
+
+.equip-btn:hover {
+    background: rgba(0, 255, 0, 0.2);
+    border-color: rgba(0, 255, 0, 0.5);
+    color: #90EE90;
+}
+
+.edit-btn:hover {
+    background: rgba(255, 255, 0, 0.2);
+    border-color: rgba(255, 255, 0, 0.5);
+    color: #FFFF90;
+}
+
+.delete-btn:hover {
+    background: rgba(255, 0, 0, 0.2);
+    border-color: rgba(255, 0, 0, 0.5);
+    color: #FF9090;
+}
+
+.item-description,
+.item-features,
+.item-dice,
+.item-ability {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    margin: 5px 0;
+    line-height: 1.4;
+}
+
+/* Gold Tracker */
+.gold-section {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.gold-section h3 {
+    color: var(--accent-color);
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 1.5rem;
+}
+
+.gold-tracker {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+}
+
+.gold-category {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.gold-category h4 {
+    color: var(--accent-color);
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.gold-circles {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 15px;
+    justify-items: center;
+}
+
+.gold-circle {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.gold-circle:hover {
+    border-color: var(--accent-color);
+    transform: scale(1.1);
+}
+
+.gold-circle.active {
+    background: rgba(255, 215, 0, 0.8);
+    border-color: rgba(255, 215, 0, 1);
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+}
+
+.equipped-pouches {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.equipped-pouches label {
+    display: block;
+    color: var(--text-color);
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.equipped-pouch-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.equipped-pouch-controls button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-color);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.equipped-pouch-controls button:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: var(--accent-color);
+}
+
+.equipped-pouch-controls button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.equipped-pouch-controls span {
+    color: var(--accent-color);
+    font-weight: 600;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* Banks */
+.banks-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.bank-entry {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 12px;
+}
+
+.bank-entry input[type="text"] {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-color);
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.bank-chests {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.bank-chests span {
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+.bank-chests button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-color);
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+}
+
+.bank-chests button:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: var(--accent-color);
+}
+
+.bank-chests button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.remove-btn {
+    background: rgba(255, 0, 0, 0.2) !important;
+    border-color: rgba(255, 0, 0, 0.5) !important;
+    color: #FF9090 !important;
+}
+
+.remove-btn:hover {
+    background: rgba(255, 0, 0, 0.3) !important;
+    border-color: rgba(255, 0, 0, 0.7) !important;
+}
+
+.add-bank-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-color);
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    align-self: flex-start;
+}
+
+.add-bank-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    color: var(--text-color);
+    margin-bottom: 5px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-color);
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.3);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+}
+
+/* Active Weapons/Armor Integration */
+.active-weapon,
+.active-armor {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.active-weapon h4,
+.active-armor h4 {
+    color: var(--accent-color);
+    margin: 0 0 5px 0;
+    font-size: 1rem;
+}
+
+.active-weapon p,
+.active-armor p {
+    color: rgba(255, 255, 255, 0.8);
+    margin: 3px 0;
+    font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .equipment-container {
+        padding: 15px;
+    }
+    
+    .overview-section {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .equipped-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .equipment-nav {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .equipment-nav-btn {
+        width: 200px;
+        text-align: center;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .gear-categories,
+    .consumables-categories {
+        grid-template-columns: 1fr;
+    }
+    
+    .gold-tracker {
+        grid-template-columns: 1fr;
+    }
+    
+    .gold-circles {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 5px;
+    }
+    
+    .gold-circle {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .item-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .item-actions {
+        justify-content: center;
     }
 }
