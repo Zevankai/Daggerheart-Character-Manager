@@ -94,30 +94,16 @@ const abilities = [
 function calculateEncumbrance() {
     let totalWeight = 0;
     
-    // Calculate equipped items weight
-    const equipped = equipmentData.equipped;
-    if (equipped.primaryWeapon) totalWeight += encumbranceWeights[equipped.primaryWeapon.type] || 1;
-    if (equipped.secondaryWeapon) totalWeight += encumbranceWeights[equipped.secondaryWeapon.type] || 1;
-    if (equipped.armor) totalWeight += encumbranceWeights[equipped.armor.type] || 1;
-    if (equipped.clothing) totalWeight += encumbranceWeights[equipped.clothing.type] || 1;
-    
-    equipped.jewelry.forEach(item => {
-        if (item) totalWeight += 1; // Jewelry is always 1 unit
-    });
-    
-    equipped.belt.forEach(item => {
-        if (item) totalWeight += encumbranceWeights[item.type] || 1;
-    });
-    
-    // Calculate carried (unequipped) items weight
+    // Calculate weight of ALL items in inventory (equipped or not)
     Object.values(equipmentData.inventory).forEach(categoryItems => {
         categoryItems.forEach(item => {
-            if (!isItemEquipped(item, item.type)) {
-                totalWeight += encumbranceWeights[item.type] || 1;
-            }
+            const itemWeight = encumbranceWeights[item.type] || 1;
+            console.log(`Item: ${item.name}, Type: ${item.type}, Weight: ${itemWeight}`);
+            totalWeight += itemWeight;
         });
     });
     
+    console.log(`Total encumbrance calculated: ${totalWeight}`);
     return totalWeight;
 }
 
@@ -987,6 +973,7 @@ function deleteItem(category, index) {
     if (confirm('Are you sure you want to delete this item?')) {
         equipmentData.inventory[category].splice(index, 1);
         saveEquipmentData();
+        updateEncumbranceDisplay();
         
         // Refresh current section
         const activeSection = document.querySelector('.equipment-nav-btn.active').dataset.section;
@@ -1066,6 +1053,9 @@ function adjustBankChests(index, change) {
 
 // ===== INTEGRATION WITH ACTIVE WEAPONS/ARMOR =====
 function updateActiveWeaponsAndArmor() {
+    console.log('updateActiveWeaponsAndArmor called');
+    console.log('Current equipped weapons:', equipmentData.equipped.primaryWeapon, equipmentData.equipped.secondaryWeapon);
+    
     // Update Active Weapons section
     updateActiveWeaponsDisplay();
     
@@ -1179,7 +1169,7 @@ function updateActiveArmorDisplay() {
             </div>
         `;
     } else {
-        equippedArmorDiv.innerHTML = '<p class="no-equipped-armor">No armor equipped</p>';
+        equippedArmorDiv.innerHTML = '';
     }
 }
 
