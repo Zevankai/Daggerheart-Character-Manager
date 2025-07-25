@@ -569,9 +569,24 @@ function changeBagType(bagName) {
     saveEquipmentData();
     updateEncumbranceDisplay();
     
+    // Update bag info display
+    updateBagInfo();
+    
     // Refresh overview
     const activeSection = document.querySelector('.equipment-nav-btn.active').dataset.section;
     switchEquipmentSection(activeSection);
+}
+
+function updateBagInfo() {
+    const bagInfo = document.querySelector('.bag-info');
+    if (bagInfo) {
+        const selectedBag = bagTypes[equipmentData.selectedBag];
+        bagInfo.innerHTML = `
+            <span class="bag-capacity">Capacity: ${selectedBag.capacity} units</span>
+            <span class="bag-consumables">Belt Slots: ${selectedBag.consumableSlots}</span>
+            ${selectedBag.bonus ? `<span class="bag-bonus">${selectedBag.bonus}</span>` : ''}
+        `;
+    }
 }
 
 function dropItem(category, index) {
@@ -778,7 +793,23 @@ function renderGoldCircles(type, current, max) {
     let circles = '';
     for (let i = 0; i < max; i++) {
         const isActive = i < current;
-        circles += `<div class="gold-circle ${isActive ? 'active' : ''}" onclick="setGoldAmount('${type}', ${i + 1})"></div>`;
+        let canClick = true;
+        
+        // Special logic for 10th circle (index 9)
+        if (i === 9) {
+            if (type === 'coins') {
+                // 10th coin can only be clicked if pouches are full (10)
+                canClick = equipmentData.gold.pouches >= 10;
+            } else if (type === 'pouches') {
+                // 10th pouch can only be clicked if chest is full (1)
+                canClick = equipmentData.gold.chest >= 1;
+            }
+        }
+        
+        const clickHandler = canClick ? `onclick="setGoldAmount('${type}', ${i + 1})"` : '';
+        const disabledClass = !canClick && i === 9 ? ' disabled' : '';
+        
+        circles += `<div class="gold-circle ${isActive ? 'active' : ''}${disabledClass}" ${clickHandler}></div>`;
     }
     return circles;
 }
@@ -1214,13 +1245,21 @@ function setGoldAmount(type, amount) {
     
     // Handle automatic conversions
     if (type === 'coins' && equipmentData.gold.coins >= 10) {
-        equipmentData.gold.coins = 0;
-        equipmentData.gold.pouches = Math.min(equipmentData.gold.pouches + 1, 10);
+        // Only auto-convert if pouches can still be filled
+        if (equipmentData.gold.pouches < 10) {
+            equipmentData.gold.coins = 0;
+            equipmentData.gold.pouches = Math.min(equipmentData.gold.pouches + 1, 10);
+        }
+        // If pouches are full, allow 10th coin to stay
     }
     
     if (type === 'pouches' && equipmentData.gold.pouches >= 10) {
-        equipmentData.gold.pouches = 0;
-        equipmentData.gold.chest = 1;
+        // Only auto-convert if chest can still be filled
+        if (equipmentData.gold.chest < 1) {
+            equipmentData.gold.pouches = 0;
+            equipmentData.gold.chest = 1;
+        }
+        // If chest is full, allow 10th pouch to stay
     }
     
     // Adjust equipped pouches if necessary
@@ -1553,6 +1592,7 @@ window.unequipSpecificItem = unequipSpecificItem;
 window.unequipJewelry = unequipJewelry;
 window.unequipBeltItem = unequipBeltItem;
 window.changeBagType = changeBagType;
+window.updateBagInfo = updateBagInfo;
 window.dropItem = dropItem;
 window.sellItem = sellItem;
 window.initializeEquipment = initializeEquipment;
