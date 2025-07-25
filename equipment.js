@@ -97,13 +97,10 @@ function calculateEncumbrance() {
     // Calculate weight of ALL items in inventory (equipped or not)
     Object.values(equipmentData.inventory).forEach(categoryItems => {
         categoryItems.forEach(item => {
-            const itemWeight = encumbranceWeights[item.type] || 1;
-            console.log(`Item: ${item.name}, Type: ${item.type}, Weight: ${itemWeight}`);
-            totalWeight += itemWeight;
+            totalWeight += encumbranceWeights[item.type] || 1;
         });
     });
     
-    console.log(`Total encumbrance calculated: ${totalWeight}`);
     return totalWeight;
 }
 
@@ -971,8 +968,41 @@ function editItem(category, index) {
 
 function deleteItem(category, index) {
     if (confirm('Are you sure you want to delete this item?')) {
+        const item = equipmentData.inventory[category][index];
+        
+        // Auto-unequip the item if it's equipped
+        if (isItemEquipped(item, item.type)) {
+            const equipped = equipmentData.equipped;
+            
+            if (item.type === 'weapon') {
+                if (equipped.primaryWeapon && equipped.primaryWeapon.id === item.id) {
+                    equipped.primaryWeapon = null;
+                }
+                if (equipped.secondaryWeapon && equipped.secondaryWeapon.id === item.id) {
+                    equipped.secondaryWeapon = null;
+                }
+            } else if (item.type === 'armor') {
+                equipped.armor = null;
+            } else if (item.type === 'clothing') {
+                equipped.clothing = null;
+            } else if (item.type === 'jewelry') {
+                const slotIndex = equipped.jewelry.findIndex(slot => slot && slot.id === item.id);
+                if (slotIndex !== -1) {
+                    equipped.jewelry[slotIndex] = null;
+                }
+            } else {
+                // For belt items
+                const slotIndex = equipped.belt.findIndex(slot => slot && slot.id === item.id);
+                if (slotIndex !== -1) {
+                    equipped.belt[slotIndex] = null;
+                }
+            }
+        }
+        
+        // Remove from inventory
         equipmentData.inventory[category].splice(index, 1);
         saveEquipmentData();
+        updateActiveWeaponsAndArmor();
         updateEncumbranceDisplay();
         
         // Refresh current section
@@ -1053,9 +1083,6 @@ function adjustBankChests(index, change) {
 
 // ===== INTEGRATION WITH ACTIVE WEAPONS/ARMOR =====
 function updateActiveWeaponsAndArmor() {
-    console.log('updateActiveWeaponsAndArmor called');
-    console.log('Current equipped weapons:', equipmentData.equipped.primaryWeapon, equipmentData.equipped.secondaryWeapon);
-    
     // Update Active Weapons section
     updateActiveWeaponsDisplay();
     
@@ -1121,21 +1148,25 @@ function updateActiveWeaponsDisplay() {
     let weaponsHTML = '';
     
     if (equipmentData.equipped.primaryWeapon) {
+        const weapon = equipmentData.equipped.primaryWeapon;
         weaponsHTML += `
             <div class="active-weapon">
-                <h4>Primary: ${equipmentData.equipped.primaryWeapon.name}</h4>
-                ${equipmentData.equipped.primaryWeapon.diceRoll ? `<p>Damage: ${equipmentData.equipped.primaryWeapon.diceRoll}</p>` : ''}
-                ${equipmentData.equipped.primaryWeapon.ability ? `<p>Ability: ${equipmentData.equipped.primaryWeapon.ability}</p>` : ''}
+                <h4>Primary: ${weapon.name}</h4>
+                ${weapon.features ? `<p>Features: ${weapon.features}</p>` : ''}
+                ${weapon.diceRoll ? `<p>Dice Roll: ${weapon.diceRoll}</p>` : ''}
+                ${weapon.ability ? `<p>Attribute: ${weapon.ability}</p>` : ''}
             </div>
         `;
     }
     
     if (equipmentData.equipped.secondaryWeapon) {
+        const weapon = equipmentData.equipped.secondaryWeapon;
         weaponsHTML += `
             <div class="active-weapon">
-                <h4>Secondary: ${equipmentData.equipped.secondaryWeapon.name}</h4>
-                ${equipmentData.equipped.secondaryWeapon.diceRoll ? `<p>Damage: ${equipmentData.equipped.secondaryWeapon.diceRoll}</p>` : ''}
-                ${equipmentData.equipped.secondaryWeapon.ability ? `<p>Ability: ${equipmentData.equipped.secondaryWeapon.ability}</p>` : ''}
+                <h4>Secondary: ${weapon.name}</h4>
+                ${weapon.features ? `<p>Features: ${weapon.features}</p>` : ''}
+                ${weapon.diceRoll ? `<p>Dice Roll: ${weapon.diceRoll}</p>` : ''}
+                ${weapon.ability ? `<p>Attribute: ${weapon.ability}</p>` : ''}
             </div>
         `;
     }
@@ -1161,11 +1192,12 @@ function updateActiveArmorDisplay() {
     
     // Update only the equipped armor display, leaving armor circles intact
     if (equipmentData.equipped.armor) {
+        const armor = equipmentData.equipped.armor;
         equippedArmorDiv.innerHTML = `
             <div class="equipped-armor-info">
-                <h4>Equipped: ${equipmentData.equipped.armor.name}</h4>
-                ${equipmentData.equipped.armor.features ? `<p>Features: ${equipmentData.equipped.armor.features}</p>` : ''}
-                ${equipmentData.equipped.armor.ability ? `<p>Ability: ${equipmentData.equipped.armor.ability}</p>` : ''}
+                <h4>${armor.name}</h4>
+                ${armor.features ? `<p>Features: ${armor.features}</p>` : ''}
+                ${armor.ability ? `<p>Attribute: ${armor.ability}</p>` : ''}
             </div>
         `;
     } else {
@@ -1216,6 +1248,15 @@ function loadEquipmentData() {
         clothing: null,
         jewelry: [null, null, null],
         belt: [null, null, null, null, null]
+    };
+    
+    // Clear any old inventory data to start fresh
+    equipmentData.inventory = {
+        'Gear': [],
+        'Utility': [],
+        'Quest': [],
+        'Crafting': [],
+        'Personal': []
     };
     
     // Ensure inventory categories exist
