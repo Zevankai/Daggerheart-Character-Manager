@@ -569,6 +569,9 @@ function changeBagType(bagName) {
     saveEquipmentData();
     updateEncumbranceDisplay();
     
+    // Update bag info display dynamically
+    updateBagInfoDisplay();
+    
     // Refresh overview section (this will re-render with updated bag info)
     const activeSection = document.querySelector('.equipment-nav-btn.active').dataset.section;
     switchEquipmentSection(activeSection);
@@ -1326,6 +1329,39 @@ function updateEncumbranceDisplay() {
     updateEncumbranceWarning();
 }
 
+function updateBagInfoDisplay() {
+    // Update the bag info display when bag type changes
+    const bagCapacityElement = document.querySelector('.bag-capacity');
+    const bagConsumablesElement = document.querySelector('.bag-consumables');
+    const bagBonusElement = document.querySelector('.bag-bonus');
+    
+    if (bagCapacityElement) {
+        bagCapacityElement.textContent = `Capacity: ${getMaxCapacity()} units`;
+    }
+    
+    if (bagConsumablesElement) {
+        bagConsumablesElement.textContent = `Belt Slots: ${bagTypes[equipmentData.selectedBag].consumableSlots}`;
+    }
+    
+    // Handle bonus text - need to check if element exists and update or remove
+    const bagInfoContainer = document.querySelector('.bag-info');
+    if (bagInfoContainer) {
+        // Remove existing bonus element if it exists
+        const existingBonus = bagInfoContainer.querySelector('.bag-bonus');
+        if (existingBonus) {
+            existingBonus.remove();
+        }
+        
+        // Add new bonus element if the selected bag has a bonus
+        if (bagTypes[equipmentData.selectedBag].bonus) {
+            const bonusElement = document.createElement('span');
+            bonusElement.className = 'bag-bonus';
+            bonusElement.textContent = bagTypes[equipmentData.selectedBag].bonus;
+            bagInfoContainer.appendChild(bonusElement);
+        }
+    }
+}
+
 function updateActiveWeaponsDisplay() {
     const activeWeaponsSection = document.querySelector('[data-color-target="active-weapons"]');
     if (!activeWeaponsSection) return;
@@ -1563,7 +1599,7 @@ window.unequipSpecificItem = unequipSpecificItem;
 window.unequipJewelry = unequipJewelry;
 window.unequipBeltItem = unequipBeltItem;
 window.changeBagType = changeBagType;
-window.updateBagInfo = updateBagInfo;
+window.updateBagInfoDisplay = updateBagInfoDisplay;
 window.dropItem = dropItem;
 window.sellItem = sellItem;
 window.initializeEquipment = initializeEquipment;
