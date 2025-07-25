@@ -1576,7 +1576,8 @@ body[data-theme="light"] {
 }
 
 .equipped-item {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--text-color);
+    opacity: 0.8;
     font-size: 0.9rem;
 }
 
@@ -1627,7 +1628,8 @@ body[data-theme="light"] {
 .gold-equipped,
 .gold-banks {
     margin-bottom: 10px;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--text-color);
+    opacity: 0.7;
     font-size: 0.9rem;
 }
 
@@ -1692,7 +1694,8 @@ body[data-theme="light"] {
 }
 
 .no-items {
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-color);
+    opacity: 0.5;
     text-align: center;
     padding: 20px;
     font-style: italic;
@@ -1712,6 +1715,17 @@ body[data-theme="light"] {
     border-color: rgba(255, 255, 255, 0.25);
 }
 
+.item-card.equipped {
+    background: rgba(255, 215, 0, 0.15);
+    border: 2px solid rgba(255, 215, 0, 0.5);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.item-card.equipped:hover {
+    background: rgba(255, 215, 0, 0.2);
+    border-color: rgba(255, 215, 0, 0.7);
+}
+
 .item-header {
     display: flex;
     justify-content: space-between;
@@ -1724,6 +1738,13 @@ body[data-theme="light"] {
     margin: 0;
     font-size: 1.1rem;
     flex: 1;
+}
+
+.equipped-indicator {
+    color: rgba(255, 215, 0, 0.9);
+    font-size: 0.8rem;
+    font-weight: normal;
+    margin-left: 8px;
 }
 
 .item-actions {
@@ -1751,6 +1772,18 @@ body[data-theme="light"] {
     color: #90EE90;
 }
 
+.equip-btn.unequip {
+    background: rgba(255, 165, 0, 0.2);
+    border-color: rgba(255, 165, 0, 0.5);
+    color: #FFA500;
+}
+
+.equip-btn.unequip:hover {
+    background: rgba(255, 165, 0, 0.3);
+    border-color: rgba(255, 165, 0, 0.7);
+    color: #FFB84D;
+}
+
 .edit-btn:hover {
     background: rgba(255, 255, 0, 0.2);
     border-color: rgba(255, 255, 0, 0.5);
@@ -1767,7 +1800,8 @@ body[data-theme="light"] {
 .item-features,
 .item-dice,
 .item-ability {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--text-color);
+    opacity: 0.8;
     font-size: 0.9rem;
     margin: 5px 0;
     line-height: 1.4;
@@ -2010,7 +2044,8 @@ body[data-theme="light"] {
 
 .form-group input::placeholder,
 .form-group textarea::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-color);
+    opacity: 0.5;
     font-style: italic;
 }
 
@@ -2033,7 +2068,8 @@ body[data-theme="light"] {
 
 .active-weapon p,
 .active-armor p {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--text-color);
+    opacity: 0.8;
     margin: 3px 0;
     font-size: 0.9rem;
 }

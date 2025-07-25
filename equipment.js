@@ -350,22 +350,28 @@ function renderItemsGrid(items, type) {
         return '<div class="no-items">No items yet</div>';
     }
     
-    return items.map((item, index) => `
-        <div class="item-card">
-            <div class="item-header">
-                <h5>${item.name}</h5>
-                <div class="item-actions">
-                    <button onclick="equipItem('${type}', ${index})" class="equip-btn">Equip</button>
-                    <button onclick="editItem('${type}', ${index})" class="edit-btn">Edit</button>
-                    <button onclick="deleteItem('${type}', ${index})" class="delete-btn">✕</button>
+    return items.map((item, index) => {
+        const isEquipped = isItemEquipped(item, type);
+        const equipBtnText = isEquipped ? 'Unequip' : 'Equip';
+        const cardClass = isEquipped ? 'item-card equipped' : 'item-card';
+        
+        return `
+            <div class="${cardClass}">
+                <div class="item-header">
+                    <h5>${item.name}${isEquipped ? ' <span class="equipped-indicator">✓ Equipped</span>' : ''}</h5>
+                    <div class="item-actions">
+                        <button onclick="${isEquipped ? `unequipItem('${type}', ${index})` : `equipItem('${type}', ${index})`}" class="equip-btn ${isEquipped ? 'unequip' : ''}">${equipBtnText}</button>
+                        <button onclick="editItem('${type}', ${index})" class="edit-btn">Edit</button>
+                        <button onclick="deleteItem('${type}', ${index})" class="delete-btn">✕</button>
+                    </div>
                 </div>
+                ${item.description ? `<p class="item-description">${item.description}</p>` : ''}
+                ${item.features ? `<p class="item-features"><strong>Features:</strong> ${item.features}</p>` : ''}
+                ${item.diceRoll ? `<p class="item-dice"><strong>Dice:</strong> ${item.diceRoll}</p>` : ''}
+                ${item.ability ? `<p class="item-ability"><strong>Ability:</strong> ${item.ability}</p>` : ''}
             </div>
-            ${item.description ? `<p class="item-description">${item.description}</p>` : ''}
-            ${item.features ? `<p class="item-features"><strong>Features:</strong> ${item.features}</p>` : ''}
-            ${item.diceRoll ? `<p class="item-dice"><strong>Dice:</strong> ${item.diceRoll}</p>` : ''}
-            ${item.ability ? `<p class="item-ability"><strong>Ability:</strong> ${item.ability}</p>` : ''}
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function renderGoldCircles(type, current, max) {
@@ -506,6 +512,92 @@ function addNewItem() {
     switchEquipmentSection(activeSection);
 }
 
+function isItemEquipped(item, type) {
+    const equipped = equipmentData.equipped;
+    
+    // Check if item is equipped by comparing IDs
+    if (type === 'weapon') {
+        return (equipped.primaryWeapon && equipped.primaryWeapon.id === item.id) ||
+               (equipped.secondaryWeapon && equipped.secondaryWeapon.id === item.id);
+    } else if (type === 'armor') {
+        return equipped.armor && equipped.armor.id === item.id;
+    } else if (type === 'clothing') {
+        return equipped.clothes && equipped.clothes.id === item.id;
+    } else if (type === 'canister') {
+        return equipped.canister && equipped.canister.id === item.id;
+    } else if (type === 'jewelry') {
+        return equipped.jewelry.some(slot => slot && slot.id === item.id);
+    } else if (type === 'potion') {
+        return equipped.potions.some(slot => slot && slot.id === item.id);
+    } else if (type === 'food') {
+        return equipped.food.some(slot => slot && slot.id === item.id);
+    } else if (type === 'quest') {
+        return equipped.questItems.some(slot => slot && slot.id === item.id);
+    }
+    
+    return false;
+}
+
+function unequipItem(type, index) {
+    const inventoryKey = type === 'weapon' ? 'weapons' : 
+                        type === 'armor' ? 'armor' :
+                        type === 'clothing' ? 'clothing' :
+                        type === 'jewelry' ? 'jewelry' :
+                        type === 'potion' ? 'potions' :
+                        type === 'canister' ? 'canisters' :
+                        type === 'food' ? 'food' :
+                        type === 'quest' ? 'questItems' : 'other';
+    
+    const item = equipmentData.inventory[inventoryKey][index];
+    const equipped = equipmentData.equipped;
+    
+    // Remove item from equipped slots
+    if (type === 'weapon') {
+        if (equipped.primaryWeapon && equipped.primaryWeapon.id === item.id) {
+            equipped.primaryWeapon = null;
+        }
+        if (equipped.secondaryWeapon && equipped.secondaryWeapon.id === item.id) {
+            equipped.secondaryWeapon = null;
+        }
+    } else if (type === 'armor') {
+        equipped.armor = null;
+    } else if (type === 'clothing') {
+        equipped.clothes = null;
+    } else if (type === 'canister') {
+        equipped.canister = null;
+    } else if (type === 'jewelry') {
+        const slotIndex = equipped.jewelry.findIndex(slot => slot && slot.id === item.id);
+        if (slotIndex !== -1) {
+            equipped.jewelry[slotIndex] = null;
+        }
+    } else if (type === 'potion') {
+        const slotIndex = equipped.potions.findIndex(slot => slot && slot.id === item.id);
+        if (slotIndex !== -1) {
+            equipped.potions[slotIndex] = null;
+        }
+    } else if (type === 'food') {
+        const slotIndex = equipped.food.findIndex(slot => slot && slot.id === item.id);
+        if (slotIndex !== -1) {
+            equipped.food[slotIndex] = null;
+        }
+    } else if (type === 'quest') {
+        const slotIndex = equipped.questItems.findIndex(slot => slot && slot.id === item.id);
+        if (slotIndex !== -1) {
+            equipped.questItems[slotIndex] = null;
+        }
+    }
+    
+    saveEquipmentData();
+    updateActiveWeaponsAndArmor();
+    
+    // Refresh current section and overview
+    const activeSection = document.querySelector('.equipment-nav-btn.active').dataset.section;
+    switchEquipmentSection(activeSection);
+    if (activeSection === 'overview') {
+        switchEquipmentSection('overview');
+    }
+}
+
 function equipItem(type, index) {
     const inventoryKey = type === 'weapon' ? 'weapons' : 
                         type === 'armor' ? 'armor' :
@@ -517,6 +609,12 @@ function equipItem(type, index) {
                         type === 'quest' ? 'questItems' : 'other';
     
     const item = equipmentData.inventory[inventoryKey][index];
+    
+    // Check if item is already equipped
+    if (isItemEquipped(item, type)) {
+        alert('This item is already equipped!');
+        return;
+    }
     
     if (type === 'weapon') {
         // Show weapon slot selection
@@ -564,6 +662,11 @@ function equipItem(type, index) {
                        type === 'canister' ? 'canister' : null;
         
         if (slotKey) {
+            // Check if slot is already occupied
+            if (equipmentData.equipped[slotKey]) {
+                alert(`You already have ${type} equipped. Unequip it first.`);
+                return;
+            }
             equipmentData.equipped[slotKey] = item;
         }
     }
@@ -571,8 +674,9 @@ function equipItem(type, index) {
     saveEquipmentData();
     updateActiveWeaponsAndArmor();
     
-    // Refresh overview if we're on it
+    // Refresh current section and overview
     const activeSection = document.querySelector('.equipment-nav-btn.active').dataset.section;
+    switchEquipmentSection(activeSection);
     if (activeSection === 'overview') {
         switchEquipmentSection('overview');
     }
@@ -598,12 +702,25 @@ function showWeaponSlotModal(weapon) {
 }
 
 function equipWeaponToSlot(slot, weapon) {
+    // Check if weapon is already equipped in any slot
+    if (isItemEquipped(weapon, 'weapon')) {
+        alert('This weapon is already equipped!');
+        return;
+    }
+    
+    // Check if slot is already occupied
+    if (equipmentData.equipped[slot]) {
+        alert(`You already have a ${slot.replace('Weapon', ' weapon')} equipped. Unequip it first.`);
+        return;
+    }
+    
     equipmentData.equipped[slot] = weapon;
     saveEquipmentData();
     updateActiveWeaponsAndArmor();
     
-    // Refresh overview if we're on it
+    // Refresh current section and overview
     const activeSection = document.querySelector('.equipment-nav-btn.active').dataset.section;
+    switchEquipmentSection(activeSection);
     if (activeSection === 'overview') {
         switchEquipmentSection('overview');
     }
@@ -885,6 +1002,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Export functions for global access
 window.showAddItemModal = showAddItemModal;
 window.equipItem = equipItem;
+window.unequipItem = unequipItem;
 window.equipWeaponToSlot = equipWeaponToSlot;
 window.editItem = editItem;
 window.deleteItem = deleteItem;
