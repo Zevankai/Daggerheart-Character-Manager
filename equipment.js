@@ -7,6 +7,25 @@
 // 5. Gold tracking system with coins, pouches, chests, and banks
 // 6. Integration with Active Weapons and Armor sections
 
+console.log('Equipment.js file loaded successfully');
+
+// Simple test function
+function testEquipmentTab() {
+    console.log('Testing equipment tab...');
+    const equipmentTabContent = document.getElementById('equipment-tab-content');
+    console.log('Equipment tab element:', equipmentTabContent);
+    
+    if (equipmentTabContent) {
+        equipmentTabContent.innerHTML = '<h2>Equipment System Test</h2><p>This is a test to see if we can write to the equipment tab.</p>';
+        console.log('Test content added to equipment tab');
+    } else {
+        console.error('Equipment tab content element not found!');
+    }
+}
+
+// Test immediately when script loads
+setTimeout(testEquipmentTab, 100);
+
 // ===== EQUIPMENT DATA STRUCTURE =====
 let equipmentData = {
     // Equipped items (visual slots on character silhouette)
@@ -1115,17 +1134,33 @@ function loadEquipmentData() {
 // ===== INITIALIZATION =====
 function initializeEquipment() {
     console.log('Initializing equipment system...');
-    loadEquipmentData();
-    console.log('Equipment data loaded:', equipmentData);
-    renderEquipmentOverview();
-    console.log('Equipment overview rendered');
-    updateActiveWeaponsAndArmor();
-    console.log('Equipment initialization complete');
+    
+    const equipmentTabContent = document.getElementById('equipment-tab-content');
+    if (!equipmentTabContent) {
+        console.error('Equipment tab content element not found!');
+        return;
+    }
+    
+    // Simple test content
+    equipmentTabContent.innerHTML = `
+        <div style="padding: 20px; text-align: center;">
+            <h2 style="color: var(--accent-color);">Equipment System</h2>
+            <p>Equipment system is working!</p>
+            <p>This is a basic test to ensure the tab is functional.</p>
+            <button onclick="alert('Equipment system loaded!')">Test Button</button>
+        </div>
+    `;
+    
+    console.log('Basic equipment content loaded');
 }
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(initializeEquipment, 150);
+    console.log('DOM loaded, scheduling equipment initialization...');
+    setTimeout(() => {
+        console.log('About to initialize equipment...');
+        initializeEquipment();
+    }, 150);
 });
 
 // Export functions for global access
