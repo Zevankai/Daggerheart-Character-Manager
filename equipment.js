@@ -126,15 +126,14 @@ const bagTypes = {
 function calculateEncumbrance() {
     let totalWeight = 0;
     
-    // Calculate weight of UNEQUIPPED items only
-    // Equipped items should not count toward encumbrance (they're worn/held)
+    // Sum up the current weight of all items
+    // Equipped items have currentWeight set to 0, unequipped items have their original weight
     Object.values(equipmentData.inventory).forEach(categoryItems => {
         categoryItems.forEach(item => {
-            const isEquipped = isItemEquipped(item, item.type);
-            if (!isEquipped) {
-                const weight = encumbranceWeights[item.type] || 1;
-                totalWeight += weight;
-            }
+            // Use currentWeight if available, otherwise fall back to original system for old items
+            const weight = item.currentWeight !== undefined ? item.currentWeight : 
+                          (!isItemEquipped(item, item.type) ? (encumbranceWeights[item.type] || 1) : 0);
+            totalWeight += weight;
         });
     });
     
@@ -474,7 +473,8 @@ function renderInventoryCategories() {
 
 function renderCompactItemCard(item, category, index) {
     const isEquipped = isItemEquipped(item, item.type);
-    const weight = encumbranceWeights[item.type] || 1;
+    // Use currentWeight if available, otherwise fall back to original system
+    const weight = item.currentWeight !== undefined ? item.currentWeight : (encumbranceWeights[item.type] || 1);
     
     return `
         <div class="item-card compact ${isEquipped ? 'equipped' : ''}" data-item-id="${item.id}">
@@ -1072,6 +1072,9 @@ function addNewItem() {
         const tagCheckboxes = document.querySelectorAll('.tag-checkbox.enhanced input:checked');
         const tags = Array.from(tagCheckboxes).map(cb => cb.value);
         
+        // Get the weight for this item type
+        const originalWeight = encumbranceWeights[type] || 1;
+        
         const newItem = {
             name,
             type,
@@ -1080,7 +1083,9 @@ function addNewItem() {
             diceRoll: diceRoll || null,
             ability: ability || null,
             tags: tags.length > 0 ? tags : null,
-            id: Date.now() // Simple ID generation
+            id: Date.now(), // Simple ID generation
+            originalWeight: originalWeight,
+            currentWeight: originalWeight
         };
         
         // Add to appropriate category
@@ -1264,6 +1269,13 @@ function unequipItem(type, index) {
         }
     }
     
+    // Restore original weight when unequipped (initialize weight properties if needed)
+    if (item.currentWeight === undefined) {
+        item.originalWeight = encumbranceWeights[item.type] || 1;
+        item.currentWeight = 0; // It was equipped, so current weight was 0
+    }
+    item.currentWeight = item.originalWeight;
+    
     saveEquipmentData();
     updateActiveWeaponsAndArmor();
     updateEncumbranceDisplay();
@@ -1330,6 +1342,13 @@ function equipItem(type, index) {
         }
     }
     
+    // Set item weight to 0 when equipped (initialize weight properties if needed)
+    if (item.currentWeight === undefined) {
+        item.originalWeight = encumbranceWeights[item.type] || 1;
+        item.currentWeight = item.originalWeight;
+    }
+    item.currentWeight = 0;
+    
     saveEquipmentData();
     updateActiveWeaponsAndArmor();
     
@@ -1371,6 +1390,14 @@ function equipWeaponToSlot(slot, weapon) {
     }
     
     equipmentData.equipped[slot] = weapon;
+    
+    // Set weapon weight to 0 when equipped (initialize weight properties if needed)
+    if (weapon.currentWeight === undefined) {
+        weapon.originalWeight = encumbranceWeights[weapon.type] || 1;
+        weapon.currentWeight = weapon.originalWeight;
+    }
+    weapon.currentWeight = 0;
+    
     saveEquipmentData();
     updateActiveWeaponsAndArmor();
     
@@ -1773,6 +1800,9 @@ function loadEquipmentData() {
             
             // Sync equipped items with inventory to ensure object references match
             syncEquippedItemReferences();
+            
+            // Initialize weight properties for existing items that don't have them
+            initializeItemWeights();
         } catch (error) {
             console.error('Error parsing saved equipment data:', error);
         }
@@ -1876,6 +1906,33 @@ function syncEquippedItemReferences() {
     
     if (syncedCount > 0) {
         console.log(`Equipment sync: ${syncedCount} equipped items synced`);
+    }
+}
+
+function initializeItemWeights() {
+    let itemsUpdated = 0;
+    
+    // Go through all items and initialize weight properties if they don't exist
+    Object.values(equipmentData.inventory).forEach(categoryItems => {
+        categoryItems.forEach(item => {
+            if (item.currentWeight === undefined) {
+                const originalWeight = encumbranceWeights[item.type] || 1;
+                item.originalWeight = originalWeight;
+                
+                // Set current weight based on whether the item is equipped
+                if (isItemEquipped(item, item.type)) {
+                    item.currentWeight = 0; // Equipped items have 0 weight
+                } else {
+                    item.currentWeight = originalWeight; // Unequipped items have original weight
+                }
+                
+                itemsUpdated++;
+            }
+        });
+    });
+    
+    if (itemsUpdated > 0) {
+        console.log(`Weight initialization: ${itemsUpdated} items updated with weight properties`);
     }
 }
 
