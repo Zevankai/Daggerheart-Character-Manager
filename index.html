@@ -35,9 +35,6 @@
        </div>
       <div class="tracker-btn" id="hope-increment">+</div>
      </div>
-     <div id="encumbrance-warning-main" class="encumbrance-warning" style="display: none; margin-top: 10px; font-size: 0.8rem;">
-      ⚠️ You are over-encumbered! -2 to strength & agility checks
-     </div>
     </div>
    </div>
 
@@ -121,6 +118,9 @@
    </div>
    <div class="column section" data-id="weapons" data-color-target="active-weapons">
     <h3>Active Weapons</h3>
+    <p>Primary: Longsword (Strength, d8+1)</p>
+    <p>Secondary: Hand Axe (Finesse, d6)</p>
+    <p>Proficiency: ⚫ ⚫ ⚫ ⚪ ⚪ ⚪</p>
    </div>
    <div class="column section" data-id="armor" data-color-target="armor-section">
     <h3>Armor</h3>
@@ -130,7 +130,11 @@
       </div>
      <button class="tracker-btn add-armor">+</button>
     </div>
-
+    <div class="divider"></div>
+    <h4>Active Armor</h4>
+    <div id="active-armor-display">
+     <p class="no-entries-message">No active armor equipped.</p>
+     </div>
    </div>
   </div>
 
@@ -158,7 +162,19 @@
     <p style="text-align: center;">Content for Effects & Features will go here.</p>
    </div>
    <div id="equipment-tab-content" class="tab-panel">
-    <!-- Equipment content will be populated by equipment.js -->
+    <div class="section">
+        <h3>Inventory</h3>
+        <textarea id="inventory-text" rows="10" placeholder="List your items here..."></textarea>
+    </div>
+    <div class="section">
+        <h3>Weapons</h3>
+        <textarea id="weapons-text" rows="6" placeholder="List your weapons here..."></textarea>
+    </div>
+    <div class="section">
+        <h3>Active Armor (Equipment)</h3>
+        <textarea id="equipment-active-armor-text" rows="3" placeholder="Describe your active armor..."></textarea>
+        <p><em>(This field is for descriptive purposes here; the Armor section above manages actual points.)</em></p>
+    </div>
    </div>
    <div id="details-tab-content" class="tab-panel">
     <p style="text-align: center;">Content for Details will go here.</p>
@@ -401,5 +417,4 @@
  <script src="experiences.js"></script>
  <script src="details.js"></script>
  <script src="settings.js"></script>
- <script src="equipment.js"></script>
 </html>
