@@ -310,6 +310,8 @@ function resetCharacterSheet() {
   document.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach(input => {
       if (input.closest('.name-box')) {
           input.value = 'Character Name';
+      } else if (input.id === 'evasionValue') {
+          input.value = '10'; // Reset evasion to default
       } else {
           input.value = '';
       }

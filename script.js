@@ -362,6 +362,36 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Evasion value functionality
+    const evasionValue = document.getElementById('evasionValue');
+    if (evasionValue) {
+        // Load saved evasion value
+        const savedEvasion = localStorage.getItem('zevi-evasion');
+        if (savedEvasion !== null) {
+            evasionValue.value = savedEvasion;
+        }
+
+        // Save evasion value when it changes
+        evasionValue.addEventListener('input', () => {
+            localStorage.setItem('zevi-evasion', evasionValue.value);
+        });
+
+        // Handle blur to ensure valid value
+        evasionValue.addEventListener('blur', () => {
+            if (evasionValue.value === '' || isNaN(evasionValue.value)) {
+                evasionValue.value = 10; // Default value
+                localStorage.setItem('zevi-evasion', '10');
+            }
+        });
+
+        // Format like attribute values
+        evasionValue.addEventListener('keydown', (event) => {
+            if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+                event.preventDefault();
+            }
+        });
+    }
+
 });
 
 // Expose these functions for HTML `onchange` and `onclick` attributes or `downtime.js` if needed.
