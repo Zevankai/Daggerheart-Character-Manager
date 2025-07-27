@@ -333,29 +333,30 @@ header {
 }
 
 .tracker-btn {
-   background: rgba(255, 255, 255, 0.15);
-   border: 1px solid rgba(255, 255, 255, 0.25);
-   border-radius: 50%; /* Make them round */
-   width: 25px; /* Size of the button */
-   height: 25px; /* Size of the button */
+   background: transparent;
+   border: none;
+   width: 20px; /* Match circle size for alignment */
+   height: 20px; /* Match circle size for alignment */
    display: flex;
    justify-content: center;
    align-items: center;
-   font-size: 1.2rem;
+   font-size: 1.4rem;
    font-weight: bold;
    color: var(--text-color);
    cursor: pointer;
-   transition: background-color 0.2s ease, transform 0.2s ease;
+   transition: color 0.2s ease, transform 0.2s ease;
    flex-shrink: 0; /* Prevent shrinking when content needs space */
+   padding: 0;
+   line-height: 1;
 }
 
 .tracker-btn:hover {
-   background: rgba(255, 255, 255, 0.3);
-   transform: scale(1.1);
+   color: var(--accent-color);
+   transform: scale(1.2);
 }
 
 .tracker-btn:active {
-   transform: scale(0.95);
+   transform: scale(1.1);
 }
 
 /* Base circle style - existing `circle` class is too general */
@@ -401,11 +402,22 @@ header {
    box-shadow: 0 0 8px rgba(255, 215, 0, 0.7); /* Subtle yellow glow */
 }
 
-/* Armor Active/Filled State - Glassy Silver/Gray */
+/* Armor Circle Base Style */
+.armor-circle {
+   width: 20px;
+   height: 20px;
+   border-radius: 50%;
+   background: rgba(128, 128, 128, 0.5); /* Semi-transparent gray for unfilled */
+   border: 1px solid rgba(255, 255, 255, 0.3);
+   cursor: pointer;
+   transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Armor Active/Filled State - Glassy Green */
 .armor-circle.active {
-   background: rgba(3, 221, 58, 0.6); /* Silver with some transparency for glassy effect */
-   border: 1px solid rgba(192, 192, 192, 0.9);
-   box-shadow: 0 0 8px rgba(192, 192, 192, 0.7); /* Subtle glow */
+   background: rgba(3, 221, 58, 0.6); /* Green with some transparency for glassy effect */
+   border: 1px solid rgba(3, 221, 58, 0.8);
+   box-shadow: 0 0 8px rgba(3, 221, 58, 0.7); /* Subtle green glow */
 }
 
 /* Existing circle styles, keep for Armor and Hope but won't apply to HP/Stress now */
@@ -2888,7 +2900,7 @@ body[data-theme="light"] {
     .trackers-wrapper {
         flex-direction: column;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
     }
     
     .trackers {
@@ -2897,9 +2909,9 @@ body[data-theme="light"] {
     }
     
     .tracker-btn {
-        width: 35px;
-        height: 35px;
-        font-size: 1.4rem;
+        width: 20px;
+        height: 20px;
+        font-size: 1.6rem;
     }
     
     /* Hope Tracker Mobile */
@@ -3160,6 +3172,7 @@ body[data-theme="light"] {
     .tracker-btn {
         min-width: 44px;
         min-height: 44px;
+        font-size: 1.8rem;
     }
     
     .damage-btn {
@@ -3192,18 +3205,18 @@ body[data-theme="light"] {
     
     .tracker-btn:hover {
         transform: none;
-        background: rgba(255, 255, 255, 0.15);
+        color: var(--text-color);
     }
-    
+
     /* Add active states for better touch feedback */
     .button:active {
         transform: scale(0.95);
         background: #ffffff40;
     }
-    
+
     .tracker-btn:active {
-        transform: scale(0.9);
-        background: rgba(255, 255, 255, 0.4);
+        transform: scale(1.1);
+        color: var(--accent-color);
     }
     
     nav.tabs button:active {
