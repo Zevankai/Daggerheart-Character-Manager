@@ -1206,9 +1206,8 @@ function isItemEquipped(item, type) {
     
     // Check if item is equipped by comparing IDs
     if (type === 'weapon') {
-        const isPrimary = equipped.primaryWeapon && equipped.primaryWeapon.id === item.id;
-        const isSecondary = equipped.secondaryWeapon && equipped.secondaryWeapon.id === item.id;
-        return isPrimary || isSecondary;
+        return (equipped.primaryWeapon && equipped.primaryWeapon.id === item.id) ||
+               (equipped.secondaryWeapon && equipped.secondaryWeapon.id === item.id);
     } else if (type === 'armor') {
         return equipped.armor && equipped.armor.id === item.id;
     } else if (type === 'clothing') {
@@ -1584,6 +1583,13 @@ function updateEncumbranceWarning() {
 }
 
 function updateEncumbranceDisplay() {
+    // Add a small delay to ensure DOM and state are synchronized
+    setTimeout(() => {
+        doUpdateEncumbranceDisplay();
+    }, 10);
+}
+
+function doUpdateEncumbranceDisplay() {
     // Check if backpack system is enabled
     const backpackEnabled = window.backpackSystemEnabled !== false;
     
@@ -1742,36 +1748,126 @@ function loadEquipmentData() {
             console.log('Parsed saved data:', parsedData);
             equipmentData = { ...equipmentData, ...parsedData };
             console.log('Equipment data after merge:', equipmentData);
+            
+            // Sync equipped items with inventory to ensure object references match
+            syncEquippedItemReferences();
         } catch (error) {
             console.error('Error parsing saved equipment data:', error);
         }
     } else {
         console.log('No saved equipment data found, using defaults');
     }
+}
+
+function syncEquippedItemReferences() {
+    console.log('Syncing equipped item references...');
     
-    // Ensure all required properties exist (for backward compatibility)
-    if (!equipmentData.equipped) {
-        equipmentData.equipped = {};
+    // Create a map of all inventory items by ID for quick lookup
+    const itemMap = new Map();
+    Object.values(equipmentData.inventory).forEach(categoryItems => {
+        categoryItems.forEach(item => {
+            if (item && item.id) {
+                itemMap.set(item.id, item);
+            }
+        });
+    });
+    
+    // Sync equipped items
+    const equipped = equipmentData.equipped;
+    let syncedCount = 0;
+    
+    // Sync weapons
+    if (equipped.primaryWeapon && equipped.primaryWeapon.id) {
+        const inventoryItem = itemMap.get(equipped.primaryWeapon.id);
+        if (inventoryItem) {
+            equipped.primaryWeapon = inventoryItem;
+            syncedCount++;
+        } else {
+            console.warn(`Primary weapon not found in inventory: ${equipped.primaryWeapon.name}`);
+            equipped.primaryWeapon = null;
+        }
     }
     
-    // Reset equipped items to ensure clean state
-    equipmentData.equipped = {
-        primaryWeapon: null,
-        secondaryWeapon: null,
-        armor: null,
-        clothing: null,
-        jewelry: [null, null, null],
-        belt: [null, null, null, null, null]
-    };
+    if (equipped.secondaryWeapon && equipped.secondaryWeapon.id) {
+        const inventoryItem = itemMap.get(equipped.secondaryWeapon.id);
+        if (inventoryItem) {
+            equipped.secondaryWeapon = inventoryItem;
+            syncedCount++;
+        } else {
+            console.warn(`Secondary weapon not found in inventory: ${equipped.secondaryWeapon.name}`);
+            equipped.secondaryWeapon = null;
+        }
+    }
     
-    // Clear any old inventory data to start fresh
-    equipmentData.inventory = {
-        'Gear': [],
-        'Utility': [],
-        'Quest': [],
-        'Crafting': [],
-        'Personal': []
-    };
+    // Sync armor
+    if (equipped.armor && equipped.armor.id) {
+        const inventoryItem = itemMap.get(equipped.armor.id);
+        if (inventoryItem) {
+            equipped.armor = inventoryItem;
+            syncedCount++;
+        } else {
+            console.warn(`Armor not found in inventory: ${equipped.armor.name}`);
+            equipped.armor = null;
+        }
+    }
+    
+    // Sync clothing
+    if (equipped.clothing && equipped.clothing.id) {
+        const inventoryItem = itemMap.get(equipped.clothing.id);
+        if (inventoryItem) {
+            equipped.clothing = inventoryItem;
+            syncedCount++;
+        } else {
+            console.warn(`Clothing not found in inventory: ${equipped.clothing.name}`);
+            equipped.clothing = null;
+        }
+    }
+    
+    // Sync jewelry
+    equipped.jewelry = equipped.jewelry.map((jewelryItem, index) => {
+        if (jewelryItem && jewelryItem.id) {
+            const inventoryItem = itemMap.get(jewelryItem.id);
+            if (inventoryItem) {
+                syncedCount++;
+                return inventoryItem;
+            } else {
+                console.warn(`Jewelry not found in inventory: ${jewelryItem.name}`);
+                return null;
+            }
+        }
+        return null;
+    });
+    
+    // Sync belt items
+    equipped.belt = equipped.belt.map((beltItem, index) => {
+        if (beltItem && beltItem.id) {
+            const inventoryItem = itemMap.get(beltItem.id);
+            if (inventoryItem) {
+                syncedCount++;
+                return inventoryItem;
+            } else {
+                console.warn(`Belt item not found in inventory: ${beltItem.name}`);
+                return null;
+            }
+        }
+        return null;
+    });
+    
+    console.log(`Sync complete: ${syncedCount} equipped items synced from ${itemMap.size} inventory items`);
+}
+
+function initializeEquipmentData() {
+    // Ensure all required properties exist (for backward compatibility)
+    if (!equipmentData.equipped) {
+        equipmentData.equipped = {
+            primaryWeapon: null,
+            secondaryWeapon: null,
+            armor: null,
+            clothing: null,
+            jewelry: [null, null, null],
+            belt: [null, null, null, null, null]
+        };
+    }
     
     // Ensure inventory categories exist
     if (!equipmentData.inventory) {
@@ -1809,7 +1905,8 @@ function initializeEquipment() {
     }
     
     try {
-        // Load equipment data
+        // Initialize and load equipment data
+        initializeEquipmentData();
         loadEquipmentData();
         console.log('Equipment data loaded:', equipmentData);
         
