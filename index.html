@@ -42,7 +42,7 @@
    </div>
 
    <div class="right-info">
-    <span id="toggleTheme" style="cursor: pointer;">Character Code: <strong>YWSAFHB</strong></span><br />
+    <span id="toggleTheme" style="cursor: pointer;">🌙</span><br />
     <a href="https://drive.google.com/file/d/1KPD_jt2jaNn2Okd9dDbQNRVdk5PAk2R2/view?usp=drivesdk" target="_blank">Official Rulebook</a><br/>
    </div>
   </header>
@@ -318,6 +318,25 @@
       </div>
      </div>
      
+     <!-- Character Code Section -->
+     <div class="settings-section">
+      <h3>Character Code</h3>
+      <p>A unique code representing your character's current state. Share this code to let others import your character.</p>
+      <div class="character-code-control">
+       <div class="code-display-group">
+        <label for="characterCodeDisplay">Your Character Code:</label>
+        <div class="code-display">
+         <input type="text" id="characterCodeDisplay" readonly value="YWSAFHB">
+         <button type="button" id="copyCodeBtn" class="copy-btn" title="Copy to clipboard">📋</button>
+        </div>
+       </div>
+       <div class="code-actions">
+        <button type="button" id="generateCodeBtn" class="action-btn">Generate New Code</button>
+        <button type="button" id="importCodeBtn" class="action-btn">Import Character</button>
+       </div>
+      </div>
+     </div>
+     
      <!-- Character Deletion Section -->
      <div class="settings-section danger-section">
       <h3>Character Data</h3>
@@ -354,6 +373,19 @@
      <div class="modal-buttons">
       <button type="button" id="confirmAccountDelete" class="confirm-delete-btn">Confirm Account Delete</button>
       <button type="button" id="cancelAccountDelete" class="cancel-btn">Cancel</button>
+     </div>
+    </div>
+   </div>
+
+   <!-- Character Import Modal -->
+   <div id="characterImportModal" class="modal">
+    <div class="modal-content">
+     <h3>Import Character</h3>
+     <p>Enter a character code to import character data:</p>
+     <input type="text" id="importCodeInput" placeholder="Enter character code (e.g. YWSAFHB)" style="width: 100%; margin: 15px 0; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+     <div class="modal-buttons">
+      <button type="button" id="confirmCharacterImport" class="confirm-btn">Import Character</button>
+      <button type="button" id="cancelCharacterImport" class="cancel-btn">Cancel</button>
      </div>
     </div>
    </div>

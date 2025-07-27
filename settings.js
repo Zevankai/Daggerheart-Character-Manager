@@ -271,6 +271,9 @@ function initializeAccentColorPicker() {
     // Reset the character sheet to default state
     resetCharacterSheet();
     
+    // Generate a new character code for the fresh character
+    generateNewCharacterCode();
+    
     // Show success message
     showNotification('Character data deleted successfully!', 'success');
   }
@@ -449,10 +452,255 @@ function initializeAccentColorPicker() {
     }, 4000);
   }
   
+  // ===== CHARACTER CODE MANAGEMENT =====
+  function initializeCharacterCode() {
+    const characterCodeDisplay = document.getElementById('characterCodeDisplay');
+    const copyCodeBtn = document.getElementById('copyCodeBtn');
+    const generateCodeBtn = document.getElementById('generateCodeBtn');
+    const importCodeBtn = document.getElementById('importCodeBtn');
+    
+    // Load saved character code or generate a new one
+    const savedCode = localStorage.getItem('zevi-character-code');
+    if (savedCode) {
+        characterCodeDisplay.value = savedCode;
+    } else {
+        generateNewCharacterCode();
+    }
+    
+    // Copy code to clipboard
+    copyCodeBtn.addEventListener('click', () => {
+        copyCharacterCode();
+    });
+    
+    // Generate new code
+    generateCodeBtn.addEventListener('click', () => {
+        if (confirm('Generate a new character code? This will create a fresh code based on your current character data.')) {
+            generateNewCharacterCode();
+        }
+    });
+    
+    // Import character
+    importCodeBtn.addEventListener('click', () => {
+        importCharacterFromCode();
+    });
+    
+    // Set up automatic code regeneration on character changes
+    setupCharacterChangeMonitoring();
+  }
+  
+  function setupCharacterChangeMonitoring() {
+    // Auto-regenerate code when character data changes significantly
+    const autoRegenCode = () => {
+        setTimeout(() => {
+            const currentData = gatherCharacterData();
+            const savedDataSnapshot = localStorage.getItem('zevi-character-data-snapshot');
+            
+            if (savedDataSnapshot) {
+                const savedData = JSON.parse(savedDataSnapshot);
+                if (JSON.stringify(currentData) !== JSON.stringify(savedData)) {
+                    generateNewCharacterCode();
+                }
+            }
+        }, 1000); // Delay to avoid excessive regeneration
+    };
+    
+    // Monitor name changes
+    const nameInput = document.querySelector('.name-box input[type="text"]');
+    if (nameInput) {
+        nameInput.addEventListener('blur', autoRegenCode);
+    }
+    
+    // Monitor attribute changes
+    const attributeInputs = document.querySelectorAll('.attribute-value');
+    attributeInputs.forEach(input => {
+        input.addEventListener('blur', autoRegenCode);
+    });
+    
+    // Monitor level changes
+    const charLevel = document.getElementById('charLevel');
+    if (charLevel) {
+        charLevel.addEventListener('blur', autoRegenCode);
+    }
+    
+    // Monitor domain changes
+    const domainBadges = document.querySelectorAll('.domain-badge');
+    domainBadges.forEach(badge => {
+        badge.addEventListener('blur', autoRegenCode);
+    });
+  }
+  
+  function generateNewCharacterCode() {
+    // Generate a character code based on current character data
+    const characterData = gatherCharacterData();
+    const code = generateCodeFromData(characterData);
+    
+    const characterCodeDisplay = document.getElementById('characterCodeDisplay');
+    characterCodeDisplay.value = code;
+    localStorage.setItem('zevi-character-code', code);
+    localStorage.setItem('zevi-character-data-snapshot', JSON.stringify(characterData));
+    
+    showNotification('New character code generated!', 'success');
+  }
+  
+  function gatherCharacterData() {
+    // Gather key character data for code generation
+    const data = {};
+    
+    // Character basic info
+    const nameInput = document.querySelector('.name-box input[type="text"]');
+    if (nameInput) data.name = nameInput.value;
+    
+    const subtitle = document.querySelector('.name-box .subtitle');
+    if (subtitle) data.subtitle = subtitle.textContent;
+    
+    const charLevel = document.getElementById('charLevel');
+    if (charLevel) data.level = charLevel.textContent;
+    
+    // Domain badges
+    const domainBadges = document.querySelectorAll('.domain-badge');
+    data.domains = Array.from(domainBadges).map(badge => badge.textContent);
+    
+    // Attribute values
+    const attributeInputs = document.querySelectorAll('.attribute-value');
+    data.attributes = Array.from(attributeInputs).map(input => input.value || '0');
+    
+    // HP and Stress
+    const hpInput = document.querySelector('input[placeholder="Max HP"]');
+    if (hpInput) data.maxHp = hpInput.value;
+    
+    const stressInput = document.querySelector('input[placeholder="Max Stress"]');
+    if (stressInput) data.maxStress = stressInput.value;
+    
+    // Evasion
+    const evasionInput = document.getElementById('evasionValue');
+    if (evasionInput) data.evasion = evasionInput.value;
+    
+    return data;
+  }
+  
+  function generateCodeFromData(data) {
+    // Create a deterministic hash from character data
+    const dataString = JSON.stringify(data);
+    let hash = 0;
+    
+    for (let i = 0; i < dataString.length; i++) {
+        const char = dataString.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32-bit integer
+    }
+    
+    // Convert to base36 and take first 7 characters, make uppercase
+    const code = Math.abs(hash).toString(36).toUpperCase().substring(0, 7);
+    
+    // Pad with random characters if too short
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let finalCode = code;
+    while (finalCode.length < 7) {
+        finalCode += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    
+    return finalCode;
+  }
+  
+  function copyCharacterCode() {
+    const characterCodeDisplay = document.getElementById('characterCodeDisplay');
+    
+    if (navigator.clipboard && window.isSecureContext) {
+        // Use modern clipboard API
+        navigator.clipboard.writeText(characterCodeDisplay.value).then(() => {
+            showNotification('Character code copied to clipboard!', 'success');
+        }).catch(() => {
+            fallbackCopyToClipboard(characterCodeDisplay.value);
+        });
+    } else {
+        // Fallback for older browsers
+        fallbackCopyToClipboard(characterCodeDisplay.value);
+    }
+  }
+  
+  function fallbackCopyToClipboard(text) {
+    const characterCodeDisplay = document.getElementById('characterCodeDisplay');
+    characterCodeDisplay.select();
+    characterCodeDisplay.setSelectionRange(0, 99999); // For mobile devices
+    
+    try {
+        document.execCommand('copy');
+        showNotification('Character code copied to clipboard!', 'success');
+    } catch (err) {
+        showNotification('Failed to copy code. Please select and copy manually.', 'error');
+    }
+  }
+  
+  function importCharacterFromCode() {
+    const modal = document.getElementById('characterImportModal');
+    const confirmBtn = document.getElementById('confirmCharacterImport');
+    const cancelBtn = document.getElementById('cancelCharacterImport');
+    const importInput = document.getElementById('importCodeInput');
+    
+    // Show modal
+    modal.style.display = 'flex';
+    importInput.value = '';
+    importInput.focus();
+    
+    // Handle confirm
+    const handleConfirm = () => {
+        const code = importInput.value.trim().toUpperCase();
+        if (!code) {
+            showNotification('Please enter a character code.', 'error');
+            return;
+        }
+        
+        // For now, just show a message that this feature is coming soon
+        // In a full implementation, this would decode the character data and apply it
+        showNotification('Character import feature coming soon! Code: ' + code, 'info');
+        
+        modal.style.display = 'none';
+        cleanup();
+    };
+    
+    // Handle cancel
+    const handleCancel = () => {
+        modal.style.display = 'none';
+        cleanup();
+    };
+    
+    // Handle click outside modal
+    const handleOutsideClick = (event) => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+            cleanup();
+        }
+    };
+    
+    // Handle Enter key
+    const handleKeyPress = (event) => {
+        if (event.key === 'Enter') {
+            handleConfirm();
+        } else if (event.key === 'Escape') {
+            handleCancel();
+        }
+    };
+    
+    // Cleanup function
+    const cleanup = () => {
+        confirmBtn.removeEventListener('click', handleConfirm);
+        cancelBtn.removeEventListener('click', handleCancel);
+        modal.removeEventListener('click', handleOutsideClick);
+        importInput.removeEventListener('keypress', handleKeyPress);
+    };
+    
+    // Add event listeners
+    confirmBtn.addEventListener('click', handleConfirm);
+    cancelBtn.addEventListener('click', handleCancel);
+    modal.addEventListener('click', handleOutsideClick);
+    importInput.addEventListener('keypress', handleKeyPress);
+  }
+
   // ===== INITIALIZATION =====
   function initializeSettings() {
     initializeAccentColorPicker();
     initializeGlassColorPicker();
+    initializeCharacterCode();
     initializeCharacterDeletion();
     initializeAccountDeletion();
     
@@ -510,6 +758,9 @@ function initializeAccentColorPicker() {
   window.changeAccentColor = changeAccentColor;
   window.updateAccentColorTransparencies = updateAccentColorTransparencies;
   window.changeGlassBackgroundColor = changeGlassBackgroundColor;
+  window.generateNewCharacterCode = generateNewCharacterCode;
+  window.copyCharacterCode = copyCharacterCode;
+  window.importCharacterFromCode = importCharacterFromCode;
   window.deleteCharacterData = deleteCharacterData;
   window.deleteAccountData = deleteAccountData;
   window.initializeSettings = initializeSettings;
