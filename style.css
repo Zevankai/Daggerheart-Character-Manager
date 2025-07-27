@@ -1542,6 +1542,7 @@ body[data-theme="light"] {
 .background-preview:empty::before {
     content: "No background image selected";
     text-align: center;
+    width: 100%;
 }
 
 /* Modal Styles */

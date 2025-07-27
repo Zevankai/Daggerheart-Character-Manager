@@ -390,7 +390,10 @@ function resetToDefaults() {
   
   // Reset background to default
   const defaultBackground = 'url(\'https://images.unsplash.com/photo-1506744038136-46273834b3fb\')';
-  document.body.style.backgroundImage = defaultBackground + ' no-repeat center center fixed';
+  document.body.style.backgroundImage = defaultBackground;
+  document.body.style.backgroundRepeat = 'no-repeat';
+  document.body.style.backgroundPosition = 'center center';
+  document.body.style.backgroundAttachment = 'fixed';
   document.body.style.backgroundSize = 'cover';
   
   // Reload the page to ensure everything is reset
