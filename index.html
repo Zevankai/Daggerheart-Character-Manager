@@ -305,6 +305,19 @@
       </div>
      </div>
      
+     <!-- Background Image Section -->
+     <div class="settings-section">
+      <h3>Background Image</h3>
+      <p>Upload a custom background image for your character sheet.</p>
+      <div class="file-upload-control">
+       <label for="bgUpload" class="file-upload-label">
+        <span class="upload-icon">🏞️</span>
+        <span class="upload-text">Choose Background Image</span>
+       </label>
+       <input type="file" id="bgUpload" accept="image/*" onchange="uploadBackground(event)" class="file-upload-input">
+      </div>
+     </div>
+     
      <!-- Character Deletion Section -->
      <div class="settings-section danger-section">
       <h3>Character Data</h3>
@@ -348,10 +361,7 @@
   </div>
  </div>
 
- <div class="background-icon">
-  <label for="bgUpload">🏞️</label>
-  <input type="file" id="bgUpload" accept="image/*" onchange="uploadBackground(event)">
- </div>
+
 
  <div id="journal-entry-modal" class="modal-overlay">
     <div class="modal">

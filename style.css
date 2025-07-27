@@ -466,6 +466,7 @@
     width: 30px;
  }
  
+ /* Removed - background upload moved to settings tab
  .background-icon {
     position: absolute;
     bottom: 10px;
@@ -483,6 +484,7 @@
  .background-icon input {
     display: none;
  }
+ */
  
  .divider {
     border-top: 2px solid rgba(255, 255, 255, 0.2);
@@ -1489,14 +1491,54 @@
      font-size: 1rem;
  }
  
- .danger-btn:hover {
+  .danger-btn:hover {
      background: rgba(255, 100, 100, 0.3);
      border-color: #ff6464;
      color: #fff;
      transform: translateY(-2px);
      box-shadow: 0 4px 12px rgba(255, 100, 100, 0.3);
  }
- 
+
+ /* File Upload Styles */
+ .file-upload-control {
+     margin-bottom: 20px;
+ }
+
+ .file-upload-label {
+     display: inline-flex;
+     align-items: center;
+     gap: 10px;
+     background: rgba(255, 255, 255, 0.1);
+     border: 2px solid rgba(255, 255, 255, 0.2);
+     color: var(--text-color);
+     padding: 12px 20px;
+     border-radius: 8px;
+     cursor: pointer;
+     transition: all 0.3s ease;
+     font-weight: 600;
+     font-size: 1rem;
+ }
+
+ .file-upload-label:hover {
+     background: rgba(255, 255, 255, 0.15);
+     border-color: var(--accent-color);
+     color: var(--accent-color);
+     transform: translateY(-2px);
+     box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+ }
+
+ .file-upload-input {
+     display: none;
+ }
+
+ .upload-icon {
+     font-size: 1.2em;
+ }
+
+ .upload-text {
+     font-size: 0.95rem;
+ }
+
  /* Modal Styles */
  .modal {
      display: none;
