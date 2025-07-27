@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8" />
+ <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+ <title>Recovery Page</title>
+ <style>
+   body { padding: 20px; font-family: Arial, sans-serif; background: #f0f0f0; }
+   .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+   button { padding: 10px 20px; margin: 10px; font-size: 16px; cursor: pointer; }
+   .danger { background: #ff4444; color: white; border: none; border-radius: 4px; }
+   .safe { background: #44aa44; color: white; border: none; border-radius: 4px; }
+   pre { background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; }
+ </style>
+</head>
+<body>
+ <div class="container">
+  <h1>🛠️ Character Sheet Recovery</h1>
+  
+  <p>If you're seeing a blank grey screen, this recovery page can help diagnose and fix the issue.</p>
+  
+  <h2>Diagnostic Information</h2>
+  <div id="diagnostic"></div>
+  
+  <h2>Recovery Options</h2>
+  
+  <button class="danger" onclick="clearAllData()">🗑️ Clear All Data (DANGER)</button>
+  <p>This will delete ALL saved character data, settings, and custom backgrounds.</p>
+  
+  <button class="danger" onclick="clearBackgroundOnly()">🖼️ Clear Background Image Only</button>
+  <p>This will only remove the custom background image.</p>
+  
+  <button class="safe" onclick="goToMainSite()">↩️ Try Main Site Again</button>
+  <p>Attempt to load the main character sheet.</p>
+  
+  <h2>Manual Fixes</h2>
+  <p>You can also manually open your browser's Developer Console (F12) and run:</p>
+  <pre>localStorage.clear()</pre>
+  <p>Then refresh the main page.</p>
+ </div>
+
+ <script>
+   // Diagnostic function
+   function runDiagnostic() {
+     const diagnostic = document.getElementById('diagnostic');
+     let results = '<h3>Found Issues:</h3><ul>';
+     
+     // Check localStorage items
+     const items = [];
+     for (let i = 0; i < localStorage.length; i++) {
+       const key = localStorage.key(i);
+       if (key && key.startsWith('zevi-')) {
+         const value = localStorage.getItem(key);
+         items.push(`<li><strong>${key}</strong>: ${value.length} characters</li>`);
+         
+         // Check for problematic background image
+         if (key === 'zevi-background-image' && value && !value.startsWith('data:image/')) {
+           results += `<li style="color: red;">❌ Invalid background image data detected</li>`;
+         }
+         
+         // Check for very large data that might cause issues
+         if (value.length > 1000000) { // 1MB
+           results += `<li style="color: orange;">⚠️ Large data in ${key} (${Math.round(value.length/1024)}KB)</li>`;
+         }
+       }
+     }
+     
+     if (items.length === 0) {
+       results += '<li style="color: green;">✅ No stored data found</li>';
+     } else {
+       results += '<li style="color: blue;">ℹ️ Stored data items:</li><ul>' + items.join('') + '</ul>';
+     }
+     
+     results += '</ul>';
+     diagnostic.innerHTML = results;
+   }
+   
+   function clearAllData() {
+     if (confirm('This will delete ALL your character data, settings, and customizations. Are you sure?')) {
+       localStorage.clear();
+       alert('All data cleared. You can now try the main site.');
+     }
+   }
+   
+   function clearBackgroundOnly() {
+     localStorage.removeItem('zevi-background-image');
+     alert('Background image cleared. Try the main site now.');
+   }
+   
+   function goToMainSite() {
+     window.location.href = '/';
+   }
+   
+   // Run diagnostic on load
+   runDiagnostic();
+ </script>
+</body>
+</html>

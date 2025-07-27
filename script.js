@@ -58,16 +58,29 @@ function resetBackground() {
 }
 
 function loadSavedBackground() {
-    const savedBackground = localStorage.getItem('zevi-background-image');
-    if (savedBackground) {
-        document.body.style.backgroundImage = `url('${savedBackground}')`;
-        
-        // Update preview
-        const preview = document.getElementById('backgroundPreview');
-        if (preview) {
-            preview.style.backgroundImage = `url('${savedBackground}')`;
-            preview.textContent = '';
+    try {
+        const savedBackground = localStorage.getItem('zevi-background-image');
+        if (savedBackground && savedBackground.length > 0) {
+            // Validate that it's a proper data URL
+            if (savedBackground.startsWith('data:image/')) {
+                document.body.style.backgroundImage = `url('${savedBackground}')`;
+                
+                // Update preview
+                const preview = document.getElementById('backgroundPreview');
+                if (preview) {
+                    preview.style.backgroundImage = `url('${savedBackground}')`;
+                    preview.textContent = '';
+                }
+            } else {
+                // Invalid background image, remove it
+                localStorage.removeItem('zevi-background-image');
+                console.warn('Invalid background image data removed from localStorage');
+            }
         }
+    } catch (error) {
+        console.error('Error loading saved background:', error);
+        // Clear potentially corrupted data
+        localStorage.removeItem('zevi-background-image');
     }
 }
 
