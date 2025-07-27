@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZEVI Character Sheet</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="landing.css">
+</head>
+<body class="landing-body">
+    <div class="landing-container">
+        <div class="landing-header">
+            <h1 class="landing-title">ZEVI Character Sheet</h1>
+            <p class="landing-subtitle">Manage your tabletop RPG characters</p>
+        </div>
+        
+        <div class="landing-content">
+            <div class="landing-options">
+                <div class="option-card" id="loadCharacterCard">
+                    <div class="option-icon">👥</div>
+                    <h3>Load Character</h3>
+                    <p>Continue with an existing character</p>
+                    <button class="option-btn primary-btn" onclick="showCharacterList()">Load Character</button>
+                </div>
+                
+                <div class="option-card" id="createCharacterCard">
+                    <div class="option-icon">✨</div>
+                    <h3>Create New Character</h3>
+                    <p>Start fresh with a blank character sheet</p>
+                    <button class="option-btn secondary-btn" onclick="createNewCharacter()">Create New</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Character Selection Modal -->
+    <div id="characterSelectionModal" class="modal landing-modal">
+        <div class="modal-content landing-modal-content">
+            <div class="modal-header">
+                <h3>Select Character</h3>
+                <button type="button" class="modal-close-btn" onclick="closeCharacterModal()" title="Close">×</button>
+            </div>
+            
+            <div class="character-list" id="characterList">
+                <!-- Character cards will be populated here -->
+            </div>
+            
+            <div class="modal-buttons">
+                <button type="button" class="cancel-btn" onclick="closeCharacterModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteConfirmModal" class="modal landing-modal">
+        <div class="modal-content landing-modal-content">
+            <div class="modal-header">
+                <h3>Delete Character</h3>
+            </div>
+            
+            <p>Are you sure you want to delete <strong id="deleteCharacterName"></strong>?</p>
+            <p class="warning-text">This action cannot be undone.</p>
+            
+            <div class="modal-buttons">
+                <button type="button" class="confirm-btn danger-btn" id="confirmDeleteBtn">Delete</button>
+                <button type="button" class="cancel-btn" onclick="closeDeleteModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="characterManager.js"></script>
+</body>
+</html>

@@ -256,6 +256,13 @@ function initializeAccentColorPicker() {
   }
   
   function deleteCharacterData() {
+    // Check if using character management system
+    const currentCharacterId = localStorage.getItem('zevi-current-character-id');
+    if (currentCharacterId && window.characterManager) {
+        showNotification('Use the Character Selection (👥) button to manage characters properly.', 'warning');
+        return;
+    }
+    
     // Get all localStorage keys that start with 'zevi-' but exclude settings
     const keysToDelete = [];
     for (let i = 0; i < localStorage.length; i++) {
