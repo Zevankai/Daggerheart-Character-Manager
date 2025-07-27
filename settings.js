@@ -256,11 +256,15 @@ function hideCharacterDeleteModal() {
 }
 
 function deleteCharacterData() {
-  // Get all localStorage keys that start with 'zevi-' but exclude settings
+  // Get all localStorage keys that start with 'zevi-' but exclude settings and UI preferences
   const keysToDelete = [];
   for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && key.startsWith('zevi-') && !key.includes('custom-accent') && !key.includes('glass-') && key !== 'zevi-theme') {
+      if (key && key.startsWith('zevi-') && 
+          !key.includes('custom-accent') && 
+          !key.includes('glass-') && 
+          key !== 'zevi-theme' && 
+          key !== 'zevi-background-image') {
           keysToDelete.push(key);
       }
   }
@@ -383,6 +387,11 @@ function resetToDefaults() {
   document.querySelectorAll('[data-color-target]').forEach(element => {
       element.style.backgroundColor = '';
   });
+  
+  // Reset background to default
+  const defaultBackground = 'url(\'https://images.unsplash.com/photo-1506744038136-46273834b3fb\')';
+  document.body.style.backgroundImage = defaultBackground + ' no-repeat center center fixed';
+  document.body.style.backgroundSize = 'cover';
   
   // Reload the page to ensure everything is reset
   setTimeout(() => {

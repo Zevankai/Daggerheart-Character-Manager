@@ -10,11 +10,62 @@ function uploadCharacterImage(event) {
 }
 
 function uploadBackground(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
     const reader = new FileReader();
     reader.onload = function(){
-      document.body.style.backgroundImage = `url('${reader.result}')`;
+        const backgroundUrl = reader.result;
+        document.body.style.backgroundImage = `url('${backgroundUrl}')`;
+        
+        // Update preview
+        const preview = document.getElementById('backgroundPreview');
+        if (preview) {
+            preview.style.backgroundImage = `url('${backgroundUrl}')`;
+            preview.textContent = '';
+        }
+        
+        // Save to localStorage
+        localStorage.setItem('zevi-background-image', backgroundUrl);
     };
-    reader.readAsDataURL(event.target.files[0]);
+    reader.readAsDataURL(file);
+}
+
+function resetBackground() {
+    // Reset to default background
+    const defaultBackground = 'url(\'https://images.unsplash.com/photo-1506744038136-46273834b3fb\')';
+    document.body.style.backgroundImage = defaultBackground + ' no-repeat center center fixed';
+    document.body.style.backgroundSize = 'cover';
+    
+    // Clear preview
+    const preview = document.getElementById('backgroundPreview');
+    if (preview) {
+        preview.style.backgroundImage = '';
+        preview.textContent = '';
+    }
+    
+    // Clear file input
+    const bgUpload = document.getElementById('bgUpload');
+    if (bgUpload) {
+        bgUpload.value = '';
+    }
+    
+    // Remove from localStorage
+    localStorage.removeItem('zevi-background-image');
+}
+
+function loadSavedBackground() {
+    const savedBackground = localStorage.getItem('zevi-background-image');
+    if (savedBackground) {
+        document.body.style.backgroundImage = `url('${savedBackground}')`;
+        
+        // Update preview
+        const preview = document.getElementById('backgroundPreview');
+        if (preview) {
+            preview.style.backgroundImage = `url('${savedBackground}')`;
+            preview.textContent = '';
+        }
+    }
 }
 
 function toggleTextColor() {
@@ -392,9 +443,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Background reset button functionality
+    const resetBackgroundBtn = document.getElementById('resetBackground');
+    if (resetBackgroundBtn) {
+        resetBackgroundBtn.addEventListener('click', resetBackground);
+    }
+
+    // Load saved background on page load
+    loadSavedBackground();
+
 });
 
 // Expose these functions for HTML `onchange` and `onclick` attributes or `downtime.js` if needed.
 window.uploadCharacterImage = uploadCharacterImage;
 window.uploadBackground = uploadBackground;
+window.resetBackground = resetBackground;
 window.toggleTextColor = toggleTextColor;
