@@ -50,16 +50,16 @@ let equipmentData = {
 const itemCategories = {
     'Gear': ['weapon', 'armor', 'potion', 'flask', 'ammunition'],
     'Utility': ['adventure', 'tool', 'food', 'map', 'camp'],
-    'Quest': ['npc-item', 'evidence', 'literature', 'magical'],
+    'Quest': ['npc-item', 'evidence', 'magical'],
     'Crafting': ['materials', 'components'],
-    'Personal': ['personal'] // Items can be manually relocated here
+    'Personal': ['personal', 'literature', 'clothing', 'jewelry'] // Items can be manually relocated here
 };
 
 const itemTypes = [
-    'weapon', 'armor', 'potion', 'flask', 'ammunition',
+    'weapon', 'armor', 'clothing', 'jewelry', 'potion', 'flask', 'ammunition',
     'adventure', 'tool', 'food', 'map', 'camp',
-    'npc-item', 'evidence', 'literature', 'magical',
-    'materials', 'components', 'personal'
+    'npc-item', 'evidence', 'magical',
+    'materials', 'components', 'personal', 'literature', 'custom'
 ];
 
 const additionalTags = [
@@ -69,7 +69,8 @@ const additionalTags = [
 const encumbranceWeights = {
     'weapon': 3,
     'armor': 10,
-    'clothing': 3,
+    'clothing': 2,
+    'jewelry': 1,
     'camp': 2,
     'potion': 1,
     'flask': 1,
@@ -84,7 +85,8 @@ const encumbranceWeights = {
     'magical': 1,
     'materials': 1,
     'components': 1,
-    'personal': 1
+    'personal': 1,
+    'custom': 1
 };
 
 const abilities = [
@@ -124,12 +126,14 @@ const bagTypes = {
 function calculateEncumbrance() {
     let totalWeight = 0;
     
-    // Calculate weight of UNEQUIPPED items only
+    // Sum up the current weight of all items
+    // Equipped items have currentWeight set to 0, unequipped items have their original weight
     Object.values(equipmentData.inventory).forEach(categoryItems => {
         categoryItems.forEach(item => {
-            if (!isItemEquipped(item, item.type)) {
-                totalWeight += encumbranceWeights[item.type] || 1;
-            }
+            // Use currentWeight if available, otherwise fall back to original system for old items
+            const weight = item.currentWeight !== undefined ? item.currentWeight : 
+                          (!isItemEquipped(item, item.type) ? (encumbranceWeights[item.type] || 1) : 0);
+            totalWeight += weight;
         });
     });
     
@@ -201,9 +205,13 @@ function renderEquipmentOverview() {
         return;
     }
     
+    // Check if backpack system is enabled
+    const backpackEnabled = window.backpackSystemEnabled !== false; // Default to true if not set
+    
     const encumbrance = calculateEncumbrance();
     const isOverEncumbered = isEncumbered();
     console.log('Encumbrance calculated:', encumbrance, 'Over encumbered:', isOverEncumbered);
+    console.log('Backpack system enabled:', backpackEnabled);
     
     try {
         const overviewContent = renderOverviewContent();
@@ -213,26 +221,27 @@ function renderEquipmentOverview() {
             <div class="equipment-container">
                 <div class="equipment-header">
                     <h2>Equipment Overview</h2>
-                    ${isOverEncumbered ? '<div class="encumbrance-warning">⚠️ ENCUMBERED - Carrying too much weight!</div>' : ''}
-                                    <div class="encumbrance-display">
-                    <span class="encumbrance-text">Encumbrance: ${encumbrance}/${getMaxCapacity()} units</span>
-                    <div class="encumbrance-bar">
-                        <div class="encumbrance-fill" style="width: ${Math.min((encumbrance / getMaxCapacity()) * 100, 100)}%"></div>
+                    ${backpackEnabled && isOverEncumbered ? '<div class="encumbrance-warning">⚠️ ENCUMBERED - Carrying too much weight!</div>' : ''}
+                    ${backpackEnabled ? `
+                    <div class="encumbrance-display">
+                        <span class="encumbrance-text">Encumbrance: ${encumbrance}/${getMaxCapacity()} units</span>
+                        <div class="encumbrance-bar">
+                            <div class="encumbrance-fill" style="width: ${Math.min((encumbrance / getMaxCapacity()) * 100, 100)}%"></div>
+                        </div>
                     </div>
-                </div>
-                <div class="bag-selector">
-                    <label for="bag-select">Bag Type:</label>
-                    <select id="bag-select" onchange="changeBagType(this.value)">
-                        ${Object.keys(bagTypes).map(bagName => 
-                            `<option value="${bagName}" ${equipmentData.selectedBag === bagName ? 'selected' : ''}>${bagName}</option>`
-                        ).join('')}
-                    </select>
-                    <div class="bag-info">
-                        <span class="bag-capacity">Capacity: ${getMaxCapacity()} units</span>
-                        <span class="bag-consumables">Belt Slots: ${bagTypes[equipmentData.selectedBag].consumableSlots}</span>
-                        ${bagTypes[equipmentData.selectedBag].bonus ? `<span class="bag-bonus">${bagTypes[equipmentData.selectedBag].bonus}</span>` : ''}
-                    </div>
-                </div>
+                    <div class="bag-selector">
+                        <label for="bag-select">Bag Type:</label>
+                        <select id="bag-select" onchange="changeBagType(this.value)">
+                            ${Object.keys(bagTypes).map(bagName => 
+                                `<option value="${bagName}" ${equipmentData.selectedBag === bagName ? 'selected' : ''}>${bagName}</option>`
+                            ).join('')}
+                        </select>
+                        <div class="bag-info">
+                            <span class="bag-capacity">Capacity: ${getMaxCapacity()} units</span>
+                            <span class="bag-consumables">Belt Slots: ${bagTypes[equipmentData.selectedBag].consumableSlots}</span>
+                            ${bagTypes[equipmentData.selectedBag].bonus ? `<span class="bag-bonus">${bagTypes[equipmentData.selectedBag].bonus}</span>` : ''}
+                        </div>
+                    </div>` : ''}
                     <div class="equipment-nav">
                         <button class="equipment-nav-btn active" data-section="overview">Overview</button>
                         <button class="equipment-nav-btn" data-section="inventory">Inventory</button>
@@ -275,6 +284,9 @@ function renderOverviewContent() {
         return '<div><p>Equipment data not loaded properly</p></div>';
     }
     
+    // Check if backpack system is enabled
+    const backpackEnabled = window.backpackSystemEnabled !== false;
+    
     const equipped = equipmentData.equipped;
     const gold = equipmentData.gold;
     
@@ -294,7 +306,7 @@ function renderOverviewContent() {
                                 <div class="slot-label">Primary Weapon</div>
                                 <div class="slot-content">
                                     ${equipped.primaryWeapon ? 
-                                        `<div class="equipped-item-name">${equipped.primaryWeapon.name}</div>
+                                        `${generateItemDetailsHTML(equipped.primaryWeapon)}
                                          <button class="unequip-btn" onclick="unequipSpecificItem('primaryWeapon')">×</button>` :
                                         '<div class="empty-slot">Drop weapon here</div>'
                                     }
@@ -304,7 +316,7 @@ function renderOverviewContent() {
                                 <div class="slot-label">Secondary Weapon</div>
                                 <div class="slot-content">
                                     ${equipped.secondaryWeapon ? 
-                                        `<div class="equipped-item-name">${equipped.secondaryWeapon.name}</div>
+                                        `${generateItemDetailsHTML(equipped.secondaryWeapon)}
                                          <button class="unequip-btn" onclick="unequipSpecificItem('secondaryWeapon')">×</button>` :
                                         '<div class="empty-slot">Drop weapon here</div>'
                                     }
@@ -314,7 +326,7 @@ function renderOverviewContent() {
                                 <div class="slot-label">Armor</div>
                                 <div class="slot-content">
                                     ${equipped.armor ? 
-                                        `<div class="equipped-item-name">${equipped.armor.name}</div>
+                                        `${generateItemDetailsHTML(equipped.armor)}
                                          <button class="unequip-btn" onclick="unequipSpecificItem('armor')">×</button>` :
                                         '<div class="empty-slot">Drop armor here</div>'
                                     }
@@ -323,6 +335,7 @@ function renderOverviewContent() {
                         </div>
                     </div>
 
+                    ${backpackEnabled ? `
                     <!-- Attire -->
                     <div class="equipment-category">
                         <h4>👕 Attire</h4>
@@ -331,7 +344,7 @@ function renderOverviewContent() {
                                 <div class="slot-label">Clothing</div>
                                 <div class="slot-content">
                                     ${equipped.clothing ? 
-                                        `<div class="equipped-item-name">${equipped.clothing.name}</div>
+                                        `${generateItemDetailsHTML(equipped.clothing)}
                                          <button class="unequip-btn" onclick="unequipSpecificItem('clothing')">×</button>` :
                                         '<div class="empty-slot">Drop clothing here</div>'
                                     }
@@ -344,7 +357,7 @@ function renderOverviewContent() {
                                         <div class="equipment-slot jewelry-slot ${item ? 'filled' : 'empty'}" data-slot="jewelry" data-index="${i}">
                                             <div class="slot-content">
                                                 ${item ? 
-                                                    `<div class="equipped-item-name">${item.name}</div>
+                                                    `${generateItemDetailsHTML(item)}
                                                      <button class="unequip-btn" onclick="unequipJewelry(${i})">×</button>` :
                                                     '<div class="empty-slot">Empty</div>'
                                                 }
@@ -366,8 +379,7 @@ function renderOverviewContent() {
                                     <div class="equipment-slot belt-slot ${item ? 'filled' : 'empty'}" data-slot="belt" data-index="${i}">
                                         <div class="slot-content">
                                             ${item ? 
-                                                `<div class="equipped-item-name">${item.name}</div>
-                                                 <div class="item-type">${item.type}</div>
+                                                `${generateItemDetailsHTML(item)}
                                                  <button class="unequip-btn" onclick="unequipBeltItem(${i})">×</button>` :
                                                 '<div class="empty-slot">Empty</div>'
                                             }
@@ -376,7 +388,7 @@ function renderOverviewContent() {
                                 `).join('')}
                             </div>
                         </div>
-                    </div>
+                    </div>` : ''}
                 </div>
             </div>
             
@@ -446,7 +458,11 @@ function renderInventoryCategories() {
                 <h4>${category} (${filteredItems.length})</h4>
                 <div class="items-grid compact">
                     ${filteredItems.length > 0 ? 
-                        filteredItems.map((item, index) => renderCompactItemCard(item, category, index)).join('') :
+                        filteredItems.map((item) => {
+                            // Find the actual inventory index for this item
+                            const actualIndex = items.findIndex(inventoryItem => inventoryItem.id === item.id);
+                            return renderCompactItemCard(item, category, actualIndex);
+                        }).join('') :
                         '<div class="no-items">No items in this category</div>'
                     }
                 </div>
@@ -457,7 +473,10 @@ function renderInventoryCategories() {
 
 function renderCompactItemCard(item, category, index) {
     const isEquipped = isItemEquipped(item, item.type);
-    const weight = encumbranceWeights[item.type] || 1;
+    // Use currentWeight if available, otherwise fall back to original system
+    const weight = item.currentWeight !== undefined ? item.currentWeight : (encumbranceWeights[item.type] || 1);
+    
+
     
     return `
         <div class="item-card compact ${isEquipped ? 'equipped' : ''}" data-item-id="${item.id}">
@@ -823,65 +842,118 @@ function switchEquipmentSection(section) {
 
 // ===== ITEM MANAGEMENT =====
 function showAddItemModal(defaultType = 'weapon') {
+    // Check if an add item modal is already open
+    const existingModal = document.querySelector('.modal.add-item-modal');
+    if (existingModal) {
+        return; // Don't create another modal
+    }
+    
     const modal = document.createElement('div');
-    modal.className = 'modal';
+    modal.className = 'modal add-item-modal';
     modal.innerHTML = `
-        <div class="modal-content">
-            <h3>Add New Item</h3>
-            <form id="add-item-form">
-                <div class="form-group">
-                    <label for="item-type">Item Type:</label>
-                    <select id="item-type" required>
-                        ${itemTypes.map(type => 
-                            `<option value="${type}" ${type === defaultType ? 'selected' : ''}>${type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ')}</option>`
-                        ).join('')}
-                    </select>
+        <div class="modal-content glassmorphic">
+            <div class="modal-header">
+                <h3>✨ Add New Item</h3>
+                <button type="button" class="modal-close-btn" onclick="closeModal(this)" title="Close">×</button>
+            </div>
+            
+            <form id="add-item-form" class="add-item-form">
+                <div class="form-row">
+                                         <div class="form-group">
+                         <label for="item-type">
+                             <span class="label-icon">🏷️</span>
+                             Item Type
+                         </label>
+                         <select id="item-type" required onchange="handleItemTypeChange()">
+                             ${itemTypes.map(type => 
+                                 `<option value="${type}" ${type === defaultType ? 'selected' : ''}>${type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ')}</option>`
+                             ).join('')}
+                         </select>
+                         <div id="custom-type-container" style="display: none; margin-top: 10px;">
+                             <label for="custom-item-type">
+                                 <span class="label-icon">✏️</span>
+                                 Custom Type Name
+                             </label>
+                             <input type="text" id="custom-item-type" placeholder="e.g., Scroll, Trinket, Gadget">
+                             <div class="custom-type-info">
+                                 <small>Custom items will be equipped in the Belt & Consumables section</small>
+                             </div>
+                         </div>
+                     </div>
+                    
+                    <div class="form-group">
+                        <label for="item-name">
+                            <span class="label-icon">📝</span>
+                            Name <span class="required">*</span>
+                        </label>
+                        <input type="text" id="item-name" required placeholder="Enter item name">
+                    </div>
                 </div>
                 
                 <div class="form-group">
-                    <label for="item-name">Name:</label>
-                    <input type="text" id="item-name" required>
+                    <label for="item-description">
+                        <span class="label-icon">📋</span>
+                        Description
+                    </label>
+                    <textarea id="item-description" rows="3" placeholder="Describe the item's appearance and basic properties..."></textarea>
                 </div>
                 
                 <div class="form-group">
-                    <label for="item-description">Description (optional):</label>
-                    <textarea id="item-description" rows="3"></textarea>
+                    <label for="item-features">
+                        <span class="label-icon">⚡</span>
+                        Features & Abilities
+                    </label>
+                    <textarea id="item-features" rows="2" placeholder="Special abilities, magical properties, or unique features..."></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="item-dice">
+                            <span class="label-icon">🎲</span>
+                            Dice Roll
+                        </label>
+                        <input type="text" id="item-dice" placeholder="e.g., 1d6, 2d8+3">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="item-ability">
+                            <span class="label-icon">💪</span>
+                            Associated Ability
+                        </label>
+                        <select id="item-ability">
+                            <option value="">None</option>
+                            ${abilities.map(ability => 
+                                `<option value="${ability}">${ability}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
                 </div>
                 
                 <div class="form-group">
-                    <label for="item-features">Features (optional):</label>
-                    <textarea id="item-features" rows="2"></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="item-dice">Dice Roll (optional):</label>
-                    <input type="text" id="item-dice" placeholder="e.g., 1d6, 2d8+3">
-                </div>
-                
-                <div class="form-group">
-                    <label for="item-ability">Associated Ability (optional):</label>
-                    <select id="item-ability">
-                        <option value="">None</option>
-                        ${abilities.map(ability => 
-                            `<option value="${ability}">${ability}</option>`
-                        ).join('')}
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="item-tags">Tags (optional):</label>
-                    <div class="tags-selection">
+                    <label for="item-tags">
+                        <span class="label-icon">🏆</span>
+                        Tags
+                    </label>
+                    <div class="tags-selection enhanced">
                         ${additionalTags.map(tag => `
-                            <label class="tag-checkbox">
-                                <input type="checkbox" value="${tag}"> ${tag}
+                            <label class="tag-checkbox enhanced">
+                                <input type="checkbox" value="${tag}">
+                                <span class="checkmark"></span>
+                                <span class="tag-text">${tag}</span>
                             </label>
                         `).join('')}
                     </div>
                 </div>
                 
-                <div class="modal-buttons">
-                    <button type="submit" class="confirm-btn">Add Item</button>
-                    <button type="button" class="cancel-btn" onclick="closeModal(this)">Cancel</button>
+                <div class="modal-buttons enhanced">
+                    <button type="submit" class="confirm-btn add-item-btn">
+                        <span class="btn-icon">✅</span>
+                        Add Item
+                    </button>
+                    <button type="button" class="cancel-btn" onclick="closeModal(this)">
+                        <span class="btn-icon">❌</span>
+                        Cancel
+                    </button>
                 </div>
             </form>
         </div>
@@ -890,54 +962,264 @@ function showAddItemModal(defaultType = 'weapon') {
     document.body.appendChild(modal);
     modal.style.display = 'flex';
     
+    // Add smooth entrance animation
+    setTimeout(() => {
+        modal.classList.add('show');
+    }, 10);
+    
+    // Focus on the name input for better UX
+    setTimeout(() => {
+        const nameInput = document.getElementById('item-name');
+        if (nameInput) nameInput.focus();
+    }, 100);
+    
     document.getElementById('add-item-form').addEventListener('submit', (e) => {
         e.preventDefault();
-        addNewItem();
-        closeModal(modal.querySelector('.cancel-btn'));
+        const success = addNewItem();
+        if (success) {
+            // Add success animation
+            const addBtn = modal.querySelector('.add-item-btn');
+            addBtn.innerHTML = '<span class="btn-icon">✅</span> Added!';
+            addBtn.style.background = 'rgba(76, 175, 80, 0.3)';
+            addBtn.style.borderColor = 'rgba(76, 175, 80, 0.6)';
+            addBtn.style.color = '#4CAF50';
+            
+            setTimeout(() => {
+                closeModalWithAnimation(modal);
+            }, 800);
+        }
     });
+    
+    // Handle escape key
+    const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+            closeModalWithAnimation(modal);
+            document.removeEventListener('keydown', handleEscape);
+        }
+    };
+    document.addEventListener('keydown', handleEscape);
+}
+
+function closeModalWithAnimation(modal) {
+    modal.classList.remove('show');
+    setTimeout(() => {
+        if (modal.parentNode) {
+            modal.parentNode.removeChild(modal);
+        }
+    }, 300);
+}
+
+function handleItemTypeChange() {
+    const typeSelect = document.getElementById('item-type');
+    const customContainer = document.getElementById('custom-type-container');
+    const customInput = document.getElementById('custom-item-type');
+    
+    if (typeSelect.value === 'custom') {
+        customContainer.style.display = 'block';
+        customContainer.classList.remove('hide');
+        customContainer.classList.add('show');
+        customInput.required = true;
+        // Focus on custom input for better UX
+        setTimeout(() => customInput.focus(), 100);
+    } else {
+        customContainer.classList.remove('show');
+        customContainer.classList.add('hide');
+        customInput.required = false;
+        customInput.value = ''; // Clear the input
+        // Hide after animation completes
+        setTimeout(() => {
+            if (customContainer.classList.contains('hide')) {
+                customContainer.style.display = 'none';
+                customContainer.classList.remove('hide');
+            }
+        }, 300);
+    }
 }
 
 function addNewItem() {
-    const type = document.getElementById('item-type').value;
-    const name = document.getElementById('item-name').value;
-    const description = document.getElementById('item-description').value;
-    const features = document.getElementById('item-features').value;
-    const diceRoll = document.getElementById('item-dice').value;
-    const ability = document.getElementById('item-ability').value;
+    try {
+        let type = document.getElementById('item-type').value;
+        const name = document.getElementById('item-name').value.trim();
+        const description = document.getElementById('item-description').value.trim();
+        const features = document.getElementById('item-features').value.trim();
+        const diceRoll = document.getElementById('item-dice').value.trim();
+        const ability = document.getElementById('item-ability').value;
+        
+        // Handle custom type
+        if (type === 'custom') {
+            const customType = document.getElementById('custom-item-type').value.trim();
+            if (!customType) {
+                showFieldError('custom-item-type', 'Custom type name is required');
+                return false;
+            }
+            if (customType.length > 30) {
+                showFieldError('custom-item-type', 'Custom type must be 30 characters or less');
+                return false;
+            }
+            // Validate custom type doesn't conflict with existing types
+            const normalizedCustomType = customType.toLowerCase().replace(/\s+/g, '-');
+            if (itemTypes.includes(normalizedCustomType)) {
+                showFieldError('custom-item-type', 'This type already exists. Please choose a different name.');
+                return false;
+            }
+            type = normalizedCustomType;
+        }
+        
+        // Validation
+        if (!name) {
+            showFieldError('item-name', 'Name is required');
+            return false;
+        }
+        
+        if (name.length > 50) {
+            showFieldError('item-name', 'Name must be 50 characters or less');
+            return false;
+        }
+        
+                 // Get selected tags
+        const tagCheckboxes = document.querySelectorAll('.tag-checkbox.enhanced input:checked');
+        const tags = Array.from(tagCheckboxes).map(cb => cb.value);
+        
+        // Get the weight for this item type
+        const originalWeight = encumbranceWeights[type] || 1;
+        
+        const newItem = {
+            name,
+            type,
+            description: description || null,
+            features: features || null,
+            diceRoll: diceRoll || null,
+            ability: ability || null,
+            tags: tags.length > 0 ? tags : null,
+            id: Date.now(), // Simple ID generation
+            originalWeight: originalWeight,
+            currentWeight: originalWeight
+        };
+        
+        // Add to appropriate category
+        let category = getItemCategory(type);
+        
+        // Custom types go to Personal category
+        if (type !== 'custom' && !itemTypes.includes(type)) {
+            category = 'Personal';
+        }
+        
+        if (!equipmentData.inventory[category]) {
+            equipmentData.inventory[category] = [];
+        }
+        equipmentData.inventory[category].push(newItem);
+        saveEquipmentData();
+        
+        // Refresh current section and update encumbrance
+        const activeSection = document.querySelector('.equipment-nav-btn.active')?.dataset.section || 'overview';
+        switchEquipmentSection(activeSection);
+        
+        // Update encumbrance display
+        updateEncumbranceDisplay();
+        
+        // Show success notification
+        if (window.showNotification && typeof window.showNotification === 'function') {
+            window.showNotification(`"${name}" added successfully!`, 'success');
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Error adding new item:', error);
+        if (window.showNotification && typeof window.showNotification === 'function') {
+            window.showNotification('Error adding item. Please try again.', 'error');
+        }
+        return false;
+    }
+}
+
+function showFieldError(fieldId, message) {
+    const field = document.getElementById(fieldId);
+    if (!field) return;
     
-    // Get selected tags
-    const tagCheckboxes = document.querySelectorAll('.tag-checkbox input:checked');
-    const tags = Array.from(tagCheckboxes).map(cb => cb.value);
+    // Remove existing error
+    const existingError = field.parentNode.querySelector('.field-error');
+    if (existingError) {
+        existingError.remove();
+    }
     
-    const newItem = {
-        name,
-        type,
-        description: description || null,
-        features: features || null,
-        diceRoll: diceRoll || null,
-        ability: ability || null,
-        tags: tags.length > 0 ? tags : null,
-        id: Date.now() // Simple ID generation
+    // Add error styling
+    field.style.borderColor = '#ff6464';
+    field.style.background = 'rgba(255, 100, 100, 0.1)';
+    
+    // Add error message
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'field-error';
+    errorDiv.textContent = message;
+    errorDiv.style.cssText = `
+        color: #ff6464;
+        font-size: 0.8rem;
+        margin-top: 5px;
+        animation: slideIn 0.3s ease;
+    `;
+    
+    field.parentNode.appendChild(errorDiv);
+    
+    // Focus the field
+    field.focus();
+    
+    // Remove error styling when user starts typing
+    const clearError = () => {
+        field.style.borderColor = '';
+        field.style.background = '';
+        if (errorDiv.parentNode) {
+            errorDiv.remove();
+        }
+        field.removeEventListener('input', clearError);
     };
     
-    // Add to appropriate category
-    const category = getItemCategory(type);
-    if (!equipmentData.inventory[category]) {
-        equipmentData.inventory[category] = [];
+    field.addEventListener('input', clearError);
+    
+    // Auto-remove error after 5 seconds
+    setTimeout(() => {
+        if (errorDiv.parentNode) {
+            clearError();
+        }
+    }, 5000);
+}
+
+function generateItemDetailsHTML(item) {
+    if (!item) return '';
+    
+    let detailsHTML = `<div class="equipped-item-name">${item.name}</div>`;
+    
+    if (item.type) {
+        detailsHTML += `<div class="item-type">Type: ${item.type.charAt(0).toUpperCase() + item.type.slice(1).replace('-', ' ')}</div>`;
     }
-    equipmentData.inventory[category].push(newItem);
-    saveEquipmentData();
     
-    // Refresh current section and update encumbrance
-    const activeSection = document.querySelector('.equipment-nav-btn.active').dataset.section;
-    switchEquipmentSection(activeSection);
+    if (item.description) {
+        detailsHTML += `<div class="item-description">${item.description}</div>`;
+    }
     
-    // Update encumbrance display
-    updateEncumbranceDisplay();
+    if (item.features) {
+        detailsHTML += `<div class="item-features">Features: ${item.features}</div>`;
+    }
+    
+    if (item.diceRoll) {
+        detailsHTML += `<div class="item-dice">Dice: ${item.diceRoll}</div>`;
+    }
+    
+    if (item.ability) {
+        detailsHTML += `<div class="item-ability">Ability: ${item.ability}</div>`;
+    }
+    
+    if (item.tags && item.tags.length > 0) {
+        detailsHTML += `<div class="item-tags">Tags: ${item.tags.join(', ')}</div>`;
+    }
+    
+    return detailsHTML;
 }
 
 function isItemEquipped(item, type) {
     const equipped = equipmentData.equipped;
+    
+    if (!item || !item.id) {
+        return false;
+    }
     
     // Check if item is equipped by comparing IDs
     if (type === 'weapon') {
@@ -950,32 +1232,39 @@ function isItemEquipped(item, type) {
     } else if (type === 'jewelry') {
         return equipped.jewelry.some(slot => slot && slot.id === item.id);
     } else {
-        // For consumables, quest items, etc. - check belt slots
+        // For consumables, quest items, custom types, etc. - check belt slots
         return equipped.belt.some(slot => slot && slot.id === item.id);
     }
-    
-    return false;
 }
+
+
 
 function unequipItem(type, index) {
     // Find the item in the appropriate category
     const category = getItemCategory(type);
     const item = equipmentData.inventory[category][index];
+    
+    if (!item) {
+        console.error(`Item not found at ${category}[${index}]`);
+        return;
+    }
+    
+    // Unequip the item
     const equipped = equipmentData.equipped;
     
     // Remove item from equipped slots
-    if (type === 'weapon') {
+    if (item.type === 'weapon') {
         if (equipped.primaryWeapon && equipped.primaryWeapon.id === item.id) {
             equipped.primaryWeapon = null;
         }
         if (equipped.secondaryWeapon && equipped.secondaryWeapon.id === item.id) {
             equipped.secondaryWeapon = null;
         }
-    } else if (type === 'armor') {
+    } else if (item.type === 'armor') {
         equipped.armor = null;
-    } else if (type === 'clothing') {
+    } else if (item.type === 'clothing') {
         equipped.clothing = null;
-    } else if (type === 'jewelry') {
+    } else if (item.type === 'jewelry') {
         const slotIndex = equipped.jewelry.findIndex(slot => slot && slot.id === item.id);
         if (slotIndex !== -1) {
             equipped.jewelry[slotIndex] = null;
@@ -988,19 +1277,41 @@ function unequipItem(type, index) {
         }
     }
     
+    // Restore original weight when unequipped (initialize weight properties if needed)
+    if (item.currentWeight === undefined) {
+        item.originalWeight = encumbranceWeights[item.type] || 1;
+        item.currentWeight = 0; // It was equipped, so current weight was 0
+    }
+    item.currentWeight = item.originalWeight;
+    
+    // Save data first
     saveEquipmentData();
+    
+    // Update displays
     updateActiveWeaponsAndArmor();
     updateEncumbranceDisplay();
     
-    // Refresh current section and overview
+    // Force refresh of the current section to show updated weights
     const activeSection = document.querySelector('.equipment-nav-btn.active').dataset.section;
-    switchEquipmentSection(activeSection);
+    if (activeSection === 'inventory') {
+        // Force a complete re-render of the inventory section
+        document.getElementById('equipment-content').innerHTML = renderInventorySection();
+    } else {
+        switchEquipmentSection(activeSection);
+    }
 }
+
+
 
 function equipItem(type, index) {
     // Find the item in the appropriate category
     const category = getItemCategory(type);
     const item = equipmentData.inventory[category][index];
+    
+    if (!item) {
+        console.error(`Item not found at ${category}[${index}]`);
+        return;
+    }
     
     // Check if item is already equipped
     if (isItemEquipped(item, type)) {
@@ -1008,10 +1319,12 @@ function equipItem(type, index) {
         return;
     }
     
-    if (type === 'weapon') {
+    // Equip the item
+    if (item.type === 'weapon') {
         // Show weapon slot selection
         showWeaponSlotModal(item);
-    } else if (type === 'jewelry') {
+        return; // showWeaponSlotModal handles the rest
+    } else if (item.type === 'jewelry') {
         // Find empty jewelry slot
         const emptySlot = equipmentData.equipped.jewelry.findIndex(slot => !slot);
         if (emptySlot !== -1) {
@@ -1020,14 +1333,14 @@ function equipItem(type, index) {
             alert('All jewelry slots are full. Unequip an item first.');
             return;
         }
-    } else if (type === 'armor') {
+    } else if (item.type === 'armor') {
         // Check if armor slot is already occupied
         if (equipmentData.equipped.armor) {
             alert('You already have armor equipped. Unequip it first.');
             return;
         }
         equipmentData.equipped.armor = item;
-    } else if (type === 'clothing') {
+    } else if (item.type === 'clothing') {
         // Check if clothing slot is already occupied
         if (equipmentData.equipped.clothing) {
             alert('You already have clothing equipped. Unequip it first.');
@@ -1035,7 +1348,7 @@ function equipItem(type, index) {
         }
         equipmentData.equipped.clothing = item;
     } else {
-        // For all other items (consumables, quest items, etc.) - use belt slots
+        // For all other items (consumables, quest items, custom types, etc.) - use belt slots
         const emptySlot = equipmentData.equipped.belt.findIndex(slot => !slot);
         if (emptySlot !== -1) {
             equipmentData.equipped.belt[emptySlot] = item;
@@ -1045,24 +1358,46 @@ function equipItem(type, index) {
         }
     }
     
-    saveEquipmentData();
-    updateActiveWeaponsAndArmor();
+    // Set item weight to 0 when equipped (initialize weight properties if needed)
+    if (item.currentWeight === undefined) {
+        item.originalWeight = encumbranceWeights[item.type] || 1;
+        item.currentWeight = item.originalWeight;
+    }
+    item.currentWeight = 0;
     
-    // Refresh current section and overview
+    // Save data first
+    saveEquipmentData();
+    
+    // Update displays
+    updateActiveWeaponsAndArmor();
+    updateEncumbranceDisplay();
+    
+    // Force refresh of the current section to show updated weights
     const activeSection = document.querySelector('.equipment-nav-btn.active').dataset.section;
-    switchEquipmentSection(activeSection);
+    if (activeSection === 'inventory') {
+        // Force a complete re-render of the inventory section
+        document.getElementById('equipment-content').innerHTML = renderInventorySection();
+    } else {
+        switchEquipmentSection(activeSection);
+    }
 }
 
 function showWeaponSlotModal(weapon) {
+    // Check if a weapon slot modal is already open
+    const existingModal = document.querySelector('.modal.weapon-slot-modal');
+    if (existingModal) {
+        return; // Don't create another modal
+    }
+    
     const modal = document.createElement('div');
-    modal.className = 'modal';
+    modal.className = 'modal weapon-slot-modal';
     modal.innerHTML = `
         <div class="modal-content">
             <h3>Equip Weapon: ${weapon.name}</h3>
             <p>Choose weapon slot:</p>
             <div class="modal-buttons">
-                <button onclick="equipWeaponToSlot('primaryWeapon', ${JSON.stringify(weapon).replace(/"/g, '&quot;')}); closeModal(this)" class="confirm-btn">Primary Weapon</button>
-                <button onclick="equipWeaponToSlot('secondaryWeapon', ${JSON.stringify(weapon).replace(/"/g, '&quot;')}); closeModal(this)" class="confirm-btn">Secondary Weapon</button>
+                <button onclick="equipWeaponToSlot('primaryWeapon', '${weapon.id}'); closeModal(this)" class="confirm-btn">Primary Weapon</button>
+                <button onclick="equipWeaponToSlot('secondaryWeapon', '${weapon.id}'); closeModal(this)" class="confirm-btn">Secondary Weapon</button>
                 <button onclick="closeModal(this)" class="cancel-btn">Cancel</button>
             </div>
         </div>
@@ -1072,7 +1407,26 @@ function showWeaponSlotModal(weapon) {
     modal.style.display = 'flex';
 }
 
-function equipWeaponToSlot(slot, weapon) {
+function equipWeaponToSlot(slot, weaponId) {
+    // Convert weaponId to number if it's a string (from onclick handler)
+    const numericWeaponId = typeof weaponId === 'string' ? parseInt(weaponId) : weaponId;
+    
+    // Find the actual weapon in inventory by ID
+    let weapon = null;
+    for (const [category, items] of Object.entries(equipmentData.inventory)) {
+        const foundWeapon = items.find(item => item.id === numericWeaponId);
+        if (foundWeapon) {
+            weapon = foundWeapon;
+            break;
+        }
+    }
+    
+    if (!weapon) {
+        console.error(`Weapon with ID ${weaponId} not found in inventory`);
+        alert('Weapon not found!');
+        return;
+    }
+    
     // Check if weapon is already equipped in any slot
     if (isItemEquipped(weapon, 'weapon')) {
         alert('This weapon is already equipped!');
@@ -1086,23 +1440,43 @@ function equipWeaponToSlot(slot, weapon) {
     }
     
     equipmentData.equipped[slot] = weapon;
-    saveEquipmentData();
-    updateActiveWeaponsAndArmor();
     
-    // Refresh current section and overview
+    // Set weapon weight to 0 when equipped (initialize weight properties if needed)
+    if (weapon.currentWeight === undefined) {
+        weapon.originalWeight = encumbranceWeights[weapon.type] || 1;
+        weapon.currentWeight = weapon.originalWeight;
+    }
+    weapon.currentWeight = 0;
+    
+    // Save data first
+    saveEquipmentData();
+    
+    // Update displays
+    updateActiveWeaponsAndArmor();
+    updateEncumbranceDisplay();
+    
+    // Force refresh of the current section to show updated weights
     const activeSection = document.querySelector('.equipment-nav-btn.active').dataset.section;
-    switchEquipmentSection(activeSection);
-    if (activeSection === 'overview') {
-        switchEquipmentSection('overview');
+    if (activeSection === 'inventory') {
+        // Force a complete re-render of the inventory section
+        document.getElementById('equipment-content').innerHTML = renderInventorySection();
+    } else {
+        switchEquipmentSection(activeSection);
     }
 }
 
 function editItem(category, index) {
     const item = equipmentData.inventory[category][index];
     
+    // Check if an edit item modal is already open
+    const existingModal = document.querySelector('.modal.edit-item-modal');
+    if (existingModal) {
+        return; // Don't create another modal
+    }
+    
     // Show edit modal with pre-filled values
     const modal = document.createElement('div');
-    modal.className = 'modal';
+    modal.className = 'modal edit-item-modal';
     modal.innerHTML = `
         <div class="modal-content">
             <h3>Edit Item: ${item.name}</h3>
@@ -1308,7 +1682,10 @@ function updateActiveWeaponsAndArmor() {
 function updateEncumbranceWarning() {
     const mainWarning = document.getElementById('encumbrance-warning-main');
     if (mainWarning) {
-        if (isEncumbered()) {
+        // Check if backpack system is enabled
+        const backpackEnabled = window.backpackSystemEnabled !== false;
+        
+        if (backpackEnabled && isEncumbered()) {
             mainWarning.style.display = 'block';
         } else {
             mainWarning.style.display = 'none';
@@ -1317,6 +1694,28 @@ function updateEncumbranceWarning() {
 }
 
 function updateEncumbranceDisplay() {
+    // Add a small delay to ensure DOM and state are synchronized
+    setTimeout(() => {
+        doUpdateEncumbranceDisplay();
+    }, 10);
+}
+
+function doUpdateEncumbranceDisplay() {
+    // Check if backpack system is enabled
+    const backpackEnabled = window.backpackSystemEnabled !== false;
+    
+    if (!backpackEnabled) {
+        // If backpack system is disabled, hide all encumbrance displays
+        const encumbranceText = document.querySelector('.encumbrance-text');
+        const encumbranceFill = document.querySelector('.encumbrance-fill');
+        const encumbranceWarning = document.querySelector('.encumbrance-warning');
+        
+        if (encumbranceText) encumbranceText.style.display = 'none';
+        if (encumbranceFill) encumbranceFill.style.display = 'none';
+        if (encumbranceWarning) encumbranceWarning.style.display = 'none';
+        return;
+    }
+    
     // Update the encumbrance bar and text in the equipment tab
     const encumbranceText = document.querySelector('.encumbrance-text');
     const encumbranceFill = document.querySelector('.encumbrance-fill');
@@ -1435,7 +1834,13 @@ function updateActiveArmorDisplay() {
 function closeModal(button) {
     const modal = button.closest('.modal');
     if (modal) {
-        modal.remove();
+        // Check if it's the enhanced add item modal
+        if (modal.classList.contains('add-item-modal')) {
+            closeModalWithAnimation(modal);
+        } else {
+            // For other modals, use immediate removal
+            modal.remove();
+        }
     }
 }
 
@@ -1454,36 +1859,157 @@ function loadEquipmentData() {
             console.log('Parsed saved data:', parsedData);
             equipmentData = { ...equipmentData, ...parsedData };
             console.log('Equipment data after merge:', equipmentData);
+            
+            // Sync equipped items with inventory to ensure object references match
+            syncEquippedItemReferences();
+            
+            // Initialize weight properties for existing items that don't have them
+            initializeItemWeights();
         } catch (error) {
             console.error('Error parsing saved equipment data:', error);
         }
     } else {
         console.log('No saved equipment data found, using defaults');
     }
+}
+
+function syncEquippedItemReferences() {
     
-    // Ensure all required properties exist (for backward compatibility)
-    if (!equipmentData.equipped) {
-        equipmentData.equipped = {};
+    // Create a map of all inventory items by ID for quick lookup
+    const itemMap = new Map();
+    Object.values(equipmentData.inventory).forEach(categoryItems => {
+        categoryItems.forEach(item => {
+            if (item && item.id) {
+                itemMap.set(item.id, item);
+            }
+        });
+    });
+    
+    // Sync equipped items
+    const equipped = equipmentData.equipped;
+    let syncedCount = 0;
+    
+    // Sync weapons
+    if (equipped.primaryWeapon && equipped.primaryWeapon.id) {
+        const inventoryItem = itemMap.get(equipped.primaryWeapon.id);
+        if (inventoryItem) {
+            equipped.primaryWeapon = inventoryItem;
+            syncedCount++;
+        } else {
+            console.warn(`Primary weapon not found in inventory: ${equipped.primaryWeapon.name}`);
+            equipped.primaryWeapon = null;
+        }
     }
     
-    // Reset equipped items to ensure clean state
-    equipmentData.equipped = {
-        primaryWeapon: null,
-        secondaryWeapon: null,
-        armor: null,
-        clothing: null,
-        jewelry: [null, null, null],
-        belt: [null, null, null, null, null]
-    };
+    if (equipped.secondaryWeapon && equipped.secondaryWeapon.id) {
+        const inventoryItem = itemMap.get(equipped.secondaryWeapon.id);
+        if (inventoryItem) {
+            equipped.secondaryWeapon = inventoryItem;
+            syncedCount++;
+        } else {
+            console.warn(`Secondary weapon not found in inventory: ${equipped.secondaryWeapon.name}`);
+            equipped.secondaryWeapon = null;
+        }
+    }
     
-    // Clear any old inventory data to start fresh
-    equipmentData.inventory = {
-        'Gear': [],
-        'Utility': [],
-        'Quest': [],
-        'Crafting': [],
-        'Personal': []
-    };
+    // Sync armor
+    if (equipped.armor && equipped.armor.id) {
+        const inventoryItem = itemMap.get(equipped.armor.id);
+        if (inventoryItem) {
+            equipped.armor = inventoryItem;
+            syncedCount++;
+        } else {
+            console.warn(`Armor not found in inventory: ${equipped.armor.name}`);
+            equipped.armor = null;
+        }
+    }
+    
+    // Sync clothing
+    if (equipped.clothing && equipped.clothing.id) {
+        const inventoryItem = itemMap.get(equipped.clothing.id);
+        if (inventoryItem) {
+            equipped.clothing = inventoryItem;
+            syncedCount++;
+        } else {
+            console.warn(`Clothing not found in inventory: ${equipped.clothing.name}`);
+            equipped.clothing = null;
+        }
+    }
+    
+    // Sync jewelry
+    equipped.jewelry = equipped.jewelry.map((jewelryItem, index) => {
+        if (jewelryItem && jewelryItem.id) {
+            const inventoryItem = itemMap.get(jewelryItem.id);
+            if (inventoryItem) {
+                syncedCount++;
+                return inventoryItem;
+            } else {
+                console.warn(`Jewelry not found in inventory: ${jewelryItem.name}`);
+                return null;
+            }
+        }
+        return null;
+    });
+    
+    // Sync belt items
+    equipped.belt = equipped.belt.map((beltItem, index) => {
+        if (beltItem && beltItem.id) {
+            const inventoryItem = itemMap.get(beltItem.id);
+            if (inventoryItem) {
+                syncedCount++;
+                return inventoryItem;
+            } else {
+                console.warn(`Belt item not found in inventory: ${beltItem.name}`);
+                return null;
+            }
+        }
+        return null;
+    });
+    
+    if (syncedCount > 0) {
+        console.log(`Equipment sync: ${syncedCount} equipped items synced`);
+    }
+}
+
+function initializeItemWeights() {
+    let itemsUpdated = 0;
+    
+    // Go through all items and initialize weight properties if they don't exist
+    Object.values(equipmentData.inventory).forEach(categoryItems => {
+        categoryItems.forEach(item => {
+            if (item.currentWeight === undefined) {
+                const originalWeight = encumbranceWeights[item.type] || 1;
+                item.originalWeight = originalWeight;
+                
+                // Set current weight based on whether the item is equipped
+                if (isItemEquipped(item, item.type)) {
+                    item.currentWeight = 0; // Equipped items have 0 weight
+                } else {
+                    item.currentWeight = originalWeight; // Unequipped items have original weight
+                }
+                
+                itemsUpdated++;
+            }
+        });
+    });
+    
+    if (itemsUpdated > 0) {
+        console.log(`Weight initialization: ${itemsUpdated} items updated with weight properties`);
+    }
+}
+
+function initializeEquipmentData() {
+    // Ensure all required properties exist (for backward compatibility)
+    if (!equipmentData.equipped) {
+        equipmentData.equipped = {
+            primaryWeapon: null,
+            secondaryWeapon: null,
+            armor: null,
+            clothing: null,
+            jewelry: [null, null, null],
+            belt: [null, null, null, null, null]
+        };
+    }
     
     // Ensure inventory categories exist
     if (!equipmentData.inventory) {
@@ -1521,7 +2047,8 @@ function initializeEquipment() {
     }
     
     try {
-        // Load equipment data
+        // Initialize and load equipment data
+        initializeEquipmentData();
         loadEquipmentData();
         console.log('Equipment data loaded:', equipmentData);
         
@@ -1579,4 +2106,7 @@ window.changeBagType = changeBagType;
 window.updateBagInfo = updateBagInfo;
 window.dropItem = dropItem;
 window.sellItem = sellItem;
+window.handleItemTypeChange = handleItemTypeChange;
+window.generateItemDetailsHTML = generateItemDetailsHTML;
 window.initializeEquipment = initializeEquipment;
+window.renderEquipmentOverview = renderEquipmentOverview;

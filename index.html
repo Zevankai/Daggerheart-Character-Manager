@@ -42,8 +42,12 @@
    </div>
 
    <div class="right-info">
-    <span id="toggleTheme" style="cursor: pointer;">Character Code: <strong>YWSAFHB</strong></span><br />
-    <a href="https://drive.google.com/file/d/1KPD_jt2jaNn2Okd9dDbQNRVdk5PAk2R2/view?usp=drivesdk" target="_blank">Official Rulebook</a><br/>
+    <span id="toggleTheme" style="cursor: pointer;">🌙</span><br />
+    <button id="characterManagerBtn" class="character-manager-btn" onclick="goToCharacterSelection()" title="Character Selection">👥</button>
+   </div>
+   
+   <div class="header-bottom-center">
+    <a href="https://drive.google.com/file/d/1KPD_jt2jaNn2Okd9dDbQNRVdk5PAk2R2/view?usp=drivesdk" target="_blank" class="rulebook-link">Official Rulebook</a>
    </div>
   </header>
 
@@ -305,6 +309,55 @@
       </div>
      </div>
      
+     <!-- Background Image Section -->
+     <div class="settings-section">
+      <h3>Background Image</h3>
+      <p>Upload a custom background image for your character sheet.</p>
+      <div class="file-upload-control">
+       <label for="bgUpload" class="file-upload-label">
+        <span class="upload-icon">🏞️</span>
+        <span class="upload-text">Choose Background Image</span>
+       </label>
+       <input type="file" id="bgUpload" accept="image/*" onchange="uploadBackground(event)" class="file-upload-input">
+      </div>
+     </div>
+     
+     <!-- Character Code Section -->
+     <div class="settings-section">
+      <h3>Character Code</h3>
+      <p>A unique code representing your character's current state. Share this code to let others import your character.</p>
+      <div class="character-code-control">
+       <div class="code-display-group">
+        <label for="characterCodeDisplay">Your Character Code:</label>
+        <div class="code-display">
+         <input type="text" id="characterCodeDisplay" readonly value="YWSAFHB">
+         <button type="button" id="copyCodeBtn" class="copy-btn" title="Copy to clipboard">📋</button>
+        </div>
+       </div>
+       <div class="code-actions">
+        <button type="button" id="generateCodeBtn" class="action-btn">Generate New Code</button>
+        <button type="button" id="importCodeBtn" class="action-btn">Import Character</button>
+       </div>
+      </div>
+     </div>
+     
+     <!-- Backpack & Encumbrance Toggle Section -->
+     <div class="settings-section">
+      <h3>Equipment Features</h3>
+      <p>Toggle advanced equipment features like backpack selection, encumbrance tracking, and additional equipment slots.</p>
+      <div class="toggle-control">
+       <label for="backpackToggle" class="toggle-label">
+        <input type="checkbox" id="backpackToggle" checked>
+        <span class="toggle-slider"></span>
+        <span class="toggle-text">Enable Backpack & Encumbrance System</span>
+       </label>
+       <div class="toggle-description">
+        <p><strong>When enabled:</strong> Backpack selection, encumbrance tracking, attire slots, and belt/consumables slots are available.</p>
+        <p><strong>When disabled:</strong> Simplified equipment view with only combat equipment and inventory management.</p>
+       </div>
+      </div>
+     </div>
+     
      <!-- Character Deletion Section -->
      <div class="settings-section danger-section">
       <h3>Character Data</h3>
@@ -345,13 +398,23 @@
     </div>
    </div>
 
+   <!-- Character Import Modal -->
+   <div id="characterImportModal" class="modal">
+    <div class="modal-content">
+     <h3>Import Character</h3>
+     <p>Enter a character code to import character data:</p>
+     <input type="text" id="importCodeInput" placeholder="Enter character code (e.g. YWSAFHB)" style="width: 100%; margin: 15px 0; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+     <div class="modal-buttons">
+      <button type="button" id="confirmCharacterImport" class="confirm-btn">Import Character</button>
+      <button type="button" id="cancelCharacterImport" class="cancel-btn">Cancel</button>
+     </div>
+    </div>
+   </div>
+
   </div>
  </div>
 
- <div class="background-icon">
-  <label for="bgUpload">🏞️</label>
-  <input type="file" id="bgUpload" accept="image/*" onchange="uploadBackground(event)">
- </div>
+
 
  <div id="journal-entry-modal" class="modal-overlay">
     <div class="modal">
@@ -406,4 +469,38 @@
  <script src="details.js"></script>
  <script src="settings.js"></script>
  <script src="equipment.js"></script>
+ <script src="characterManager.js"></script>
+ <script>
+  // Initialize character management
+  function goToCharacterSelection() {
+    // Save current character data before leaving
+    if (window.characterManager && window.characterManager.currentCharacter) {
+      window.characterManager.saveCharacterData(window.characterManager.currentCharacter);
+    }
+    // Redirect to landing page
+    window.location.href = 'landing.html';
+  }
+  
+  // Auto-save character data periodically
+  setInterval(() => {
+    if (window.characterManager && window.characterManager.currentCharacter) {
+      window.characterManager.saveCharacterData(window.characterManager.currentCharacter);
+    }
+  }, 30000); // Save every 30 seconds
+  
+  // Check if user has a current character loaded
+  document.addEventListener('DOMContentLoaded', () => {
+    const currentCharacterId = localStorage.getItem('zevi-current-character-id');
+    if (!currentCharacterId) {
+      // No character loaded, redirect to landing page
+      window.location.href = 'landing.html';
+    } else if (window.characterManager) {
+      // Set the current character for the character manager
+      const character = window.characterManager.getCharacter(currentCharacterId);
+      if (character) {
+        window.characterManager.currentCharacter = character;
+      }
+    }
+  });
+ </script>
 </html>
