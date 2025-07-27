@@ -459,7 +459,11 @@ function renderInventoryCategories() {
                 <h4>${category} (${filteredItems.length})</h4>
                 <div class="items-grid compact">
                     ${filteredItems.length > 0 ? 
-                        filteredItems.map((item, index) => renderCompactItemCard(item, category, index)).join('') :
+                        filteredItems.map((item) => {
+                            // Find the actual inventory index for this item
+                            const actualIndex = items.findIndex(inventoryItem => inventoryItem.id === item.id);
+                            return renderCompactItemCard(item, category, actualIndex);
+                        }).join('') :
                         '<div class="no-items">No items in this category</div>'
                     }
                 </div>
@@ -484,8 +488,8 @@ function renderCompactItemCard(item, category, index) {
             ${item.tags && item.tags.length > 0 ? `<div class="item-tags">${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>` : ''}
             <div class="item-actions">
                 ${isEquipped ? 
-                    `<button class="equip-btn unequip" onclick="unequipItemById('${item.id}')">Unequip</button>` :
-                    `<button class="equip-btn" onclick="equipItemById('${item.id}')">Equip</button>`
+                    `<button class="equip-btn unequip" onclick="unequipItem('${item.type}', ${index})">Unequip</button>` :
+                    `<button class="equip-btn" onclick="equipItem('${item.type}', ${index})">Equip</button>`
                 }
                 <button class="edit-btn" onclick="editItem('${category}', ${index})">Edit</button>
                 <button class="drop-btn" onclick="dropItem('${category}', ${index})">Drop</button>
@@ -1220,26 +1224,7 @@ function isItemEquipped(item, type) {
     }
 }
 
-function unequipItemById(itemId) {
-    // Find the item in inventory by ID
-    let foundItem = null;
-    
-    for (const [category, items] of Object.entries(equipmentData.inventory)) {
-        const item = items.find(item => item.id === itemId);
-        if (item) {
-            foundItem = item;
-            break;
-        }
-    }
-    
-    if (!foundItem) {
-        console.error(`Item with ID ${itemId} not found in inventory`);
-        return;
-    }
-    
-    // Use the shared unequip logic
-    unequipItemLogic(foundItem);
-}
+
 
 function unequipItem(type, index) {
     // Find the item in the appropriate category
@@ -1251,11 +1236,7 @@ function unequipItem(type, index) {
         return;
     }
     
-    // Use the shared unequip logic
-    unequipItemLogic(item);
-}
-
-function unequipItemLogic(item) {
+    // Unequip the item
     const equipped = equipmentData.equipped;
     const type = item.type;
     
@@ -1293,32 +1274,7 @@ function unequipItemLogic(item) {
     switchEquipmentSection(activeSection);
 }
 
-function equipItemById(itemId) {
-    // Find the item in inventory by ID
-    let foundItem = null;
-    
-    for (const [category, items] of Object.entries(equipmentData.inventory)) {
-        const item = items.find(item => item.id === itemId);
-        if (item) {
-            foundItem = item;
-            break;
-        }
-    }
-    
-    if (!foundItem) {
-        console.error(`Item with ID ${itemId} not found in inventory`);
-        return;
-    }
-    
-    // Check if item is already equipped
-    if (isItemEquipped(foundItem, foundItem.type)) {
-        alert('This item is already equipped!');
-        return;
-    }
-    
-    // Use the shared equipItem logic
-    equipItemLogic(foundItem, foundItem.type);
-}
+
 
 function equipItem(type, index) {
     // Find the item in the appropriate category
@@ -1336,11 +1292,8 @@ function equipItem(type, index) {
         return;
     }
     
-    // Use the shared equipItem logic
-    equipItemLogic(item, type);
-}
-
-function equipItemLogic(item, type) {
+    // Equip the item
+    const type = item.type;
     if (type === 'weapon') {
         // Show weapon slot selection
         showWeaponSlotModal(item);
@@ -2040,5 +1993,3 @@ window.handleItemTypeChange = handleItemTypeChange;
 window.generateItemDetailsHTML = generateItemDetailsHTML;
 window.initializeEquipment = initializeEquipment;
 window.renderEquipmentOverview = renderEquipmentOverview;
-window.equipItemById = equipItemById;
-window.unequipItemById = unequipItemById;
