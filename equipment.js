@@ -484,8 +484,8 @@ function renderCompactItemCard(item, category, index) {
             ${item.tags && item.tags.length > 0 ? `<div class="item-tags">${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>` : ''}
             <div class="item-actions">
                 ${isEquipped ? 
-                    `<button class="equip-btn unequip" onclick="unequipItem('${item.type}', ${index})">Unequip</button>` :
-                    `<button class="equip-btn" onclick="equipItem('${item.type}', ${index})">Equip</button>`
+                    `<button class="equip-btn unequip" onclick="unequipItemById('${item.id}')">Unequip</button>` :
+                    `<button class="equip-btn" onclick="equipItemById('${item.id}')">Equip</button>`
                 }
                 <button class="edit-btn" onclick="editItem('${category}', ${index})">Edit</button>
                 <button class="drop-btn" onclick="dropItem('${category}', ${index})">Drop</button>
@@ -1220,11 +1220,44 @@ function isItemEquipped(item, type) {
     }
 }
 
+function unequipItemById(itemId) {
+    // Find the item in inventory by ID
+    let foundItem = null;
+    
+    for (const [category, items] of Object.entries(equipmentData.inventory)) {
+        const item = items.find(item => item.id === itemId);
+        if (item) {
+            foundItem = item;
+            break;
+        }
+    }
+    
+    if (!foundItem) {
+        console.error(`Item with ID ${itemId} not found in inventory`);
+        return;
+    }
+    
+    // Use the shared unequip logic
+    unequipItemLogic(foundItem);
+}
+
 function unequipItem(type, index) {
     // Find the item in the appropriate category
     const category = getItemCategory(type);
     const item = equipmentData.inventory[category][index];
+    
+    if (!item) {
+        console.error(`Item not found at ${category}[${index}]`);
+        return;
+    }
+    
+    // Use the shared unequip logic
+    unequipItemLogic(item);
+}
+
+function unequipItemLogic(item) {
     const equipped = equipmentData.equipped;
+    const type = item.type;
     
     // Remove item from equipped slots
     if (type === 'weapon') {
@@ -1260,10 +1293,42 @@ function unequipItem(type, index) {
     switchEquipmentSection(activeSection);
 }
 
+function equipItemById(itemId) {
+    // Find the item in inventory by ID
+    let foundItem = null;
+    
+    for (const [category, items] of Object.entries(equipmentData.inventory)) {
+        const item = items.find(item => item.id === itemId);
+        if (item) {
+            foundItem = item;
+            break;
+        }
+    }
+    
+    if (!foundItem) {
+        console.error(`Item with ID ${itemId} not found in inventory`);
+        return;
+    }
+    
+    // Check if item is already equipped
+    if (isItemEquipped(foundItem, foundItem.type)) {
+        alert('This item is already equipped!');
+        return;
+    }
+    
+    // Use the shared equipItem logic
+    equipItemLogic(foundItem, foundItem.type);
+}
+
 function equipItem(type, index) {
     // Find the item in the appropriate category
     const category = getItemCategory(type);
     const item = equipmentData.inventory[category][index];
+    
+    if (!item) {
+        console.error(`Item not found at ${category}[${index}]`);
+        return;
+    }
     
     // Check if item is already equipped
     if (isItemEquipped(item, type)) {
@@ -1271,9 +1336,15 @@ function equipItem(type, index) {
         return;
     }
     
+    // Use the shared equipItem logic
+    equipItemLogic(item, type);
+}
+
+function equipItemLogic(item, type) {
     if (type === 'weapon') {
         // Show weapon slot selection
         showWeaponSlotModal(item);
+        return; // showWeaponSlotModal handles the rest
     } else if (type === 'jewelry') {
         // Find empty jewelry slot
         const emptySlot = equipmentData.equipped.jewelry.findIndex(slot => !slot);
@@ -1760,7 +1831,6 @@ function loadEquipmentData() {
 }
 
 function syncEquippedItemReferences() {
-    console.log('Syncing equipped item references...');
     
     // Create a map of all inventory items by ID for quick lookup
     const itemMap = new Map();
@@ -1853,7 +1923,9 @@ function syncEquippedItemReferences() {
         return null;
     });
     
-    console.log(`Sync complete: ${syncedCount} equipped items synced from ${itemMap.size} inventory items`);
+    if (syncedCount > 0) {
+        console.log(`Equipment sync: ${syncedCount} equipped items synced`);
+    }
 }
 
 function initializeEquipmentData() {
@@ -1968,3 +2040,5 @@ window.handleItemTypeChange = handleItemTypeChange;
 window.generateItemDetailsHTML = generateItemDetailsHTML;
 window.initializeEquipment = initializeEquipment;
 window.renderEquipmentOverview = renderEquipmentOverview;
+window.equipItemById = equipItemById;
+window.unequipItemById = unequipItemById;
