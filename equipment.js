@@ -127,10 +127,13 @@ function calculateEncumbrance() {
     let totalWeight = 0;
     
     // Calculate weight of UNEQUIPPED items only
+    // Equipped items should not count toward encumbrance (they're worn/held)
     Object.values(equipmentData.inventory).forEach(categoryItems => {
         categoryItems.forEach(item => {
-            if (!isItemEquipped(item, item.type)) {
-                totalWeight += encumbranceWeights[item.type] || 1;
+            const isEquipped = isItemEquipped(item, item.type);
+            if (!isEquipped) {
+                const weight = encumbranceWeights[item.type] || 1;
+                totalWeight += weight;
             }
         });
     });
@@ -304,7 +307,7 @@ function renderOverviewContent() {
                                 <div class="slot-label">Primary Weapon</div>
                                 <div class="slot-content">
                                     ${equipped.primaryWeapon ? 
-                                        `<div class="equipped-item-name">${equipped.primaryWeapon.name}</div>
+                                        `${generateItemDetailsHTML(equipped.primaryWeapon)}
                                          <button class="unequip-btn" onclick="unequipSpecificItem('primaryWeapon')">×</button>` :
                                         '<div class="empty-slot">Drop weapon here</div>'
                                     }
@@ -314,7 +317,7 @@ function renderOverviewContent() {
                                 <div class="slot-label">Secondary Weapon</div>
                                 <div class="slot-content">
                                     ${equipped.secondaryWeapon ? 
-                                        `<div class="equipped-item-name">${equipped.secondaryWeapon.name}</div>
+                                        `${generateItemDetailsHTML(equipped.secondaryWeapon)}
                                          <button class="unequip-btn" onclick="unequipSpecificItem('secondaryWeapon')">×</button>` :
                                         '<div class="empty-slot">Drop weapon here</div>'
                                     }
@@ -324,7 +327,7 @@ function renderOverviewContent() {
                                 <div class="slot-label">Armor</div>
                                 <div class="slot-content">
                                     ${equipped.armor ? 
-                                        `<div class="equipped-item-name">${equipped.armor.name}</div>
+                                        `${generateItemDetailsHTML(equipped.armor)}
                                          <button class="unequip-btn" onclick="unequipSpecificItem('armor')">×</button>` :
                                         '<div class="empty-slot">Drop armor here</div>'
                                     }
@@ -342,7 +345,7 @@ function renderOverviewContent() {
                                 <div class="slot-label">Clothing</div>
                                 <div class="slot-content">
                                     ${equipped.clothing ? 
-                                        `<div class="equipped-item-name">${equipped.clothing.name}</div>
+                                        `${generateItemDetailsHTML(equipped.clothing)}
                                          <button class="unequip-btn" onclick="unequipSpecificItem('clothing')">×</button>` :
                                         '<div class="empty-slot">Drop clothing here</div>'
                                     }
@@ -355,7 +358,7 @@ function renderOverviewContent() {
                                         <div class="equipment-slot jewelry-slot ${item ? 'filled' : 'empty'}" data-slot="jewelry" data-index="${i}">
                                             <div class="slot-content">
                                                 ${item ? 
-                                                    `<div class="equipped-item-name">${item.name}</div>
+                                                    `${generateItemDetailsHTML(item)}
                                                      <button class="unequip-btn" onclick="unequipJewelry(${i})">×</button>` :
                                                     '<div class="empty-slot">Empty</div>'
                                                 }
@@ -377,8 +380,7 @@ function renderOverviewContent() {
                                     <div class="equipment-slot belt-slot ${item ? 'filled' : 'empty'}" data-slot="belt" data-index="${i}">
                                         <div class="slot-content">
                                             ${item ? 
-                                                `<div class="equipped-item-name">${item.name}</div>
-                                                 <div class="item-type">${item.type}</div>
+                                                `${generateItemDetailsHTML(item)}
                                                  <button class="unequip-btn" onclick="unequipBeltItem(${i})">×</button>` :
                                                 '<div class="empty-slot">Empty</div>'
                                             }
@@ -1163,13 +1165,50 @@ function showFieldError(fieldId, message) {
     }, 5000);
 }
 
+function generateItemDetailsHTML(item) {
+    if (!item) return '';
+    
+    let detailsHTML = `<div class="equipped-item-name">${item.name}</div>`;
+    
+    if (item.type) {
+        detailsHTML += `<div class="item-type">Type: ${item.type.charAt(0).toUpperCase() + item.type.slice(1).replace('-', ' ')}</div>`;
+    }
+    
+    if (item.description) {
+        detailsHTML += `<div class="item-description">${item.description}</div>`;
+    }
+    
+    if (item.features) {
+        detailsHTML += `<div class="item-features">Features: ${item.features}</div>`;
+    }
+    
+    if (item.diceRoll) {
+        detailsHTML += `<div class="item-dice">Dice: ${item.diceRoll}</div>`;
+    }
+    
+    if (item.ability) {
+        detailsHTML += `<div class="item-ability">Ability: ${item.ability}</div>`;
+    }
+    
+    if (item.tags && item.tags.length > 0) {
+        detailsHTML += `<div class="item-tags">Tags: ${item.tags.join(', ')}</div>`;
+    }
+    
+    return detailsHTML;
+}
+
 function isItemEquipped(item, type) {
     const equipped = equipmentData.equipped;
     
+    if (!item || !item.id) {
+        return false;
+    }
+    
     // Check if item is equipped by comparing IDs
     if (type === 'weapon') {
-        return (equipped.primaryWeapon && equipped.primaryWeapon.id === item.id) ||
-               (equipped.secondaryWeapon && equipped.secondaryWeapon.id === item.id);
+        const isPrimary = equipped.primaryWeapon && equipped.primaryWeapon.id === item.id;
+        const isSecondary = equipped.secondaryWeapon && equipped.secondaryWeapon.id === item.id;
+        return isPrimary || isSecondary;
     } else if (type === 'armor') {
         return equipped.armor && equipped.armor.id === item.id;
     } else if (type === 'clothing') {
@@ -1177,11 +1216,9 @@ function isItemEquipped(item, type) {
     } else if (type === 'jewelry') {
         return equipped.jewelry.some(slot => slot && slot.id === item.id);
     } else {
-        // For consumables, quest items, etc. - check belt slots
+        // For consumables, quest items, custom types, etc. - check belt slots
         return equipped.belt.some(slot => slot && slot.id === item.id);
     }
-    
-    return false;
 }
 
 function unequipItem(type, index) {
@@ -1831,5 +1868,6 @@ window.updateBagInfo = updateBagInfo;
 window.dropItem = dropItem;
 window.sellItem = sellItem;
 window.handleItemTypeChange = handleItemTypeChange;
+window.generateItemDetailsHTML = generateItemDetailsHTML;
 window.initializeEquipment = initializeEquipment;
 window.renderEquipmentOverview = renderEquipmentOverview;
