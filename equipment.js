@@ -842,6 +842,12 @@ function switchEquipmentSection(section) {
 
 // ===== ITEM MANAGEMENT =====
 function showAddItemModal(defaultType = 'weapon') {
+    // Check if an add item modal is already open
+    const existingModal = document.querySelector('.modal.add-item-modal');
+    if (existingModal) {
+        return; // Don't create another modal
+    }
+    
     const modal = document.createElement('div');
     modal.className = 'modal add-item-modal';
     modal.innerHTML = `
@@ -1377,8 +1383,14 @@ function equipItem(type, index) {
 }
 
 function showWeaponSlotModal(weapon) {
+    // Check if a weapon slot modal is already open
+    const existingModal = document.querySelector('.modal.weapon-slot-modal');
+    if (existingModal) {
+        return; // Don't create another modal
+    }
+    
     const modal = document.createElement('div');
-    modal.className = 'modal';
+    modal.className = 'modal weapon-slot-modal';
     modal.innerHTML = `
         <div class="modal-content">
             <h3>Equip Weapon: ${weapon.name}</h3>
@@ -1456,9 +1468,15 @@ function equipWeaponToSlot(slot, weaponId) {
 function editItem(category, index) {
     const item = equipmentData.inventory[category][index];
     
+    // Check if an edit item modal is already open
+    const existingModal = document.querySelector('.modal.edit-item-modal');
+    if (existingModal) {
+        return; // Don't create another modal
+    }
+    
     // Show edit modal with pre-filled values
     const modal = document.createElement('div');
-    modal.className = 'modal';
+    modal.className = 'modal edit-item-modal';
     modal.innerHTML = `
         <div class="modal-content">
             <h3>Edit Item: ${item.name}</h3>
