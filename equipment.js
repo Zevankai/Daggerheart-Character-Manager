@@ -476,6 +476,8 @@ function renderCompactItemCard(item, category, index) {
     // Use currentWeight if available, otherwise fall back to original system
     const weight = item.currentWeight !== undefined ? item.currentWeight : (encumbranceWeights[item.type] || 1);
     
+
+    
     return `
         <div class="item-card compact ${isEquipped ? 'equipped' : ''}" data-item-id="${item.id}">
             <div class="item-header">
@@ -1276,13 +1278,21 @@ function unequipItem(type, index) {
     }
     item.currentWeight = item.originalWeight;
     
+    // Save data first
     saveEquipmentData();
+    
+    // Update displays
     updateActiveWeaponsAndArmor();
     updateEncumbranceDisplay();
     
-    // Refresh current section and overview
+    // Force refresh of the current section to show updated weights
     const activeSection = document.querySelector('.equipment-nav-btn.active').dataset.section;
-    switchEquipmentSection(activeSection);
+    if (activeSection === 'inventory') {
+        // Force a complete re-render of the inventory section
+        document.getElementById('equipment-content').innerHTML = renderInventorySection();
+    } else {
+        switchEquipmentSection(activeSection);
+    }
 }
 
 
@@ -1349,12 +1359,21 @@ function equipItem(type, index) {
     }
     item.currentWeight = 0;
     
+    // Save data first
     saveEquipmentData();
-    updateActiveWeaponsAndArmor();
     
-    // Refresh current section and overview
+    // Update displays
+    updateActiveWeaponsAndArmor();
+    updateEncumbranceDisplay();
+    
+    // Force refresh of the current section to show updated weights
     const activeSection = document.querySelector('.equipment-nav-btn.active').dataset.section;
-    switchEquipmentSection(activeSection);
+    if (activeSection === 'inventory') {
+        // Force a complete re-render of the inventory section
+        document.getElementById('equipment-content').innerHTML = renderInventorySection();
+    } else {
+        switchEquipmentSection(activeSection);
+    }
 }
 
 function showWeaponSlotModal(weapon) {
@@ -1398,14 +1417,20 @@ function equipWeaponToSlot(slot, weapon) {
     }
     weapon.currentWeight = 0;
     
+    // Save data first
     saveEquipmentData();
-    updateActiveWeaponsAndArmor();
     
-    // Refresh current section and overview
+    // Update displays
+    updateActiveWeaponsAndArmor();
+    updateEncumbranceDisplay();
+    
+    // Force refresh of the current section to show updated weights
     const activeSection = document.querySelector('.equipment-nav-btn.active').dataset.section;
-    switchEquipmentSection(activeSection);
-    if (activeSection === 'overview') {
-        switchEquipmentSection('overview');
+    if (activeSection === 'inventory') {
+        // Force a complete re-render of the inventory section
+        document.getElementById('equipment-content').innerHTML = renderInventorySection();
+    } else {
+        switchEquipmentSection(activeSection);
     }
 }
 
