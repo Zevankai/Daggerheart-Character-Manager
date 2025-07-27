@@ -50,16 +50,16 @@ let equipmentData = {
 const itemCategories = {
     'Gear': ['weapon', 'armor', 'potion', 'flask', 'ammunition'],
     'Utility': ['adventure', 'tool', 'food', 'map', 'camp'],
-    'Quest': ['npc-item', 'evidence', 'literature', 'magical'],
+    'Quest': ['npc-item', 'evidence', 'magical'],
     'Crafting': ['materials', 'components'],
-    'Personal': ['personal'] // Items can be manually relocated here
+    'Personal': ['personal', 'literature', 'clothing', 'jewelry'] // Items can be manually relocated here
 };
 
 const itemTypes = [
-    'weapon', 'armor', 'potion', 'flask', 'ammunition',
+    'weapon', 'armor', 'clothing', 'jewelry', 'potion', 'flask', 'ammunition',
     'adventure', 'tool', 'food', 'map', 'camp',
-    'npc-item', 'evidence', 'literature', 'magical',
-    'materials', 'components', 'personal'
+    'npc-item', 'evidence', 'magical',
+    'materials', 'components', 'personal', 'literature', 'custom'
 ];
 
 const additionalTags = [
@@ -69,7 +69,8 @@ const additionalTags = [
 const encumbranceWeights = {
     'weapon': 3,
     'armor': 10,
-    'clothing': 3,
+    'clothing': 2,
+    'jewelry': 1,
     'camp': 2,
     'potion': 1,
     'flask': 1,
@@ -84,7 +85,8 @@ const encumbranceWeights = {
     'magical': 1,
     'materials': 1,
     'components': 1,
-    'personal': 1
+    'personal': 1,
+    'custom': 1
 };
 
 const abilities = [
@@ -843,17 +845,27 @@ function showAddItemModal(defaultType = 'weapon') {
             
             <form id="add-item-form" class="add-item-form">
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="item-type">
-                            <span class="label-icon">🏷️</span>
-                            Item Type
-                        </label>
-                        <select id="item-type" required>
-                            ${itemTypes.map(type => 
-                                `<option value="${type}" ${type === defaultType ? 'selected' : ''}>${type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ')}</option>`
-                            ).join('')}
-                        </select>
-                    </div>
+                                         <div class="form-group">
+                         <label for="item-type">
+                             <span class="label-icon">🏷️</span>
+                             Item Type
+                         </label>
+                         <select id="item-type" required onchange="handleItemTypeChange()">
+                             ${itemTypes.map(type => 
+                                 `<option value="${type}" ${type === defaultType ? 'selected' : ''}>${type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ')}</option>`
+                             ).join('')}
+                         </select>
+                         <div id="custom-type-container" style="display: none; margin-top: 10px;">
+                             <label for="custom-item-type">
+                                 <span class="label-icon">✏️</span>
+                                 Custom Type Name
+                             </label>
+                             <input type="text" id="custom-item-type" placeholder="e.g., Scroll, Trinket, Gadget">
+                             <div class="custom-type-info">
+                                 <small>Custom items will be equipped in the Belt & Consumables section</small>
+                             </div>
+                         </div>
+                     </div>
                     
                     <div class="form-group">
                         <label for="item-name">
@@ -983,14 +995,61 @@ function closeModalWithAnimation(modal) {
     }, 300);
 }
 
+function handleItemTypeChange() {
+    const typeSelect = document.getElementById('item-type');
+    const customContainer = document.getElementById('custom-type-container');
+    const customInput = document.getElementById('custom-item-type');
+    
+    if (typeSelect.value === 'custom') {
+        customContainer.style.display = 'block';
+        customContainer.classList.remove('hide');
+        customContainer.classList.add('show');
+        customInput.required = true;
+        // Focus on custom input for better UX
+        setTimeout(() => customInput.focus(), 100);
+    } else {
+        customContainer.classList.remove('show');
+        customContainer.classList.add('hide');
+        customInput.required = false;
+        customInput.value = ''; // Clear the input
+        // Hide after animation completes
+        setTimeout(() => {
+            if (customContainer.classList.contains('hide')) {
+                customContainer.style.display = 'none';
+                customContainer.classList.remove('hide');
+            }
+        }, 300);
+    }
+}
+
 function addNewItem() {
     try {
-        const type = document.getElementById('item-type').value;
+        let type = document.getElementById('item-type').value;
         const name = document.getElementById('item-name').value.trim();
         const description = document.getElementById('item-description').value.trim();
         const features = document.getElementById('item-features').value.trim();
         const diceRoll = document.getElementById('item-dice').value.trim();
         const ability = document.getElementById('item-ability').value;
+        
+        // Handle custom type
+        if (type === 'custom') {
+            const customType = document.getElementById('custom-item-type').value.trim();
+            if (!customType) {
+                showFieldError('custom-item-type', 'Custom type name is required');
+                return false;
+            }
+            if (customType.length > 30) {
+                showFieldError('custom-item-type', 'Custom type must be 30 characters or less');
+                return false;
+            }
+            // Validate custom type doesn't conflict with existing types
+            const normalizedCustomType = customType.toLowerCase().replace(/\s+/g, '-');
+            if (itemTypes.includes(normalizedCustomType)) {
+                showFieldError('custom-item-type', 'This type already exists. Please choose a different name.');
+                return false;
+            }
+            type = normalizedCustomType;
+        }
         
         // Validation
         if (!name) {
@@ -1019,7 +1078,13 @@ function addNewItem() {
         };
         
         // Add to appropriate category
-        const category = getItemCategory(type);
+        let category = getItemCategory(type);
+        
+        // Custom types go to Personal category
+        if (type !== 'custom' && !itemTypes.includes(type)) {
+            category = 'Personal';
+        }
+        
         if (!equipmentData.inventory[category]) {
             equipmentData.inventory[category] = [];
         }
@@ -1197,7 +1262,7 @@ function equipItem(type, index) {
         }
         equipmentData.equipped.clothing = item;
     } else {
-        // For all other items (consumables, quest items, etc.) - use belt slots
+        // For all other items (consumables, quest items, custom types, etc.) - use belt slots
         const emptySlot = equipmentData.equipped.belt.findIndex(slot => !slot);
         if (emptySlot !== -1) {
             equipmentData.equipped.belt[emptySlot] = item;
@@ -1765,5 +1830,6 @@ window.changeBagType = changeBagType;
 window.updateBagInfo = updateBagInfo;
 window.dropItem = dropItem;
 window.sellItem = sellItem;
+window.handleItemTypeChange = handleItemTypeChange;
 window.initializeEquipment = initializeEquipment;
 window.renderEquipmentOverview = renderEquipmentOverview;

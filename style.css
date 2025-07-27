@@ -2107,6 +2107,32 @@
      animation: slideIn 0.3s ease;
  }
 
+ /* Custom Type Container Styles */
+ #custom-type-container {
+     transition: all 0.3s ease;
+ }
+
+ #custom-type-container.show {
+     opacity: 1;
+     transform: translateY(0);
+ }
+
+ #custom-type-container.hide {
+     opacity: 0;
+     transform: translateY(-10px);
+ }
+
+ .custom-type-info {
+     margin-top: 5px;
+ }
+
+ .custom-type-info small {
+     color: var(--text-color);
+     opacity: 0.7;
+     font-style: italic;
+     font-size: 0.8rem;
+ }
+
  /* Responsive Design for Settings */
  @media (max-width: 768px) {
      .settings-container {
