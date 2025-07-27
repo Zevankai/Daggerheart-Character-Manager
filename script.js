@@ -196,15 +196,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.warn('resetDowntimeView function not found. Ensure downtime.js is loaded.');
                 }
             }
-            if (targetPanelId === 'equipment-tab-content') {
-                console.log('Equipment tab clicked!');
-                if (window.initializeEquipment && typeof window.initializeEquipment === 'function') {
-                    console.log('Calling initializeEquipment...');
-                    window.initializeEquipment();
-                } else {
-                    console.warn('initializeEquipment function not found. Ensure equipment.js is loaded.');
-                }
-            }
             if (targetPanelId === 'journal-tab-content') {
                 if (window.renderJournalEntries && typeof window.renderJournalEntries === 'function') {
                     window.renderJournalEntries();
