@@ -1238,21 +1238,20 @@ function unequipItem(type, index) {
     
     // Unequip the item
     const equipped = equipmentData.equipped;
-    const type = item.type;
     
     // Remove item from equipped slots
-    if (type === 'weapon') {
+    if (item.type === 'weapon') {
         if (equipped.primaryWeapon && equipped.primaryWeapon.id === item.id) {
             equipped.primaryWeapon = null;
         }
         if (equipped.secondaryWeapon && equipped.secondaryWeapon.id === item.id) {
             equipped.secondaryWeapon = null;
         }
-    } else if (type === 'armor') {
+    } else if (item.type === 'armor') {
         equipped.armor = null;
-    } else if (type === 'clothing') {
+    } else if (item.type === 'clothing') {
         equipped.clothing = null;
-    } else if (type === 'jewelry') {
+    } else if (item.type === 'jewelry') {
         const slotIndex = equipped.jewelry.findIndex(slot => slot && slot.id === item.id);
         if (slotIndex !== -1) {
             equipped.jewelry[slotIndex] = null;
@@ -1293,12 +1292,11 @@ function equipItem(type, index) {
     }
     
     // Equip the item
-    const type = item.type;
-    if (type === 'weapon') {
+    if (item.type === 'weapon') {
         // Show weapon slot selection
         showWeaponSlotModal(item);
         return; // showWeaponSlotModal handles the rest
-    } else if (type === 'jewelry') {
+    } else if (item.type === 'jewelry') {
         // Find empty jewelry slot
         const emptySlot = equipmentData.equipped.jewelry.findIndex(slot => !slot);
         if (emptySlot !== -1) {
@@ -1307,14 +1305,14 @@ function equipItem(type, index) {
             alert('All jewelry slots are full. Unequip an item first.');
             return;
         }
-    } else if (type === 'armor') {
+    } else if (item.type === 'armor') {
         // Check if armor slot is already occupied
         if (equipmentData.equipped.armor) {
             alert('You already have armor equipped. Unequip it first.');
             return;
         }
         equipmentData.equipped.armor = item;
-    } else if (type === 'clothing') {
+    } else if (item.type === 'clothing') {
         // Check if clothing slot is already occupied
         if (equipmentData.equipped.clothing) {
             alert('You already have clothing equipped. Unequip it first.');
