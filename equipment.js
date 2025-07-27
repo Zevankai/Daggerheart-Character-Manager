@@ -833,64 +833,101 @@ function switchEquipmentSection(section) {
 // ===== ITEM MANAGEMENT =====
 function showAddItemModal(defaultType = 'weapon') {
     const modal = document.createElement('div');
-    modal.className = 'modal';
+    modal.className = 'modal add-item-modal';
     modal.innerHTML = `
-        <div class="modal-content">
-            <h3>Add New Item</h3>
-            <form id="add-item-form">
-                <div class="form-group">
-                    <label for="item-type">Item Type:</label>
-                    <select id="item-type" required>
-                        ${itemTypes.map(type => 
-                            `<option value="${type}" ${type === defaultType ? 'selected' : ''}>${type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ')}</option>`
-                        ).join('')}
-                    </select>
+        <div class="modal-content glassmorphic">
+            <div class="modal-header">
+                <h3>✨ Add New Item</h3>
+                <button type="button" class="modal-close-btn" onclick="closeModal(this)" title="Close">×</button>
+            </div>
+            
+            <form id="add-item-form" class="add-item-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="item-type">
+                            <span class="label-icon">🏷️</span>
+                            Item Type
+                        </label>
+                        <select id="item-type" required>
+                            ${itemTypes.map(type => 
+                                `<option value="${type}" ${type === defaultType ? 'selected' : ''}>${type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ')}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="item-name">
+                            <span class="label-icon">📝</span>
+                            Name <span class="required">*</span>
+                        </label>
+                        <input type="text" id="item-name" required placeholder="Enter item name">
+                    </div>
                 </div>
                 
                 <div class="form-group">
-                    <label for="item-name">Name:</label>
-                    <input type="text" id="item-name" required>
+                    <label for="item-description">
+                        <span class="label-icon">📋</span>
+                        Description
+                    </label>
+                    <textarea id="item-description" rows="3" placeholder="Describe the item's appearance and basic properties..."></textarea>
                 </div>
                 
                 <div class="form-group">
-                    <label for="item-description">Description (optional):</label>
-                    <textarea id="item-description" rows="3"></textarea>
+                    <label for="item-features">
+                        <span class="label-icon">⚡</span>
+                        Features & Abilities
+                    </label>
+                    <textarea id="item-features" rows="2" placeholder="Special abilities, magical properties, or unique features..."></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="item-dice">
+                            <span class="label-icon">🎲</span>
+                            Dice Roll
+                        </label>
+                        <input type="text" id="item-dice" placeholder="e.g., 1d6, 2d8+3">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="item-ability">
+                            <span class="label-icon">💪</span>
+                            Associated Ability
+                        </label>
+                        <select id="item-ability">
+                            <option value="">None</option>
+                            ${abilities.map(ability => 
+                                `<option value="${ability}">${ability}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
                 </div>
                 
                 <div class="form-group">
-                    <label for="item-features">Features (optional):</label>
-                    <textarea id="item-features" rows="2"></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="item-dice">Dice Roll (optional):</label>
-                    <input type="text" id="item-dice" placeholder="e.g., 1d6, 2d8+3">
-                </div>
-                
-                <div class="form-group">
-                    <label for="item-ability">Associated Ability (optional):</label>
-                    <select id="item-ability">
-                        <option value="">None</option>
-                        ${abilities.map(ability => 
-                            `<option value="${ability}">${ability}</option>`
-                        ).join('')}
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="item-tags">Tags (optional):</label>
-                    <div class="tags-selection">
+                    <label for="item-tags">
+                        <span class="label-icon">🏆</span>
+                        Tags
+                    </label>
+                    <div class="tags-selection enhanced">
                         ${additionalTags.map(tag => `
-                            <label class="tag-checkbox">
-                                <input type="checkbox" value="${tag}"> ${tag}
+                            <label class="tag-checkbox enhanced">
+                                <input type="checkbox" value="${tag}">
+                                <span class="checkmark"></span>
+                                <span class="tag-text">${tag}</span>
                             </label>
                         `).join('')}
                     </div>
                 </div>
                 
-                <div class="modal-buttons">
-                    <button type="submit" class="confirm-btn">Add Item</button>
-                    <button type="button" class="cancel-btn" onclick="closeModal(this)">Cancel</button>
+                <div class="modal-buttons enhanced">
+                    <button type="submit" class="confirm-btn add-item-btn">
+                        <span class="btn-icon">✅</span>
+                        Add Item
+                    </button>
+                    <button type="button" class="cancel-btn" onclick="closeModal(this)">
+                        <span class="btn-icon">❌</span>
+                        Cancel
+                    </button>
                 </div>
             </form>
         </div>
@@ -899,50 +936,166 @@ function showAddItemModal(defaultType = 'weapon') {
     document.body.appendChild(modal);
     modal.style.display = 'flex';
     
+    // Add smooth entrance animation
+    setTimeout(() => {
+        modal.classList.add('show');
+    }, 10);
+    
+    // Focus on the name input for better UX
+    setTimeout(() => {
+        const nameInput = document.getElementById('item-name');
+        if (nameInput) nameInput.focus();
+    }, 100);
+    
     document.getElementById('add-item-form').addEventListener('submit', (e) => {
         e.preventDefault();
-        addNewItem();
-        closeModal(modal.querySelector('.cancel-btn'));
+        const success = addNewItem();
+        if (success) {
+            // Add success animation
+            const addBtn = modal.querySelector('.add-item-btn');
+            addBtn.innerHTML = '<span class="btn-icon">✅</span> Added!';
+            addBtn.style.background = 'rgba(76, 175, 80, 0.3)';
+            addBtn.style.borderColor = 'rgba(76, 175, 80, 0.6)';
+            addBtn.style.color = '#4CAF50';
+            
+            setTimeout(() => {
+                closeModalWithAnimation(modal);
+            }, 800);
+        }
     });
+    
+    // Handle escape key
+    const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+            closeModalWithAnimation(modal);
+            document.removeEventListener('keydown', handleEscape);
+        }
+    };
+    document.addEventListener('keydown', handleEscape);
+}
+
+function closeModalWithAnimation(modal) {
+    modal.classList.remove('show');
+    setTimeout(() => {
+        if (modal.parentNode) {
+            modal.parentNode.removeChild(modal);
+        }
+    }, 300);
 }
 
 function addNewItem() {
-    const type = document.getElementById('item-type').value;
-    const name = document.getElementById('item-name').value;
-    const description = document.getElementById('item-description').value;
-    const features = document.getElementById('item-features').value;
-    const diceRoll = document.getElementById('item-dice').value;
-    const ability = document.getElementById('item-ability').value;
+    try {
+        const type = document.getElementById('item-type').value;
+        const name = document.getElementById('item-name').value.trim();
+        const description = document.getElementById('item-description').value.trim();
+        const features = document.getElementById('item-features').value.trim();
+        const diceRoll = document.getElementById('item-dice').value.trim();
+        const ability = document.getElementById('item-ability').value;
+        
+        // Validation
+        if (!name) {
+            showFieldError('item-name', 'Name is required');
+            return false;
+        }
+        
+        if (name.length > 50) {
+            showFieldError('item-name', 'Name must be 50 characters or less');
+            return false;
+        }
+        
+                 // Get selected tags
+        const tagCheckboxes = document.querySelectorAll('.tag-checkbox.enhanced input:checked');
+        const tags = Array.from(tagCheckboxes).map(cb => cb.value);
+        
+        const newItem = {
+            name,
+            type,
+            description: description || null,
+            features: features || null,
+            diceRoll: diceRoll || null,
+            ability: ability || null,
+            tags: tags.length > 0 ? tags : null,
+            id: Date.now() // Simple ID generation
+        };
+        
+        // Add to appropriate category
+        const category = getItemCategory(type);
+        if (!equipmentData.inventory[category]) {
+            equipmentData.inventory[category] = [];
+        }
+        equipmentData.inventory[category].push(newItem);
+        saveEquipmentData();
+        
+        // Refresh current section and update encumbrance
+        const activeSection = document.querySelector('.equipment-nav-btn.active')?.dataset.section || 'overview';
+        switchEquipmentSection(activeSection);
+        
+        // Update encumbrance display
+        updateEncumbranceDisplay();
+        
+        // Show success notification
+        if (window.showNotification && typeof window.showNotification === 'function') {
+            window.showNotification(`"${name}" added successfully!`, 'success');
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Error adding new item:', error);
+        if (window.showNotification && typeof window.showNotification === 'function') {
+            window.showNotification('Error adding item. Please try again.', 'error');
+        }
+        return false;
+    }
+}
+
+function showFieldError(fieldId, message) {
+    const field = document.getElementById(fieldId);
+    if (!field) return;
     
-    // Get selected tags
-    const tagCheckboxes = document.querySelectorAll('.tag-checkbox input:checked');
-    const tags = Array.from(tagCheckboxes).map(cb => cb.value);
+    // Remove existing error
+    const existingError = field.parentNode.querySelector('.field-error');
+    if (existingError) {
+        existingError.remove();
+    }
     
-    const newItem = {
-        name,
-        type,
-        description: description || null,
-        features: features || null,
-        diceRoll: diceRoll || null,
-        ability: ability || null,
-        tags: tags.length > 0 ? tags : null,
-        id: Date.now() // Simple ID generation
+    // Add error styling
+    field.style.borderColor = '#ff6464';
+    field.style.background = 'rgba(255, 100, 100, 0.1)';
+    
+    // Add error message
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'field-error';
+    errorDiv.textContent = message;
+    errorDiv.style.cssText = `
+        color: #ff6464;
+        font-size: 0.8rem;
+        margin-top: 5px;
+        animation: slideIn 0.3s ease;
+    `;
+    
+    field.parentNode.appendChild(errorDiv);
+    
+    // Focus the field
+    field.focus();
+    
+    // Remove error styling when user starts typing
+    const clearError = () => {
+        field.style.borderColor = '';
+        field.style.background = '';
+        if (errorDiv.parentNode) {
+            errorDiv.remove();
+        }
+        field.removeEventListener('input', clearError);
     };
     
-    // Add to appropriate category
-    const category = getItemCategory(type);
-    if (!equipmentData.inventory[category]) {
-        equipmentData.inventory[category] = [];
-    }
-    equipmentData.inventory[category].push(newItem);
-    saveEquipmentData();
+    field.addEventListener('input', clearError);
     
-    // Refresh current section and update encumbrance
-    const activeSection = document.querySelector('.equipment-nav-btn.active').dataset.section;
-    switchEquipmentSection(activeSection);
-    
-    // Update encumbrance display
-    updateEncumbranceDisplay();
+    // Auto-remove error after 5 seconds
+    setTimeout(() => {
+        if (errorDiv.parentNode) {
+            clearError();
+        }
+    }, 5000);
 }
 
 function isItemEquipped(item, type) {
@@ -1462,7 +1615,13 @@ function updateActiveArmorDisplay() {
 function closeModal(button) {
     const modal = button.closest('.modal');
     if (modal) {
-        modal.remove();
+        // Check if it's the enhanced add item modal
+        if (modal.classList.contains('add-item-modal')) {
+            closeModalWithAnimation(modal);
+        } else {
+            // For other modals, use immediate removal
+            modal.remove();
+        }
     }
 }
 
