@@ -1396,10 +1396,13 @@ function showWeaponSlotModal(weapon) {
 }
 
 function equipWeaponToSlot(slot, weaponId) {
+    // Convert weaponId to number if it's a string (from onclick handler)
+    const numericWeaponId = typeof weaponId === 'string' ? parseInt(weaponId) : weaponId;
+    
     // Find the actual weapon in inventory by ID
     let weapon = null;
     for (const [category, items] of Object.entries(equipmentData.inventory)) {
-        const foundWeapon = items.find(item => item.id === weaponId);
+        const foundWeapon = items.find(item => item.id === numericWeaponId);
         if (foundWeapon) {
             weapon = foundWeapon;
             break;
