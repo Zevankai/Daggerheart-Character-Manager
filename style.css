@@ -100,7 +100,6 @@ select:focus,
    /* UPDATED: Now uses a CSS variable for its background color */
    background: var(--glass-background-color);
    /* Ensure content is accessible even if background image fails to load */
-   background-color: rgba(0, 0, 0, 0.3);
    background-blend-mode: overlay;
    border-radius: 12px;
    border: 1px solid rgba(255, 255, 255, 0.2);
