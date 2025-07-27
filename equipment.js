@@ -1384,8 +1384,8 @@ function showWeaponSlotModal(weapon) {
             <h3>Equip Weapon: ${weapon.name}</h3>
             <p>Choose weapon slot:</p>
             <div class="modal-buttons">
-                <button onclick="equipWeaponToSlot('primaryWeapon', ${JSON.stringify(weapon).replace(/"/g, '&quot;')}); closeModal(this)" class="confirm-btn">Primary Weapon</button>
-                <button onclick="equipWeaponToSlot('secondaryWeapon', ${JSON.stringify(weapon).replace(/"/g, '&quot;')}); closeModal(this)" class="confirm-btn">Secondary Weapon</button>
+                <button onclick="equipWeaponToSlot('primaryWeapon', '${weapon.id}'); closeModal(this)" class="confirm-btn">Primary Weapon</button>
+                <button onclick="equipWeaponToSlot('secondaryWeapon', '${weapon.id}'); closeModal(this)" class="confirm-btn">Secondary Weapon</button>
                 <button onclick="closeModal(this)" class="cancel-btn">Cancel</button>
             </div>
         </div>
@@ -1395,7 +1395,23 @@ function showWeaponSlotModal(weapon) {
     modal.style.display = 'flex';
 }
 
-function equipWeaponToSlot(slot, weapon) {
+function equipWeaponToSlot(slot, weaponId) {
+    // Find the actual weapon in inventory by ID
+    let weapon = null;
+    for (const [category, items] of Object.entries(equipmentData.inventory)) {
+        const foundWeapon = items.find(item => item.id === weaponId);
+        if (foundWeapon) {
+            weapon = foundWeapon;
+            break;
+        }
+    }
+    
+    if (!weapon) {
+        console.error(`Weapon with ID ${weaponId} not found in inventory`);
+        alert('Weapon not found!');
+        return;
+    }
+    
     // Check if weapon is already equipped in any slot
     if (isItemEquipped(weapon, 'weapon')) {
         alert('This weapon is already equipped!');
