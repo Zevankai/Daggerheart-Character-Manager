@@ -12,6 +12,17 @@
    --char-image-border-color: rgba(255, 255, 255, 0.12);
 }
 
+/* Mobile-First Optimizations */
+* {
+   box-sizing: border-box;
+}
+
+/* Improved scrolling on mobile */
+html {
+   -webkit-text-size-adjust: 100%; /* Prevent iOS text size adjustment */
+   -ms-text-size-adjust: 100%; /* Prevent Windows Phone text size adjustment */
+}
+
 body {
    margin: 0;
    font-family: 'Segoe UI', sans-serif;
@@ -22,11 +33,75 @@ body {
    align-items: center;
    padding: 20px;
    color: var(--text-color);
+   /* Improved mobile scrolling */
+   -webkit-overflow-scrolling: touch;
+   /* Prevent text selection on UI elements */
+   -webkit-user-select: none;
+   -moz-user-select: none;
+   -ms-user-select: none;
+   user-select: none;
+}
+
+/* Allow text selection in content areas */
+input, textarea, [contenteditable] {
+   -webkit-user-select: text;
+   -moz-user-select: text;
+   -ms-user-select: text;
+   user-select: text;
+}
+
+/* Prevent zoom on inputs for mobile */
+@media screen and (max-width: 768px) {
+   input[type="text"],
+   input[type="number"],
+   input[type="email"],
+   input[type="password"],
+   textarea,
+   select {
+       font-size: 16px !important; /* Prevents zoom on iOS */
+   }
+}
+
+/* Safe area support for devices with notches */
+@supports (padding: max(0px)) {
+   body {
+       padding-left: max(20px, env(safe-area-inset-left));
+       padding-right: max(20px, env(safe-area-inset-right));
+       padding-bottom: max(20px, env(safe-area-inset-bottom));
+   }
+   
+   @media (max-width: 768px) {
+       body {
+           padding-left: max(8px, env(safe-area-inset-left));
+           padding-right: max(8px, env(safe-area-inset-right));
+           padding-bottom: max(8px, env(safe-area-inset-bottom));
+       }
+   }
+}
+
+/* Improve focus states for accessibility */
+button:focus,
+input:focus,
+textarea:focus,
+select:focus,
+.button:focus {
+   outline: 2px solid var(--accent-color);
+   outline-offset: 2px;
+}
+
+/* Optimized animations for mobile */
+@media (max-width: 768px) {
+   * {
+       transition-duration: 0.2s !important; /* Faster transitions on mobile */
+   }
 }
 
 .glass {
    /* UPDATED: Now uses a CSS variable for its background color */
    background: var(--glass-background-color);
+   /* Ensure content is accessible even if background image fails to load */
+   background-color: rgba(0, 0, 0, 0.3);
+   background-blend-mode: overlay;
    border-radius: 12px;
    border: 1px solid rgba(255, 255, 255, 0.2);
    padding: 20px;
@@ -2641,8 +2716,285 @@ body[data-theme="light"] {
     cursor: pointer;
 }
 
-/* Responsive Design for New System */
+/* This mobile styles section is now integrated into the comprehensive mobile improvements below */
+
+/* Mobile-First Responsive Design Improvements */
+
+/* Enhanced Mobile Styles - Starting around line 2685 */
+@media (max-width: 900px) {
+    body {
+        padding: 10px;
+    }
+    
+    .glass {
+        width: 95%;
+        padding: 15px;
+    }
+    
+    /* Header Layout for Tablets */
+    header {
+        gap: 20px;
+        padding: 15px;
+    }
+    
+    .char-img-wrapper {
+        width: 250px;
+        height: 250px;
+    }
+    
+    .name-box {
+        max-width: 300px;
+    }
+    
+    .right-info {
+        position: relative;
+        right: auto;
+        top: auto;
+        text-align: center;
+        padding-right: 0;
+        margin-top: 15px;
+    }
+}
+
 @media (max-width: 768px) {
+    body {
+        padding: 8px;
+    }
+    
+    .glass {
+        width: 98%;
+        padding: 12px;
+        border-radius: 8px;
+    }
+    
+    /* Mobile Header Layout */
+    header {
+        flex-direction: column;
+        gap: 15px;
+        padding: 10px;
+        text-align: center;
+    }
+    
+    .char-img-wrapper {
+        width: 200px;
+        height: 200px;
+        order: 1;
+    }
+    
+    .name-box {
+        order: 2;
+        max-width: 100%;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .name-box input {
+        font-size: 1.5rem;
+    }
+    
+    .right-info {
+        order: 3;
+        position: relative;
+        right: auto;
+        top: auto;
+        text-align: center;
+        padding-right: 0;
+        margin-top: 0;
+        width: 100%;
+    }
+    
+    /* Main Grid Layout - Stack on Mobile */
+    .flex-row {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .section {
+        margin-top: 0;
+        padding: 15px;
+    }
+    
+    /* Attributes Grid - Single Column on Mobile */
+    .attributes-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        max-width: 300px;
+    }
+    
+    .attribute-box {
+        padding: 12px;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .attribute-box h4 {
+        font-size: 0.9rem;
+        text-align: left;
+    }
+    
+    .attribute-value {
+        font-size: 1.5rem;
+        width: 80px;
+    }
+    
+    .attribute-text {
+        font-size: 0.7rem;
+        text-align: right;
+        white-space: normal;
+        line-height: 1.2;
+    }
+    
+    /* Mobile Tab Navigation */
+    nav.tabs {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-top: 1rem;
+    }
+    
+    nav.tabs button {
+        padding: 12px 8px;
+        font-size: 0.8rem;
+        text-align: center;
+        line-height: 1.2;
+    }
+    
+    /* Damage Control Buttons - Stack on Mobile */
+    .damage-control-row {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .damage-btn {
+        width: 100%;
+        max-width: 200px;
+        padding: 12px;
+        font-size: 0.9rem;
+    }
+    
+    .damage-value-input {
+        width: 40px;
+        height: 40px;
+        font-size: 1.4rem;
+        margin-top: 5px;
+    }
+    
+    /* Trackers - Better Mobile Layout */
+    .trackers-wrapper {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .trackers {
+        justify-content: center;
+        max-width: 300px;
+    }
+    
+    .tracker-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 1.4rem;
+    }
+    
+    /* Hope Tracker Mobile */
+    .hope-tracker-inline .trackers-wrapper {
+        flex-direction: row;
+        justify-content: center;
+    }
+    
+    /* Journal Category Buttons */
+    .journal-category-buttons {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+    
+    .journal-category-buttons .button {
+        padding: 10px 8px;
+        font-size: 0.8rem;
+    }
+    
+    /* Modal Improvements for Mobile */
+    .modal-overlay {
+        padding: 10px;
+    }
+    
+    .modal {
+        margin: 10px;
+        padding: 20px;
+        max-width: calc(100vw - 20px);
+        max-height: calc(100vh - 40px);
+        overflow-y: auto;
+    }
+    
+    .modal h3 {
+        font-size: 1.3rem;
+        margin-bottom: 15px;
+    }
+    
+    .modal-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .modal-buttons .button {
+        width: 100%;
+        margin-top: 0;
+    }
+    
+    /* Rest Options Mobile */
+    .rest-type-selection .button-group {
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .rest-type-selection .button-group .button {
+        width: 100%;
+        max-width: 250px;
+    }
+    
+    .rest-options-list {
+        max-width: 100%;
+    }
+    
+    .rest-option {
+        padding: 12px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .rest-option input[type="checkbox"] {
+        align-self: flex-start;
+    }
+    
+    /* Projects Header Mobile */
+    .projects-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .project-action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+    
+    .project-action-buttons .button {
+        width: 100%;
+        margin-top: 0;
+    }
+    
+    /* Equipment Specific Mobile Improvements */
     .character-silhouette {
         grid-template-columns: 1fr;
         gap: 20px;
@@ -2650,6 +3002,7 @@ body[data-theme="light"] {
     
     .character-svg {
         max-width: 250px;
+        width: 100%;
     }
     
     .search-controls {
@@ -2661,6 +3014,7 @@ body[data-theme="light"] {
     .search-controls select {
         min-width: auto;
         width: 100%;
+        margin-bottom: 10px;
     }
     
     .items-grid.compact {
@@ -2679,5 +3033,274 @@ body[data-theme="light"] {
     
     .tags-selection {
         grid-template-columns: repeat(2, 1fr);
+    }
+    
+    /* Better Spacing for Forms */
+    .detail-field {
+        margin-bottom: 15px;
+    }
+    
+    .detail-field label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    
+    .detail-field input[type="text"],
+    .detail-field textarea,
+    .detail-field select {
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Journal Entry Mobile Improvements */
+    .journal-entries-list {
+        max-height: 400px;
+    }
+    
+    .journal-entry-item {
+        padding: 12px;
+    }
+    
+    .journal-entry-item h4 {
+        font-size: 1rem;
+    }
+    
+    .journal-detail-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+}
+
+/* Extra Small Mobile Devices */
+@media (max-width: 480px) {
+    .glass {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+    }
+    
+    .char-img-wrapper {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .name-box input {
+        font-size: 1.2rem;
+    }
+    
+    .domain-row {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .domain-badge, .level-display {
+        font-size: 0.8rem;
+    }
+    
+    .level-display {
+        font-size: 1.4rem;
+    }
+    
+    nav.tabs {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+    }
+    
+    nav.tabs button {
+        padding: 10px 6px;
+        font-size: 0.7rem;
+    }
+    
+    .attributes-grid {
+        max-width: 280px;
+    }
+    
+    .attribute-box {
+        padding: 10px;
+    }
+    
+    .attribute-value {
+        width: 70px;
+        font-size: 1.3rem;
+    }
+    
+    .attribute-text {
+        font-size: 0.6rem;
+    }
+    
+    .trackers {
+        max-width: 250px;
+    }
+    
+    .hp-circle, .stress-circle, .armor-circle, .hope-circle {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .journal-category-buttons {
+        grid-template-columns: 1fr;
+    }
+    
+    .character-svg {
+        max-width: 200px;
+    }
+    
+    .search-controls input[type="text"],
+    .search-controls select {
+        font-size: 14px;
+        padding: 8px;
+    }
+}
+
+/* Touch-Friendly Improvements */
+@media (hover: none) and (pointer: coarse) {
+    /* Increase touch targets for mobile devices */
+    .tracker-btn {
+        min-width: 44px;
+        min-height: 44px;
+    }
+    
+    .damage-btn {
+        min-height: 48px;
+    }
+    
+    nav.tabs button {
+        min-height: 48px;
+    }
+    
+    .button {
+        min-height: 44px;
+        padding: 12px 16px;
+    }
+    
+    .hp-circle, .stress-circle, .armor-circle, .hope-circle {
+        min-width: 24px;
+        min-height: 24px;
+    }
+    
+    /* Remove hover effects on touch devices */
+    .section:hover {
+        transform: none;
+    }
+    
+    .button:hover {
+        transform: none;
+        background: #ffffff20;
+    }
+    
+    .tracker-btn:hover {
+        transform: none;
+        background: rgba(255, 255, 255, 0.15);
+    }
+    
+    /* Add active states for better touch feedback */
+    .button:active {
+        transform: scale(0.95);
+        background: #ffffff40;
+    }
+    
+    .tracker-btn:active {
+        transform: scale(0.9);
+        background: rgba(255, 255, 255, 0.4);
+    }
+    
+    nav.tabs button:active {
+        background: rgba(255,255,255,0.4);
+    }
+    
+    /* Better touch targets for inputs */
+    input[type="text"],
+    input[type="number"],
+    textarea,
+    select {
+        min-height: 44px;
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+    
+    /* Touch-friendly checkboxes */
+    input[type="checkbox"] {
+        min-width: 20px;
+        min-height: 20px;
+        transform: scale(1.2);
+    }
+}
+
+/* Landscape Orientation Optimizations for Mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    header {
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .char-img-wrapper {
+        width: 120px;
+        height: 120px;
+        order: 1;
+    }
+    
+    .name-box {
+        order: 2;
+        max-width: 350px;
+        flex: 1;
+        min-width: 250px;
+    }
+    
+    .right-info {
+        order: 3;
+        text-align: right;
+        flex-shrink: 0;
+    }
+    
+    .flex-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    
+    nav.tabs {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .journal-category-buttons {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Accessibility Improvements */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+        animation: none !important;
+    }
+    
+    .section:hover {
+        transform: none;
+    }
+    
+    .button:hover {
+        transform: none;
+    }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .glass {
+        border: 2px solid rgba(255, 255, 255, 0.5);
+    }
+    
+    .section {
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    nav.tabs button {
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .button {
+        border: 1px solid rgba(255, 255, 255, 0.4);
     }
 }
