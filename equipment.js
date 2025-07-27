@@ -201,9 +201,13 @@ function renderEquipmentOverview() {
         return;
     }
     
+    // Check if backpack system is enabled
+    const backpackEnabled = window.backpackSystemEnabled !== false; // Default to true if not set
+    
     const encumbrance = calculateEncumbrance();
     const isOverEncumbered = isEncumbered();
     console.log('Encumbrance calculated:', encumbrance, 'Over encumbered:', isOverEncumbered);
+    console.log('Backpack system enabled:', backpackEnabled);
     
     try {
         const overviewContent = renderOverviewContent();
@@ -213,26 +217,27 @@ function renderEquipmentOverview() {
             <div class="equipment-container">
                 <div class="equipment-header">
                     <h2>Equipment Overview</h2>
-                    ${isOverEncumbered ? '<div class="encumbrance-warning">⚠️ ENCUMBERED - Carrying too much weight!</div>' : ''}
-                                    <div class="encumbrance-display">
-                    <span class="encumbrance-text">Encumbrance: ${encumbrance}/${getMaxCapacity()} units</span>
-                    <div class="encumbrance-bar">
-                        <div class="encumbrance-fill" style="width: ${Math.min((encumbrance / getMaxCapacity()) * 100, 100)}%"></div>
+                    ${backpackEnabled && isOverEncumbered ? '<div class="encumbrance-warning">⚠️ ENCUMBERED - Carrying too much weight!</div>' : ''}
+                    ${backpackEnabled ? `
+                    <div class="encumbrance-display">
+                        <span class="encumbrance-text">Encumbrance: ${encumbrance}/${getMaxCapacity()} units</span>
+                        <div class="encumbrance-bar">
+                            <div class="encumbrance-fill" style="width: ${Math.min((encumbrance / getMaxCapacity()) * 100, 100)}%"></div>
+                        </div>
                     </div>
-                </div>
-                <div class="bag-selector">
-                    <label for="bag-select">Bag Type:</label>
-                    <select id="bag-select" onchange="changeBagType(this.value)">
-                        ${Object.keys(bagTypes).map(bagName => 
-                            `<option value="${bagName}" ${equipmentData.selectedBag === bagName ? 'selected' : ''}>${bagName}</option>`
-                        ).join('')}
-                    </select>
-                    <div class="bag-info">
-                        <span class="bag-capacity">Capacity: ${getMaxCapacity()} units</span>
-                        <span class="bag-consumables">Belt Slots: ${bagTypes[equipmentData.selectedBag].consumableSlots}</span>
-                        ${bagTypes[equipmentData.selectedBag].bonus ? `<span class="bag-bonus">${bagTypes[equipmentData.selectedBag].bonus}</span>` : ''}
-                    </div>
-                </div>
+                    <div class="bag-selector">
+                        <label for="bag-select">Bag Type:</label>
+                        <select id="bag-select" onchange="changeBagType(this.value)">
+                            ${Object.keys(bagTypes).map(bagName => 
+                                `<option value="${bagName}" ${equipmentData.selectedBag === bagName ? 'selected' : ''}>${bagName}</option>`
+                            ).join('')}
+                        </select>
+                        <div class="bag-info">
+                            <span class="bag-capacity">Capacity: ${getMaxCapacity()} units</span>
+                            <span class="bag-consumables">Belt Slots: ${bagTypes[equipmentData.selectedBag].consumableSlots}</span>
+                            ${bagTypes[equipmentData.selectedBag].bonus ? `<span class="bag-bonus">${bagTypes[equipmentData.selectedBag].bonus}</span>` : ''}
+                        </div>
+                    </div>` : ''}
                     <div class="equipment-nav">
                         <button class="equipment-nav-btn active" data-section="overview">Overview</button>
                         <button class="equipment-nav-btn" data-section="inventory">Inventory</button>
@@ -274,6 +279,9 @@ function renderOverviewContent() {
         console.error('Equipment data is not properly initialized');
         return '<div><p>Equipment data not loaded properly</p></div>';
     }
+    
+    // Check if backpack system is enabled
+    const backpackEnabled = window.backpackSystemEnabled !== false;
     
     const equipped = equipmentData.equipped;
     const gold = equipmentData.gold;
@@ -323,6 +331,7 @@ function renderOverviewContent() {
                         </div>
                     </div>
 
+                    ${backpackEnabled ? `
                     <!-- Attire -->
                     <div class="equipment-category">
                         <h4>👕 Attire</h4>
@@ -376,7 +385,7 @@ function renderOverviewContent() {
                                 `).join('')}
                             </div>
                         </div>
-                    </div>
+                    </div>` : ''}
                 </div>
             </div>
             
@@ -1308,7 +1317,10 @@ function updateActiveWeaponsAndArmor() {
 function updateEncumbranceWarning() {
     const mainWarning = document.getElementById('encumbrance-warning-main');
     if (mainWarning) {
-        if (isEncumbered()) {
+        // Check if backpack system is enabled
+        const backpackEnabled = window.backpackSystemEnabled !== false;
+        
+        if (backpackEnabled && isEncumbered()) {
             mainWarning.style.display = 'block';
         } else {
             mainWarning.style.display = 'none';
@@ -1317,6 +1329,21 @@ function updateEncumbranceWarning() {
 }
 
 function updateEncumbranceDisplay() {
+    // Check if backpack system is enabled
+    const backpackEnabled = window.backpackSystemEnabled !== false;
+    
+    if (!backpackEnabled) {
+        // If backpack system is disabled, hide all encumbrance displays
+        const encumbranceText = document.querySelector('.encumbrance-text');
+        const encumbranceFill = document.querySelector('.encumbrance-fill');
+        const encumbranceWarning = document.querySelector('.encumbrance-warning');
+        
+        if (encumbranceText) encumbranceText.style.display = 'none';
+        if (encumbranceFill) encumbranceFill.style.display = 'none';
+        if (encumbranceWarning) encumbranceWarning.style.display = 'none';
+        return;
+    }
+    
     // Update the encumbrance bar and text in the equipment tab
     const encumbranceText = document.querySelector('.encumbrance-text');
     const encumbranceFill = document.querySelector('.encumbrance-fill');
@@ -1580,3 +1607,4 @@ window.updateBagInfo = updateBagInfo;
 window.dropItem = dropItem;
 window.sellItem = sellItem;
 window.initializeEquipment = initializeEquipment;
+window.renderEquipmentOverview = renderEquipmentOverview;

@@ -696,11 +696,68 @@ function initializeAccentColorPicker() {
     importInput.addEventListener('keypress', handleKeyPress);
   }
 
+  // ===== BACKPACK & ENCUMBRANCE TOGGLE =====
+  function initializeBackpackToggle() {
+    const backpackToggle = document.getElementById('backpackToggle');
+    
+    if (!backpackToggle) {
+      console.error('Backpack toggle element not found');
+      return;
+    }
+    
+    // Load saved setting
+    const savedSetting = localStorage.getItem('zevi-backpack-enabled');
+    const isEnabled = savedSetting !== null ? savedSetting === 'true' : true; // Default to enabled
+    
+    backpackToggle.checked = isEnabled;
+    applyBackpackToggle(isEnabled);
+    
+    // Handle toggle change
+    backpackToggle.addEventListener('change', (event) => {
+      const enabled = event.target.checked;
+      localStorage.setItem('zevi-backpack-enabled', enabled.toString());
+      applyBackpackToggle(enabled);
+      showNotification(
+        enabled ? 'Backpack & encumbrance system enabled!' : 'Backpack & encumbrance system disabled!',
+        'success'
+      );
+    });
+  }
+  
+  function applyBackpackToggle(enabled) {
+    // Set a global flag for other modules to check
+    window.backpackSystemEnabled = enabled;
+    
+    // Apply CSS class to control visibility
+    const body = document.body;
+    if (enabled) {
+      body.classList.remove('backpack-disabled');
+    } else {
+      body.classList.add('backpack-disabled');
+    }
+    
+    // Hide/show encumbrance warning in main header
+    const mainWarning = document.getElementById('encumbrance-warning-main');
+    if (mainWarning) {
+      mainWarning.style.display = enabled ? '' : 'none';
+    }
+    
+    // Refresh equipment tab if it's currently active
+    const equipmentTab = document.getElementById('equipment-tab-content');
+    if (equipmentTab && equipmentTab.classList.contains('active')) {
+      // Re-render equipment if the module is available
+      if (window.renderEquipmentOverview && typeof window.renderEquipmentOverview === 'function') {
+        window.renderEquipmentOverview();
+      }
+    }
+  }
+
   // ===== INITIALIZATION =====
   function initializeSettings() {
     initializeAccentColorPicker();
     initializeGlassColorPicker();
     initializeCharacterCode();
+    initializeBackpackToggle();
     initializeCharacterDeletion();
     initializeAccountDeletion();
     
@@ -746,6 +803,14 @@ function initializeAccentColorPicker() {
         const newRgbaColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${savedGlassOpacity})`;
         root.style.setProperty('--glass-background-color', newRgbaColor);
     }
+    
+    // Apply saved backpack setting
+    const savedBackpackSetting = localStorage.getItem('zevi-backpack-enabled');
+    if (savedBackpackSetting !== null) {
+        const isEnabled = savedBackpackSetting === 'true';
+        window.backpackSystemEnabled = isEnabled;
+        applyBackpackToggle(isEnabled);
+    }
   }
   
   // Initialize when DOM is loaded
@@ -761,6 +826,7 @@ function initializeAccentColorPicker() {
   window.generateNewCharacterCode = generateNewCharacterCode;
   window.copyCharacterCode = copyCharacterCode;
   window.importCharacterFromCode = importCharacterFromCode;
+  window.applyBackpackToggle = applyBackpackToggle;
   window.deleteCharacterData = deleteCharacterData;
   window.deleteAccountData = deleteAccountData;
   window.initializeSettings = initializeSettings;
