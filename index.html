@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
  <meta charset="UTF-8" />
- <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+ <meta name="apple-mobile-web-app-capable" content="yes">
+ <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
  <title>Zevi Character Sheet</title>
  <link rel="stylesheet" href="style.css">
 </head>
@@ -83,6 +85,10 @@
       <input type="number" class="attribute-value" data-attribute="knowledge" value="0">
       <p class="attribute-text">Recall || Analyze || Comprehend</p>
      </div>
+    </div>
+    <div class="evasion-display">
+     <div class="evasion-label">Evasion</div>
+     <input type="number" class="evasion-value" id="evasionValue" value="10" contenteditable="true">
     </div>
    </div>
    <div class="column section" data-id="hp" data-color-target="hp-stress">
@@ -301,6 +307,20 @@
       </div>
      </div>
      
+     <!-- Background Image Section -->
+     <div class="settings-section">
+      <h3>Background Image</h3>
+      <p>Upload a custom background image for your character sheet.</p>
+      <div class="background-upload-control">
+       <label for="bgUpload" class="upload-btn">
+        🏞️ Choose Background Image
+       </label>
+       <input type="file" id="bgUpload" accept="image/*" onchange="uploadBackground(event)">
+       <div class="background-preview" id="backgroundPreview"></div>
+       <button type="button" id="resetBackground" class="reset-btn">Reset to Default</button>
+      </div>
+     </div>
+     
      <!-- Character Deletion Section -->
      <div class="settings-section danger-section">
       <h3>Character Data</h3>
@@ -344,10 +364,7 @@
   </div>
  </div>
 
- <div class="background-icon">
-  <label for="bgUpload">🏞️</label>
-  <input type="file" id="bgUpload" accept="image/*" onchange="uploadBackground(event)">
- </div>
+
 
  <div id="journal-entry-modal" class="modal-overlay">
     <div class="modal">

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8" />
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+ <meta name="apple-mobile-web-app-capable" content="yes">
+ <title>StackBlitz iPad Test</title>
+ <style>
+   body { 
+     margin: 0;
+     padding: 20px; 
+     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+     min-height: 100vh;
+     color: white;
+   }
+   .test-card { 
+     background: rgba(255,255,255,0.1); 
+     backdrop-filter: blur(10px);
+     border-radius: 12px; 
+     padding: 20px; 
+     margin: 10px 0;
+     border: 1px solid rgba(255,255,255,0.2);
+   }
+   .pass { border-left: 4px solid #4CAF50; }
+   .fail { border-left: 4px solid #f44336; }
+   .info { border-left: 4px solid #2196F3; }
+   button {
+     background: rgba(255,255,255,0.2);
+     color: white;
+     border: 1px solid rgba(255,255,255,0.3);
+     padding: 12px 20px;
+     border-radius: 8px;
+     margin: 5px;
+     cursor: pointer;
+     font-size: 16px;
+   }
+   button:active { background: rgba(255,255,255,0.4); }
+   pre { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; overflow-x: auto; }
+ </style>
+</head>
+<body>
+ <div class="test-card info">
+  <h1>📱 StackBlitz iPad Pro Diagnostic</h1>
+  <p>Testing environment compatibility for the character sheet.</p>
+ </div>
+
+ <div id="results"></div>
+ 
+ <div class="test-card">
+  <h3>🛠️ Quick Fixes</h3>
+  <button onclick="clearLocalStorage()">Clear localStorage</button>
+  <button onclick="testMainSite()">Test Main Site</button>
+  <button onclick="reloadPage()">Reload Page</button>
+ </div>
+
+ <div class="test-card">
+  <h3>📊 Environment Info</h3>
+  <div id="envInfo"></div>
+ </div>
+
+ <script>
+   function addResult(title, status, details = '') {
+     const results = document.getElementById('results');
+     const div = document.createElement('div');
+     div.className = `test-card ${status}`;
+     div.innerHTML = `
+       <h3>${status === 'pass' ? '✅' : status === 'fail' ? '❌' : 'ℹ️'} ${title}</h3>
+       ${details ? `<p>${details}</p>` : ''}
+     `;
+     results.appendChild(div);
+   }
+   
+   function runTests() {
+     // Test 1: Basic JavaScript
+     addResult('JavaScript Execution', 'pass', 'JavaScript is running correctly');
+     
+     // Test 2: StackBlitz detection
+     const isStackBlitz = window.location.hostname.includes('stackblitz') || 
+                          window.location.hostname.includes('webcontainer');
+     addResult('StackBlitz Environment', isStackBlitz ? 'info' : 'fail', 
+               isStackBlitz ? 'Running in StackBlitz' : 'Not detected as StackBlitz');
+     
+     // Test 3: iOS detection
+     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+     addResult('iOS Device', isIOS ? 'info' : 'info', 
+               isIOS ? 'iOS device detected' : 'Not an iOS device');
+     
+     // Test 4: localStorage
+     try {
+       localStorage.setItem('test', 'value');
+       const retrieved = localStorage.getItem('test');
+       localStorage.removeItem('test');
+       addResult('localStorage', retrieved === 'value' ? 'pass' : 'fail');
+     } catch(e) {
+       addResult('localStorage', 'fail', `Error: ${e.message}`);
+     }
+     
+     // Test 5: CSS support
+     const supportsBackdrop = CSS.supports('backdrop-filter', 'blur(10px)');
+     addResult('Backdrop Filter Support', supportsBackdrop ? 'pass' : 'fail');
+     
+     // Test 6: Viewport
+     const viewport = document.querySelector('meta[name="viewport"]');
+     addResult('Viewport Meta', viewport ? 'pass' : 'fail', 
+               viewport ? viewport.content : 'Missing viewport meta tag');
+               
+     // Test 7: Fetch API
+     addResult('Fetch API', typeof fetch !== 'undefined' ? 'pass' : 'fail');
+     
+     // Environment info
+     const envInfo = document.getElementById('envInfo');
+     envInfo.innerHTML = `
+       <strong>User Agent:</strong><br>
+       <pre>${navigator.userAgent}</pre>
+       <strong>Screen:</strong> ${screen.width}x${screen.height}<br>
+       <strong>Window:</strong> ${window.innerWidth}x${window.innerHeight}<br>
+       <strong>Device Pixel Ratio:</strong> ${window.devicePixelRatio}<br>
+       <strong>URL:</strong> ${window.location.href}
+     `;
+   }
+   
+   function clearLocalStorage() {
+     try {
+       localStorage.clear();
+       alert('localStorage cleared successfully!');
+     } catch(e) {
+       alert('Error clearing localStorage: ' + e.message);
+     }
+   }
+   
+   function testMainSite() {
+     window.location.href = '/';
+   }
+   
+   function reloadPage() {
+     window.location.reload();
+   }
+   
+   // Run tests when page loads
+   runTests();
+   
+   console.log('StackBlitz iPad diagnostic completed');
+ </script>
+</body>
+</html>

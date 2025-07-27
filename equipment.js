@@ -1047,6 +1047,7 @@ function equipItem(type, index) {
     
     saveEquipmentData();
     updateActiveWeaponsAndArmor();
+    updateEncumbranceDisplay();
     
     // Refresh current section and overview
     const activeSection = document.querySelector('.equipment-nav-btn.active').dataset.section;
@@ -1088,6 +1089,7 @@ function equipWeaponToSlot(slot, weapon) {
     equipmentData.equipped[slot] = weapon;
     saveEquipmentData();
     updateActiveWeaponsAndArmor();
+    updateEncumbranceDisplay();
     
     // Refresh current section and overview
     const activeSection = document.querySelector('.equipment-nav-btn.active').dataset.section;

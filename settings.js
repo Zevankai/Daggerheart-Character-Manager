@@ -92,27 +92,54 @@ function initializeGlassColorPicker() {
   const glassOpacityValue = document.getElementById('glassOpacityValue');
   const resetGlassBtn = document.getElementById('resetGlassColor');
   
-  // Load current glass background color
-  const root = document.documentElement;
-  const currentGlassColor = getComputedStyle(root).getPropertyValue('--glass-background-color').trim();
+  // Check if elements exist
+  if (!glassColorPicker || !glassColorPreview || !glassOpacitySlider || !glassOpacityValue || !resetGlassBtn) {
+      console.error('Glass color picker elements not found');
+      return;
+  }
   
-  // Parse the rgba values
-  const rgbaMatch = currentGlassColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+),?\s*([\d\.]+)?\)/);
+  // Check if required functions exist
+  if (typeof hexToRgb !== 'function' || typeof rgbToHex !== 'function') {
+      console.error('Required color conversion functions not found');
+      return;
+  }
+  
+  // Load saved values first, then use computed values as fallback
+  const savedGlassColor = localStorage.getItem('zevi-glass-color');
+  const savedGlassOpacity = localStorage.getItem('zevi-glass-opacity');
+  
   let currentColor = '#ffffff';
   let currentOpacity = 0.1;
   
-  if (rgbaMatch) {
-      const r = parseInt(rgbaMatch[1]);
-      const g = parseInt(rgbaMatch[2]);
-      const b = parseInt(rgbaMatch[3]);
-      currentOpacity = rgbaMatch[4] ? parseFloat(rgbaMatch[4]) : 0.1;
-      currentColor = rgbToHex(`rgb(${r}, ${g}, ${b})`);
+  if (savedGlassColor && savedGlassOpacity) {
+      // Use saved values
+      currentColor = savedGlassColor;
+      currentOpacity = parseFloat(savedGlassOpacity);
+  } else {
+      // Parse current computed style as fallback
+      const root = document.documentElement;
+      const currentGlassColor = getComputedStyle(root).getPropertyValue('--glass-background-color').trim();
+      
+      // Enhanced regex pattern for RGBA parsing
+      const rgbaMatch = currentGlassColor.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d\.]+))?\s*\)/);
+      
+      if (rgbaMatch) {
+          const r = parseInt(rgbaMatch[1]);
+          const g = parseInt(rgbaMatch[2]);
+          const b = parseInt(rgbaMatch[3]);
+          currentOpacity = rgbaMatch[4] ? parseFloat(rgbaMatch[4]) : 0.1;
+          currentColor = rgbToHex(`rgb(${r}, ${g}, ${b})`);
+      }
   }
   
+  // Set initial values
   glassColorPicker.value = currentColor;
-  glassOpacitySlider.value = currentOpacity * 100;
+  glassOpacitySlider.value = Math.round(currentOpacity * 100);
   glassOpacityValue.textContent = Math.round(currentOpacity * 100) + '%';
   updateGlassPreview(currentColor, currentOpacity);
+  
+  // Apply the current values to make sure they're set
+  changeGlassBackgroundColor(currentColor, currentOpacity);
   
   // Handle color change
   glassColorPicker.addEventListener('input', (event) => {
@@ -144,21 +171,50 @@ function initializeGlassColorPicker() {
 }
 
 function changeGlassBackgroundColor(hexColor, opacity) {
-  const root = document.documentElement;
-  const rgb = hexToRgb(hexColor);
-  const newRgbaColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity})`;
-  
-  root.style.setProperty('--glass-background-color', newRgbaColor);
-  localStorage.setItem('zevi-glass-color', hexColor);
-  localStorage.setItem('zevi-glass-opacity', opacity.toString());
+  try {
+    const root = document.documentElement;
+    const rgb = hexToRgb(hexColor);
+    
+    if (!rgb || typeof rgb.r === 'undefined') {
+      console.error('Invalid hex color:', hexColor);
+      return;
+    }
+    
+    const newRgbaColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity})`;
+    
+    root.style.setProperty('--glass-background-color', newRgbaColor);
+    localStorage.setItem('zevi-glass-color', hexColor);
+    localStorage.setItem('zevi-glass-opacity', opacity.toString());
+  } catch (error) {
+    console.error('Error changing glass background color:', error);
+  }
 }
 
 function updateGlassPreview(hexColor, opacity) {
-  const glassColorPreview = document.getElementById('glassColorPreview');
-  const rgb = hexToRgb(hexColor);
-  glassColorPreview.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity})`;
-  glassColorPreview.style.border = '1px solid rgba(255, 255, 255, 0.2)';
-  glassColorPreview.style.backdropFilter = 'blur(15px)';
+  try {
+    const glassColorPreview = document.getElementById('glassColorPreview');
+    if (!glassColorPreview) {
+      console.error('Glass color preview element not found');
+      return;
+    }
+    
+    const rgb = hexToRgb(hexColor);
+    if (!rgb || typeof rgb.r === 'undefined') {
+      console.error('Invalid hex color for preview:', hexColor);
+      return;
+    }
+    
+    const previewColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity})`;
+    glassColorPreview.style.backgroundColor = previewColor;
+    glassColorPreview.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+    glassColorPreview.style.backdropFilter = 'blur(15px)';
+    glassColorPreview.style.webkitBackdropFilter = 'blur(15px)';
+    glassColorPreview.style.borderRadius = '4px';
+    glassColorPreview.style.width = '40px';
+    glassColorPreview.style.height = '40px';
+  } catch (error) {
+    console.error('Error updating glass preview:', error);
+  }
 }
 
 // ===== CHARACTER DELETION =====
@@ -200,11 +256,15 @@ function hideCharacterDeleteModal() {
 }
 
 function deleteCharacterData() {
-  // Get all localStorage keys that start with 'zevi-' but exclude settings
+  // Get all localStorage keys that start with 'zevi-' but exclude settings and UI preferences
   const keysToDelete = [];
   for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && key.startsWith('zevi-') && !key.includes('custom-accent') && !key.includes('glass-') && key !== 'zevi-theme') {
+      if (key && key.startsWith('zevi-') && 
+          !key.includes('custom-accent') && 
+          !key.includes('glass-') && 
+          key !== 'zevi-theme' && 
+          key !== 'zevi-background-image') {
           keysToDelete.push(key);
       }
   }
@@ -254,6 +314,8 @@ function resetCharacterSheet() {
   document.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach(input => {
       if (input.closest('.name-box')) {
           input.value = 'Character Name';
+      } else if (input.id === 'evasionValue') {
+          input.value = '10'; // Reset evasion to default
       } else {
           input.value = '';
       }
@@ -325,6 +387,14 @@ function resetToDefaults() {
   document.querySelectorAll('[data-color-target]').forEach(element => {
       element.style.backgroundColor = '';
   });
+  
+  // Reset background to default (iOS Safari compatible)
+  const defaultBackground = 'url(\'https://images.unsplash.com/photo-1506744038136-46273834b3fb\')';
+  document.body.style.backgroundImage = defaultBackground;
+  document.body.style.backgroundRepeat = 'no-repeat';
+  document.body.style.backgroundPosition = 'center center';
+  document.body.style.backgroundSize = 'cover';
+  // Remove background-attachment for iOS compatibility
   
   // Reload the page to ensure everything is reset
   setTimeout(() => {

@@ -10,11 +10,88 @@ function uploadCharacterImage(event) {
 }
 
 function uploadBackground(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
     const reader = new FileReader();
     reader.onload = function(){
-      document.body.style.backgroundImage = `url('${reader.result}')`;
+        const backgroundUrl = reader.result;
+        document.body.style.backgroundImage = `url('${backgroundUrl}')`;
+        
+        // Update preview
+        const preview = document.getElementById('backgroundPreview');
+        if (preview) {
+            preview.style.backgroundImage = `url('${backgroundUrl}')`;
+            preview.textContent = '';
+        }
+        
+        // Save to localStorage
+        localStorage.setItem('zevi-background-image', backgroundUrl);
     };
-    reader.readAsDataURL(event.target.files[0]);
+    reader.readAsDataURL(file);
+}
+
+function resetBackground() {
+    // Reset to default background (iOS Safari compatible)
+    const defaultBackground = 'url(\'https://images.unsplash.com/photo-1506744038136-46273834b3fb\')';
+    document.body.style.backgroundImage = defaultBackground;
+    document.body.style.backgroundRepeat = 'no-repeat';
+    document.body.style.backgroundPosition = 'center center';
+    document.body.style.backgroundSize = 'cover';
+    // Remove background-attachment for iOS compatibility
+    
+    // Clear preview
+    const preview = document.getElementById('backgroundPreview');
+    if (preview) {
+        preview.style.backgroundImage = '';
+        preview.textContent = '';
+    }
+    
+    // Clear file input
+    const bgUpload = document.getElementById('bgUpload');
+    if (bgUpload) {
+        bgUpload.value = '';
+    }
+    
+    // Remove from localStorage
+    localStorage.removeItem('zevi-background-image');
+}
+
+function loadSavedBackground() {
+    try {
+        // Check if localStorage is available (StackBlitz/iframe issues)
+        if (typeof localStorage === 'undefined' || !localStorage) {
+            console.warn('localStorage not available, skipping background load');
+            return;
+        }
+        
+        const savedBackground = localStorage.getItem('zevi-background-image');
+        if (savedBackground && savedBackground.length > 0) {
+            // Validate that it's a proper data URL
+            if (savedBackground.startsWith('data:image/')) {
+                document.body.style.backgroundImage = `url('${savedBackground}')`;
+                
+                // Update preview (only if element exists)
+                const preview = document.getElementById('backgroundPreview');
+                if (preview) {
+                    preview.style.backgroundImage = `url('${savedBackground}')`;
+                    preview.textContent = '';
+                }
+            } else {
+                // Invalid background image, remove it
+                localStorage.removeItem('zevi-background-image');
+                console.warn('Invalid background image data removed from localStorage');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading saved background:', error);
+        // Clear potentially corrupted data (if localStorage is available)
+        try {
+            localStorage.removeItem('zevi-background-image');
+        } catch (e) {
+            console.warn('Could not clear localStorage:', e);
+        }
+    }
 }
 
 function toggleTextColor() {
@@ -362,9 +439,49 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Evasion value functionality
+    const evasionValue = document.getElementById('evasionValue');
+    if (evasionValue) {
+        // Load saved evasion value
+        const savedEvasion = localStorage.getItem('zevi-evasion');
+        if (savedEvasion !== null) {
+            evasionValue.value = savedEvasion;
+        }
+
+        // Save evasion value when it changes
+        evasionValue.addEventListener('input', () => {
+            localStorage.setItem('zevi-evasion', evasionValue.value);
+        });
+
+        // Handle blur to ensure valid value
+        evasionValue.addEventListener('blur', () => {
+            if (evasionValue.value === '' || isNaN(evasionValue.value)) {
+                evasionValue.value = 10; // Default value
+                localStorage.setItem('zevi-evasion', '10');
+            }
+        });
+
+        // Format like attribute values
+        evasionValue.addEventListener('keydown', (event) => {
+            if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+                event.preventDefault();
+            }
+        });
+    }
+
+    // Background reset button functionality
+    const resetBackgroundBtn = document.getElementById('resetBackground');
+    if (resetBackgroundBtn) {
+        resetBackgroundBtn.addEventListener('click', resetBackground);
+    }
+
+    // Load saved background on page load
+    loadSavedBackground();
+
 });
 
 // Expose these functions for HTML `onchange` and `onclick` attributes or `downtime.js` if needed.
 window.uploadCharacterImage = uploadCharacterImage;
 window.uploadBackground = uploadBackground;
+window.resetBackground = resetBackground;
 window.toggleTextColor = toggleTextColor;
