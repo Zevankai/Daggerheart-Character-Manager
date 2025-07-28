@@ -224,13 +224,27 @@ class CharacterManager {
       const hasCharacters = this.characters.length > 0;
       const currentCharacterId = localStorage.getItem('zevi-current-character-id');
       
-      if (hasCharacters && currentCharacterId) {
+      // Only auto-redirect if we're on the landing page and not coming from a redirect loop
+      const isOnLandingPage = window.location.pathname.includes('landing.html') || window.location.pathname === '/';
+      const hasRedirected = sessionStorage.getItem('zevi-redirect-attempted');
+      
+      if (hasCharacters && currentCharacterId && isOnLandingPage && !hasRedirected) {
           // Try to load the last character automatically
           const lastCharacter = this.getCharacter(currentCharacterId);
           if (lastCharacter) {
+              // Set flag to prevent redirect loops
+              sessionStorage.setItem('zevi-redirect-attempted', 'true');
               this.loadCharacterAndRedirect(lastCharacter);
               return;
+          } else {
+              // Character ID exists but character not found - clear it
+              localStorage.removeItem('zevi-current-character-id');
           }
+      }
+      
+      // Clear redirect flag if we're staying on the landing page
+      if (isOnLandingPage) {
+          sessionStorage.removeItem('zevi-redirect-attempted');
       }
       
       // If no valid character or first time, disable load button if no characters
@@ -262,6 +276,8 @@ class CharacterManager {
   // Load character and redirect to main app
   loadCharacterAndRedirect(character) {
       if (this.loadCharacterData(character)) {
+          // Clear any redirect flags before successful navigation
+          sessionStorage.removeItem('zevi-redirect-attempted');
           window.location.href = 'index.html';
       } else {
           alert('Error loading character data. Please try again.');
@@ -322,6 +338,8 @@ function closeCharacterModal() {
 function loadCharacter(characterId) {
   const character = characterManager.getCharacter(characterId);
   if (character) {
+      // Clear redirect flags
+      sessionStorage.removeItem('zevi-redirect-attempted');
       characterManager.loadCharacterAndRedirect(character);
   } else {
       alert('Character not found!');
@@ -336,6 +354,9 @@ function createNewCharacter() {
   localStorage.removeItem('zevi-experiences');
   localStorage.removeItem('zevi-hope');
   localStorage.removeItem('zevi-downtime');
+  
+  // Clear redirect flags
+  sessionStorage.removeItem('zevi-redirect-attempted');
   
   // Create a new character entry
   const newCharacter = characterManager.createCharacter({

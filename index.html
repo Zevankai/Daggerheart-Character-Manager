@@ -490,16 +490,54 @@
   
   // Check if user has a current character loaded
   document.addEventListener('DOMContentLoaded', () => {
-    const currentCharacterId = localStorage.getItem('zevi-current-character-id');
-    if (!currentCharacterId) {
-      // No character loaded, redirect to landing page
-      window.location.href = 'landing.html';
-    } else if (window.characterManager) {
-      // Set the current character for the character manager
-      const character = window.characterManager.getCharacter(currentCharacterId);
-      if (character) {
-        window.characterManager.currentCharacter = character;
+    try {
+      const currentCharacterId = localStorage.getItem('zevi-current-character-id');
+      if (!currentCharacterId) {
+        // No character loaded, redirect to landing page only if we're not already in a redirect loop
+        const hasRedirected = sessionStorage.getItem('zevi-redirect-attempted');
+        if (!hasRedirected) {
+          sessionStorage.setItem('zevi-redirect-attempted', 'true');
+          window.location.href = 'landing.html';
+        } else {
+          // Prevent infinite redirect loop - clear session storage and stay on page
+          sessionStorage.removeItem('zevi-redirect-attempted');
+          console.warn('No character loaded and redirect loop detected. Staying on main page.');
+        }
+      } else if (window.characterManager) {
+        // Clear redirect flag since we have a valid character
+        sessionStorage.removeItem('zevi-redirect-attempted');
+        // Set the current character for the character manager
+        const character = window.characterManager.getCharacter(currentCharacterId);
+        if (character) {
+          window.characterManager.currentCharacter = character;
+        } else {
+          // Character ID exists but character data not found - clear it and redirect
+          localStorage.removeItem('zevi-current-character-id');
+          window.location.href = 'landing.html';
+        }
+      } else {
+        // Character manager not loaded yet, wait a bit and try again
+        console.warn('Character manager not loaded yet, retrying...');
+        setTimeout(() => {
+          if (window.characterManager) {
+            const character = window.characterManager.getCharacter(currentCharacterId);
+            if (character) {
+              window.characterManager.currentCharacter = character;
+            } else {
+              localStorage.removeItem('zevi-current-character-id');
+              window.location.href = 'landing.html';
+            }
+          } else {
+            console.error('Character manager failed to load');
+          }
+        }, 100);
       }
+    } catch (error) {
+      console.error('Error during character loading:', error);
+      // Clear potentially corrupted data and redirect to landing
+      localStorage.removeItem('zevi-current-character-id');
+      sessionStorage.removeItem('zevi-redirect-attempted');
+      window.location.href = 'landing.html';
     }
   });
  </script>
