@@ -4179,3 +4179,163 @@
     display: block;
     line-height: 1.4;
 }
+
+/* Character List Section */
+.character-list-section {
+    margin-top: 2rem;
+}
+
+.character-list-section h3 {
+    color: var(--text-color);
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.character-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.character-list-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+}
+
+.character-list-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.character-list-card.current-character {
+    border-color: var(--accent-color);
+    background: rgba(255, 215, 0, 0.1);
+}
+
+.character-list-image,
+.character-list-placeholder {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.character-list-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.list-placeholder-icon {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.character-list-info {
+    flex: 1;
+}
+
+.character-list-info h4 {
+    color: var(--text-color);
+    margin: 0 0 0.25rem 0;
+    font-size: 1.1rem;
+}
+
+.character-list-subtitle {
+    color: var(--text-color);
+    opacity: 0.7;
+    font-style: italic;
+    margin: 0 0 0.25rem 0;
+    font-size: 0.9rem;
+}
+
+.character-list-level {
+    color: var(--text-color);
+    margin: 0 0 0.25rem 0;
+    font-size: 0.9rem;
+}
+
+.character-list-system {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.character-list-system.daggerheart-layout {
+    color: #a855f7;
+}
+
+.character-list-system.dnd-layout {
+    color: #dc2626;
+}
+
+.character-list-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-end;
+}
+
+.load-character-btn, .delete-character-btn {
+    padding: 0.4rem 0.8rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+    min-width: 60px;
+}
+
+.load-character-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.load-character-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.delete-character-btn {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+    color: white;
+}
+
+.delete-character-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.current-indicator {
+    background: var(--accent-color);
+    color: black;
+    padding: 0.4rem 0.8rem;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-align: center;
+}
+
+.no-characters {
+    text-align: center;
+    color: var(--text-color);
+    opacity: 0.7;
+    font-style: italic;
+    padding: 2rem;
+}

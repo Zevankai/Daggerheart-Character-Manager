@@ -42,8 +42,7 @@
    </div>
 
    <div class="right-info">
-    <span id="toggleTheme" style="cursor: pointer;">🌙</span><br />
-    <button id="characterManagerBtn" class="character-manager-btn" onclick="goToCharacterSelection()" title="Character Selection">👥</button>
+    <span id="toggleTheme" style="cursor: pointer;">🌙</span>
    </div>
    
    <div class="header-bottom-center">
@@ -272,10 +271,15 @@
      <h2>Character Management</h2>
      <div class="character-actions">
       <button class="option-btn primary-btn" onclick="createNewCharacter()">Create New Character</button>
-      <button class="option-btn secondary-btn" onclick="goToCharacterSelection()">Character Selection</button>
      </div>
      <div id="current-character-info" class="current-character-info">
       <!-- Current character info will be populated here -->
+     </div>
+     <div id="character-list-section" class="character-list-section">
+      <h3>Available Characters</h3>
+      <div id="character-list-container" class="character-list-container">
+       <!-- Character list will be populated here -->
+      </div>
      </div>
     </div>
    </div>
@@ -481,14 +485,6 @@
  <script src="characterManager.js"></script>
  <script>
   // Initialize character management
-  function goToCharacterSelection() {
-    // Save current character data before leaving
-    if (window.characterManager && window.characterManager.currentCharacter) {
-      window.characterManager.saveCharacterData(window.characterManager.currentCharacter);
-    }
-    // Redirect to landing page
-    window.location.href = 'landing.html';
-  }
   
   // Auto-save character data periodically
   setInterval(() => {
@@ -502,10 +498,13 @@
     const currentCharacterId = localStorage.getItem('zevi-current-character-id');
     
     // If no character ID at all, redirect to landing page immediately
-    if (!currentCharacterId) {
+    if (!currentCharacterId || currentCharacterId === 'null' || currentCharacterId === '') {
+      console.log('No character ID found, redirecting to landing page');
       window.location.href = 'landing.html';
       return;
     }
+    
+    console.log('Found character ID:', currentCharacterId);
     
     // If we have a character ID, wait for character manager to load
     const waitForCharacterManager = (attempts = 0) => {
@@ -561,40 +560,134 @@
    
    // Initialize Characters tab content
    function initializeCharactersTab() {
-     if (window.characterManager && window.characterManager.currentCharacter) {
-       const character = window.characterManager.currentCharacter;
-       const infoDiv = document.getElementById('current-character-info');
-       if (infoDiv) {
-         const layoutInfo = character.layout === 'dnd' ? 
-           { name: 'D&D 5e', icon: '🐉' } : 
-           { name: 'Daggerheart', icon: '⚔️' };
-         
-         infoDiv.innerHTML = `
-           <div class="current-character-card">
-             <h3>Current Character</h3>
-             ${character.characterImage ? 
-               `<div class="character-image-display">
-                  <img src="${character.characterImage}" alt="${character.name}" class="character-display-image">
-                </div>` : 
-               `<div class="character-image-placeholder">
-                  <span class="image-placeholder-icon">👤</span>
-                </div>`
-             }
-             <div class="character-info">
-               <h4>${character.name}</h4>
-               ${character.subtitle ? `<p class="character-subtitle">${character.subtitle}</p>` : ''}
-               <p class="character-level">Level: ${character.level}</p>
-               <p class="character-system">
-                 <span class="system-icon">${layoutInfo.icon}</span>
-                 System: ${layoutInfo.name}
-               </p>
-               <p class="character-dates">
-                 <small>Created: ${characterManager.formatDate ? characterManager.formatDate(character.createdAt) : character.createdAt}</small><br>
-                 <small>Last Modified: ${characterManager.formatDate ? characterManager.formatDate(character.lastModified) : character.lastModified}</small>
-               </p>
+     if (window.characterManager) {
+       // Show current character info
+       if (window.characterManager.currentCharacter) {
+         const character = window.characterManager.currentCharacter;
+         const infoDiv = document.getElementById('current-character-info');
+         if (infoDiv) {
+           const layoutInfo = character.layout === 'dnd' ? 
+             { name: 'D&D 5e', icon: '🐉' } : 
+             { name: 'Daggerheart', icon: '⚔️' };
+           
+           infoDiv.innerHTML = `
+             <div class="current-character-card">
+               <h3>Current Character</h3>
+               ${character.characterImage ? 
+                 `<div class="character-image-display">
+                    <img src="${character.characterImage}" alt="${character.name}" class="character-display-image">
+                  </div>` : 
+                 `<div class="character-image-placeholder">
+                    <span class="image-placeholder-icon">👤</span>
+                  </div>`
+               }
+               <div class="character-info">
+                 <h4>${character.name}</h4>
+                 ${character.subtitle ? `<p class="character-subtitle">${character.subtitle}</p>` : ''}
+                 <p class="character-level">Level: ${character.level}</p>
+                 <p class="character-system">
+                   <span class="system-icon">${layoutInfo.icon}</span>
+                   System: ${layoutInfo.name}
+                 </p>
+                 <p class="character-dates">
+                   <small>Created: ${window.characterManager.formatDate ? window.characterManager.formatDate(character.createdAt) : character.createdAt}</small><br>
+                   <small>Last Modified: ${window.characterManager.formatDate ? window.characterManager.formatDate(character.lastModified) : character.lastModified}</small>
+                 </p>
+               </div>
              </div>
-           </div>
-         `;
+           `;
+         }
+       }
+       
+       // Show all available characters
+       const listContainer = document.getElementById('character-list-container');
+       if (listContainer && window.characterManager.characters) {
+         if (window.characterManager.characters.length === 0) {
+           listContainer.innerHTML = '<p class="no-characters">No characters found. Create your first character!</p>';
+         } else {
+           listContainer.innerHTML = window.characterManager.characters.map(character => {
+             const layoutInfo = character.layout === 'dnd' ? 
+               { name: 'D&D 5e', icon: '🐉', class: 'dnd-layout' } : 
+               { name: 'Daggerheart', icon: '⚔️', class: 'daggerheart-layout' };
+             
+             const isCurrentCharacter = window.characterManager.currentCharacter && 
+                                      window.characterManager.currentCharacter.id === character.id;
+             
+             return `
+               <div class="character-list-card ${isCurrentCharacter ? 'current-character' : ''}" data-character-id="${character.id}">
+                 ${character.characterImage ? 
+                   `<div class="character-list-image">
+                      <img src="${character.characterImage}" alt="${character.name}" class="character-list-thumbnail">
+                    </div>` : 
+                   `<div class="character-list-placeholder">
+                      <span class="list-placeholder-icon">👤</span>
+                    </div>`
+                 }
+                 <div class="character-list-info">
+                   <h4>${character.name}</h4>
+                   ${character.subtitle ? `<p class="character-list-subtitle">${character.subtitle}</p>` : ''}
+                   <p class="character-list-level">Level: ${character.level}</p>
+                   <p class="character-list-system ${layoutInfo.class}">
+                     <span class="system-icon">${layoutInfo.icon}</span>
+                     ${layoutInfo.name}
+                   </p>
+                 </div>
+                 <div class="character-list-actions">
+                   ${isCurrentCharacter ? 
+                     '<span class="current-indicator">Current</span>' : 
+                     `<button class="load-character-btn" onclick="loadCharacterFromTab('${character.id}')">Load</button>`
+                   }
+                   <button class="delete-character-btn" onclick="deleteCharacterFromTab('${character.id}', '${character.name}')">Delete</button>
+                 </div>
+               </div>
+             `;
+           }).join('');
+         }
+       }
+     }
+   }
+   
+   // Load character from Characters tab
+   function loadCharacterFromTab(characterId) {
+     if (window.characterManager) {
+       const character = window.characterManager.getCharacter(characterId);
+       if (character) {
+         // Save current character data first
+         if (window.characterManager.currentCharacter) {
+           window.characterManager.saveCharacterData(window.characterManager.currentCharacter);
+         }
+         
+         // Load the selected character
+         if (window.characterManager.loadCharacterData(character)) {
+           // Redirect based on character's layout
+           const layout = character.layout || 'daggerheart';
+           if (layout === 'dnd') {
+             window.location.href = 'dnd-placeholder.html';
+           } else {
+             window.location.href = 'index.html';
+           }
+         } else {
+           alert('Error loading character data. Please try again.');
+         }
+       } else {
+         alert('Character not found!');
+       }
+     }
+   }
+   
+   // Delete character from Characters tab
+   function deleteCharacterFromTab(characterId, characterName) {
+     if (confirm(`Are you sure you want to delete "${characterName}"? This action cannot be undone.`)) {
+       if (window.characterManager) {
+         window.characterManager.deleteCharacter(characterId);
+         // Refresh the Characters tab
+         initializeCharactersTab();
+         
+         // If we deleted the current character, clear the current character
+         if (window.characterManager.currentCharacter && window.characterManager.currentCharacter.id === characterId) {
+           localStorage.removeItem('zevi-current-character-id');
+           window.location.href = 'landing.html';
+         }
        }
      }
    }
