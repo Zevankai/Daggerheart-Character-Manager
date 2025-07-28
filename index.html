@@ -55,6 +55,7 @@
 
    <div class="right-info">
     <span id="toggleTheme" style="cursor: pointer;">🌙</span>
+    <div id="autoSaveIndicator" style="display: none; font-size: 0.8rem; color: #4CAF50; margin-top: 5px;">✓ Saved</div>
    </div>
    
    <div class="header-bottom-center">
@@ -624,7 +625,7 @@
     if (window.characterManager && window.characterManager.currentCharacter) {
       window.characterManager.saveCharacterData(window.characterManager.currentCharacter);
     }
-  }, 30000); // Save every 30 seconds
+  }, 10000); // Save every 10 seconds
   
   // Always redirect to landing page unless coming from a character selection
   document.addEventListener('DOMContentLoaded', () => {
