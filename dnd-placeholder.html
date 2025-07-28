@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D&D Character Sheet - Coming Soon</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="landing.css">
+</head>
+<body class="landing-body">
+    <div class="landing-container">
+        <div class="placeholder-content">
+            <div class="placeholder-header">
+                <div class="placeholder-icon">🐉</div>
+                <h1 class="placeholder-title">Dungeons & Dragons</h1>
+                <h2 class="placeholder-subtitle">Character Sheet</h2>
+            </div>
+            
+            <div class="placeholder-message">
+                <h3>Coming Soon!</h3>
+                <p>The D&D character sheet is currently under development. We're working hard to bring you the best experience for managing your D&D characters.</p>
+                
+                <div class="feature-preview">
+                    <h4>What's Coming:</h4>
+                    <ul>
+                        <li>✨ Complete D&D 5e character management</li>
+                        <li>📊 Automated calculations and modifiers</li>
+                        <li>🎒 Equipment and inventory tracking</li>
+                        <li>📝 Spell management and tracking</li>
+                        <li>⚔️ Combat and initiative tools</li>
+                        <li>📖 Notes and campaign journal</li>
+                    </ul>
+                </div>
+                
+                <div class="placeholder-actions">
+                    <button class="option-btn primary-btn" onclick="goBackToLayoutSelection()">
+                        Choose Different System
+                    </button>
+                    <button class="option-btn secondary-btn" onclick="goToCharacterSelection()">
+                        Back to Characters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="characterManager.js"></script>
+    <script>
+        function goBackToLayoutSelection() {
+            // Delete the current character since it's not usable yet
+            const currentCharacterId = localStorage.getItem('zevi-current-character-id');
+            if (currentCharacterId && window.characterManager) {
+                window.characterManager.deleteCharacter(currentCharacterId);
+                localStorage.removeItem('zevi-current-character-id');
+            }
+            
+            window.location.href = 'layoutSelection.html';
+        }
+
+        function goToCharacterSelection() {
+            // Delete the current character since it's not usable yet
+            const currentCharacterId = localStorage.getItem('zevi-current-character-id');
+            if (currentCharacterId && window.characterManager) {
+                window.characterManager.deleteCharacter(currentCharacterId);
+                localStorage.removeItem('zevi-current-character-id');
+            }
+            
+            window.location.href = 'landing.html';
+        }
+
+        // Show character manager button for returning users
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add character manager button to the page
+            const actionsDiv = document.querySelector('.placeholder-actions');
+            if (actionsDiv && window.characterManager && window.characterManager.characters.length > 0) {
+                const managerBtn = document.createElement('button');
+                managerBtn.className = 'option-btn';
+                managerBtn.textContent = 'Manage Characters';
+                managerBtn.onclick = goToCharacterSelection;
+                actionsDiv.appendChild(managerBtn);
+            }
+        });
+    </script>
+
+    <style>
+        .placeholder-content {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .placeholder-header {
+            margin-bottom: 3rem;
+        }
+
+        .placeholder-icon {
+            font-size: 6rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .placeholder-title {
+            font-size: 3rem;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .placeholder-subtitle {
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin: 0.5rem 0 0 0;
+            font-weight: 300;
+        }
+
+        .placeholder-message {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .placeholder-message h3 {
+            color: white;
+            font-size: 2rem;
+            margin: 0 0 1rem 0;
+            font-weight: 600;
+        }
+
+        .placeholder-message p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin: 0 0 2rem 0;
+        }
+
+        .feature-preview {
+            text-align: left;
+            margin: 2rem 0;
+        }
+
+        .feature-preview h4 {
+            color: white;
+            font-size: 1.3rem;
+            margin: 0 0 1rem 0;
+            text-align: center;
+        }
+
+        .feature-preview ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .feature-preview li {
+            color: rgba(255, 255, 255, 0.9);
+            padding: 0.5rem 0;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .placeholder-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .placeholder-actions .option-btn {
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .placeholder-content {
+                padding: 1rem;
+            }
+
+            .placeholder-title {
+                font-size: 2.5rem;
+            }
+
+            .placeholder-message {
+                padding: 2rem 1.5rem;
+            }
+
+            .placeholder-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .placeholder-actions .option-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</body>
+</html>
