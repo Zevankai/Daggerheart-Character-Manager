@@ -490,17 +490,59 @@
   
   // Check if user has a current character loaded
   document.addEventListener('DOMContentLoaded', () => {
-    const currentCharacterId = localStorage.getItem('zevi-current-character-id');
-    if (!currentCharacterId) {
-      // No character loaded, redirect to landing page
-      window.location.href = 'landing.html';
-    } else if (window.characterManager) {
-      // Set the current character for the character manager
-      const character = window.characterManager.getCharacter(currentCharacterId);
-      if (character) {
-        window.characterManager.currentCharacter = character;
+    // Add a small delay to ensure all scripts are loaded
+    setTimeout(() => {
+      const currentCharacterId = localStorage.getItem('zevi-current-character-id');
+      const isCreatingCharacter = localStorage.getItem('zevi-creating-character');
+      
+      if (!currentCharacterId) {
+        // No character loaded, redirect to landing page
+        window.location.href = 'landing.html';
+        return;
       }
-    }
+      
+      // Clear the creating character flag
+      if (isCreatingCharacter) {
+        localStorage.removeItem('zevi-creating-character');
+      }
+      
+      // Wait for character manager to be available and ready
+      const waitForCharacterManager = (attempts = 0) => {
+        if (attempts > 100) {
+          // Timeout after 5 seconds, something is wrong
+          localStorage.removeItem('zevi-current-character-id');
+          window.location.href = 'landing.html';
+          return;
+        }
+        
+        if (window.characterManager && window.characterManager.characters) {
+          // Character manager is ready, check for character
+          const character = window.characterManager.getCharacter(currentCharacterId);
+          if (character) {
+            window.characterManager.currentCharacter = character;
+            
+            // Load character image if it exists
+            if (character.characterImage) {
+              const img = document.getElementById("charImage");
+              const placeholder = document.getElementById("charPlaceholder");
+              if (img && placeholder) {
+                img.src = character.characterImage;
+                placeholder.style.display = 'none';
+              }
+            }
+          } else {
+            // Character ID exists but character not found, redirect to landing
+            localStorage.removeItem('zevi-current-character-id');
+            window.location.href = 'landing.html';
+          }
+        } else {
+          // Character manager not ready, wait a bit more
+          setTimeout(() => waitForCharacterManager(attempts + 1), 50);
+        }
+      };
+      
+      waitForCharacterManager();
+    }, 200); // Increased delay to 200ms
   });
  </script>
 </html>

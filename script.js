@@ -5,6 +5,19 @@ function uploadCharacterImage(event) {
       const img = document.getElementById("charImage");
       img.src = reader.result;
       document.getElementById("charPlaceholder").style.display = 'none';
+      
+      // Save image to character data
+      const currentCharacterId = localStorage.getItem('zevi-current-character-id');
+      if (currentCharacterId && window.characterManager) {
+        const character = window.characterManager.getCharacter(currentCharacterId);
+        if (character) {
+          character.characterImage = reader.result;
+          window.characterManager.updateCharacterMetadata(currentCharacterId, {
+            characterImage: reader.result,
+            lastModified: new Date().toISOString()
+          });
+        }
+      }
     };
     reader.readAsDataURL(event.target.files[0]);
 }
