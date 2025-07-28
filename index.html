@@ -493,21 +493,27 @@
     }
   }, 30000); // Save every 30 seconds
   
-  // Check if we're supposed to load a character (coming from character selection)
-  document.addEventListener('DOMContentLoaded', () => {
+  // Always redirect to landing page unless specifically coming from there
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', checkRedirect);
+  } else {
+    checkRedirect();
+  }
+  
+  function checkRedirect() {
     const currentCharacterId = localStorage.getItem('zevi-current-character-id');
     const isDirectAccess = !document.referrer || !document.referrer.includes('landing.html');
     
     // If no character ID or direct access, redirect to landing page
     if (!currentCharacterId || isDirectAccess) {
       console.log('No character ID or direct access, redirecting to landing page');
-      window.location.href = 'landing.html';
+      window.location.replace('landing.html');
       return;
     }
     
     // We have a character ID and came from landing page, initialize character
     initializeCharacterFromId(currentCharacterId);
-  });
+  }
   
   function initializeCharacterFromId(characterId) {
     const waitForCharacterManager = (attempts = 0) => {
@@ -584,33 +590,60 @@
       }
     }
     
-    // Load HP data
-    if (character.hp && window.hpCircles !== undefined) {
-      // Update global hpCircles array
-      const maxHP = character.hp.max || 4;
-      const currentHP = character.hp.current || 0;
-      window.hpCircles = Array(maxHP).fill(null).map((_, i) => ({ active: i < currentHP }));
-      localStorage.setItem('zevi-hp-circles', JSON.stringify(window.hpCircles));
-      if (typeof renderHPCircles === 'function') renderHPCircles();
-    }
-    
-    // Load Stress data
-    if (character.stress && window.stressCircles !== undefined) {
-      const maxStress = character.stress.max || 4;
-      const currentStress = character.stress.current || 0;
-      window.stressCircles = Array(maxStress).fill(null).map((_, i) => ({ active: i < currentStress }));
-      localStorage.setItem('zevi-stress-circles', JSON.stringify(window.stressCircles));
-      if (typeof renderStressCircles === 'function') renderStressCircles();
-    }
-    
-    // Load Hope data
-    if (character.hope) {
-      const currentHope = character.hope.current || 0;
-      const maxHope = character.hope.max || 6;
-      localStorage.setItem('zevi-hope', currentHope);
-      localStorage.setItem('zevi-max-hope', maxHope);
-      if (typeof renderHopeCircles === 'function') renderHopeCircles();
-    }
+    // Load character-specific data with a delay to ensure systems are ready
+    setTimeout(() => {
+      // Load HP data
+      if (character.hp) {
+        const maxHP = character.hp.max || 4;
+        const currentHP = character.hp.current || 0;
+        if (window.hpCircles !== undefined) {
+          window.hpCircles = Array(maxHP).fill(null).map((_, i) => ({ active: i < currentHP }));
+        }
+        localStorage.setItem('zevi-hp-circles', JSON.stringify(Array(maxHP).fill(null).map((_, i) => ({ active: i < currentHP }))));
+        if (typeof renderHPCircles === 'function') renderHPCircles();
+      }
+      
+      // Load Stress data
+      if (character.stress) {
+        const maxStress = character.stress.max || 4;
+        const currentStress = character.stress.current || 0;
+        if (window.stressCircles !== undefined) {
+          window.stressCircles = Array(maxStress).fill(null).map((_, i) => ({ active: i < currentStress }));
+        }
+        localStorage.setItem('zevi-stress-circles', JSON.stringify(Array(maxStress).fill(null).map((_, i) => ({ active: i < currentStress }))));
+        if (typeof renderStressCircles === 'function') renderStressCircles();
+      }
+      
+             // Load Hope data
+       if (character.hope) {
+         const currentHope = character.hope.current || 0;
+         const maxHope = character.hope.max || 6;
+         localStorage.setItem('zevi-hope', currentHope);
+         localStorage.setItem('zevi-max-hope', maxHope);
+         if (typeof window.renderHopeCircles === 'function') {
+           window.renderHopeCircles();
+         }
+       }
+       
+       // Load Damage Thresholds
+       if (character.damageThresholds) {
+         const minorInput = document.getElementById('minor-damage-value');
+         const majorInput = document.getElementById('major-damage-value');
+         
+         if (minorInput) {
+           minorInput.value = character.damageThresholds.minor || 3;
+           localStorage.setItem('zevi-minor-damage-value', character.damageThresholds.minor || 3);
+         }
+         if (majorInput) {
+           majorInput.value = character.damageThresholds.major || 6;
+           localStorage.setItem('zevi-major-damage-value', character.damageThresholds.major || 6);
+         }
+         // Note: severe threshold is no longer in HTML but we store it in character data
+         if (character.damageThresholds.severe) {
+           localStorage.setItem('zevi-severe-damage-value', character.damageThresholds.severe || 9);
+         }
+       }
+     }, 200);  // 200ms delay to ensure all systems are loaded
   }
   
   // Save character field when it changes

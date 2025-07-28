@@ -149,6 +149,23 @@ function updateDamageValue(element, type) {
         value = 0; // Default to 0 if input is empty or invalid
     }
     localStorage.setItem(`zevi-${type}-damage-value`, value);
+    
+    // Save to character data
+    if (window.characterManager && window.characterManager.currentCharacter) {
+        const character = window.characterManager.currentCharacter;
+        if (!character.damageThresholds) {
+            character.damageThresholds = { minor: 3, major: 6, severe: 9 };
+        }
+        character.damageThresholds[type] = value;
+        character.lastModified = new Date().toISOString();
+        
+        window.characterManager.updateCharacterMetadata(character.id, {
+            damageThresholds: character.damageThresholds,
+            lastModified: character.lastModified
+        });
+        
+        console.log(`Updated character damage threshold ${type}:`, value);
+    }
 }
 
 // Function to load damage values on page load

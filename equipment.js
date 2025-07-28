@@ -2035,6 +2035,11 @@ function initializeEquipmentData() {
         };
     }
     
+    // Ensure selectedBag exists
+    if (!equipmentData.selectedBag) {
+        equipmentData.selectedBag = 'Standard Backpack';
+    }
+    
     console.log('Equipment data after ensuring required properties:', equipmentData);
 }
 

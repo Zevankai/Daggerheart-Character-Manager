@@ -47,6 +47,7 @@ class CharacterManager {
             hp: characterData.hp || { current: 10, max: 10 },
             stress: characterData.stress || { current: 0, max: 10 },
             evasion: characterData.evasion || 10,
+            damageThresholds: characterData.damageThresholds || { minor: 3, major: 6, severe: 9 },
             equipment: characterData.equipment || null,
             journal: characterData.journal || null,
             experiences: characterData.experiences || null,
