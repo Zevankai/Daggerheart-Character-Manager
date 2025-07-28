@@ -4071,22 +4071,113 @@
      }
  }
 
-/* Character Manager Button */
-.character-manager-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    color: white;
-    padding: 8px 12px;
-    cursor: pointer;
-    font-size: 1.2rem;
-    transition: all 0.3s ease;
-    margin-top: 10px;
-    backdrop-filter: blur(10px);
+/* Characters Tab Styles */
+.characters-management {
+    padding: 20px;
 }
 
-.character-manager-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.4);
+.characters-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.characters-header h3 {
+    margin: 0;
+    color: var(--text-color);
+}
+
+.characters-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.character-card-tab {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 15px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.character-card-tab:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
     transform: translateY(-2px);
 }
+
+.character-card-tab.current-character {
+    border-color: var(--accent-color);
+    background: rgba(255, 215, 0, 0.1);
+}
+
+.character-card-tab .character-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.character-card-tab .character-details h4 {
+    margin: 0 0 8px 0;
+    color: var(--text-color);
+    font-size: 1.1rem;
+}
+
+.character-card-tab .character-meta {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 2px 0;
+}
+
+.character-card-tab .character-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.character-action-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.character-action-btn.load-btn {
+    background: var(--accent-color);
+    color: black;
+}
+
+.character-action-btn.load-btn:hover {
+    background: var(--accent-color);
+    opacity: 0.8;
+    transform: translateY(-1px);
+}
+
+.character-action-btn.delete-btn {
+    background: #ff4444;
+    color: white;
+}
+
+.character-action-btn.delete-btn:hover {
+    background: #ff6666;
+    transform: translateY(-1px);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.empty-state h4 {
+    margin: 0 0 10px 0;
+    color: var(--text-color);
+}
+
+

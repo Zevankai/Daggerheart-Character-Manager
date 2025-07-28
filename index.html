@@ -54,8 +54,7 @@
    </div>
 
    <div class="right-info">
-    <span id="toggleTheme" style="cursor: pointer;">🌙</span><br />
-    <button id="characterManagerBtn" class="character-manager-btn" onclick="goToCharacterSelection()" title="Character Selection">👥</button>
+    <span id="toggleTheme" style="cursor: pointer;">🌙</span>
    </div>
    
    <div class="header-bottom-center">
@@ -280,7 +279,16 @@
    </div>
 
    <div id="characters-tab-content" class="tab-panel">
-    <p style="text-align: center;">Content for Characters will go here.</p>
+    <div class="characters-management">
+      <div class="characters-header">
+        <h3>Character Management</h3>
+        <button class="button primary-btn" onclick="createNewCharacterFromTab()">Create New Character</button>
+      </div>
+      
+      <div class="characters-list" id="charactersTabList">
+        <!-- Character cards will be populated here -->
+      </div>
+    </div>
    </div>
    <div id="settings-tab-content" class="tab-panel">
     <div class="settings-container">
@@ -484,16 +492,132 @@
  <script src="characterManager.js"></script>
  <script>
   // Initialize character management
-  function goToCharacterSelection() {
-    // Save current character data before leaving
+  
+  // Functions for character management within the tab
+  function createNewCharacterFromTab() {
+    // Save current character data before creating new one
     if (window.characterManager && window.characterManager.currentCharacter) {
       window.characterManager.saveCharacterData(window.characterManager.currentCharacter);
     }
-    // Clear the landing flag so we can return to the landing page
-    sessionStorage.removeItem('zevi-from-landing');
-    // Redirect to landing page
-    window.location.href = 'landing.html';
+    
+    // Clear any existing character data
+    localStorage.removeItem('zevi-current-character-id');
+    localStorage.removeItem('zevi-equipment');
+    localStorage.removeItem('zevi-journal');
+    localStorage.removeItem('zevi-experiences');
+    localStorage.removeItem('zevi-hope');
+    localStorage.removeItem('zevi-downtime');
+    
+    // Create a new character entry
+    const newCharacter = window.characterManager.createCharacter({
+        name: 'New Character',
+        subtitle: '',
+        level: 1
+    });
+    
+    // Load the new character data and refresh the page
+    window.characterManager.loadCharacterData(newCharacter);
+    window.characterManager.currentCharacter = newCharacter;
+    
+    // Refresh the characters list and reload the page to show new character
+    populateCharactersTab();
+    location.reload();
   }
+  
+  function loadCharacterFromTab(characterId) {
+    // Save current character data before switching
+    if (window.characterManager && window.characterManager.currentCharacter) {
+      window.characterManager.saveCharacterData(window.characterManager.currentCharacter);
+    }
+    
+    const character = window.characterManager.getCharacter(characterId);
+    if (character) {
+      // Load the character data
+      window.characterManager.loadCharacterData(character);
+      window.characterManager.currentCharacter = character;
+      
+      // Refresh the characters list and reload the page to show selected character
+      populateCharactersTab();
+      location.reload();
+    } else {
+      alert('Character not found!');
+    }
+  }
+  
+  function deleteCharacterFromTab(characterId) {
+    const character = window.characterManager.getCharacter(characterId);
+    if (character && confirm(`Are you sure you want to delete "${character.name}"? This action cannot be undone.`)) {
+      const currentCharacterId = localStorage.getItem('zevi-current-character-id');
+      
+      // Delete the character
+      if (window.characterManager.deleteCharacter(characterId)) {
+        // If we just deleted the current character, clear it
+        if (currentCharacterId === characterId) {
+          localStorage.removeItem('zevi-current-character-id');
+          // Load the first available character if any exist
+          if (window.characterManager.characters.length > 0) {
+            const firstCharacter = window.characterManager.characters[0];
+            window.characterManager.loadCharacterData(firstCharacter);
+            window.characterManager.currentCharacter = firstCharacter;
+          }
+          location.reload();
+        } else {
+          // Just refresh the list if we deleted a different character
+          populateCharactersTab();
+        }
+      } else {
+        alert('Error deleting character. Please try again.');
+      }
+    }
+  }
+  
+     function populateCharactersTab() {
+     const charactersList = document.getElementById('charactersTabList');
+     const currentCharacterId = localStorage.getItem('zevi-current-character-id');
+     
+     if (!charactersList) return;
+     
+     // Clear previous content
+     charactersList.innerHTML = '';
+     
+     if (window.characterManager.characters.length === 0) {
+       charactersList.innerHTML = `
+         <div class="empty-state">
+           <h4>No Characters Found</h4>
+           <p>Create your first character to get started!</p>
+         </div>
+       `;
+     } else {
+       window.characterManager.characters.forEach(character => {
+         const isCurrentCharacter = character.id === currentCharacterId;
+         const characterCard = document.createElement('div');
+         characterCard.className = `character-card-tab ${isCurrentCharacter ? 'current-character' : ''}`;
+         characterCard.innerHTML = `
+           <div class="character-info">
+             <div class="character-details">
+               <h4>${character.name} ${isCurrentCharacter ? '(Current)' : ''}</h4>
+               ${character.subtitle ? `<div class="character-meta">Subtitle: ${character.subtitle}</div>` : ''}
+               <div class="character-meta">Level: ${character.level}</div>
+               <div class="character-meta">Created: ${window.characterManager.formatDate(character.createdAt)}</div>
+               <div class="character-meta">Last Modified: ${window.characterManager.formatDate(character.lastModified)}</div>
+             </div>
+             <div class="character-actions">
+               ${!isCurrentCharacter ? `<button class="character-action-btn load-btn" onclick="loadCharacterFromTab('${character.id}')">Load</button>` : ''}
+               <button class="character-action-btn delete-btn" onclick="deleteCharacterFromTab('${character.id}')">Delete</button>
+             </div>
+           </div>
+         `;
+         
+         charactersList.appendChild(characterCard);
+       });
+     }
+   }
+   
+   // Make functions available globally
+   window.createNewCharacterFromTab = createNewCharacterFromTab;
+   window.loadCharacterFromTab = loadCharacterFromTab;
+   window.deleteCharacterFromTab = deleteCharacterFromTab;
+   window.populateCharactersTab = populateCharactersTab;
   
   // Auto-save character data periodically
   setInterval(() => {

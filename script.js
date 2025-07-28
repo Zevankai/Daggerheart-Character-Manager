@@ -219,6 +219,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.warn('renderExperiences function not found. Ensure experiences.js is loaded.');
                 }
             }
+            if (targetPanelId === 'characters-tab-content') {
+                if (window.populateCharactersTab && typeof window.populateCharactersTab === 'function') {
+                    window.populateCharactersTab();
+                } else {
+                    console.warn('populateCharactersTab function not found. Ensure character management is loaded.');
+                }
+            }
         });
     });
 
