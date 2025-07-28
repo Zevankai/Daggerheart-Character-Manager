@@ -212,6 +212,8 @@ function renderEquipmentOverview() {
     const isOverEncumbered = isEncumbered();
     console.log('Encumbrance calculated:', encumbrance, 'Over encumbered:', isOverEncumbered);
     console.log('Backpack system enabled:', backpackEnabled);
+    console.log('Equipment data loaded:', !!equipmentData.inventory);
+    console.log('Selected bag:', equipmentData.selectedBag);
     
     try {
         const overviewContent = renderOverviewContent();

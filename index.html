@@ -503,14 +503,27 @@
   function checkRedirect() {
     const currentCharacterId = localStorage.getItem('zevi-current-character-id');
     const isDirectAccess = !document.referrer || !document.referrer.includes('landing.html');
+    const hasValidReferrer = document.referrer && document.referrer.includes('landing.html');
     
-    // If no character ID or direct access, redirect to landing page
-    if (!currentCharacterId || isDirectAccess) {
-      console.log('No character ID or direct access, redirecting to landing page');
+    console.log('Redirect check:', {
+      currentCharacterId: currentCharacterId,
+      referrer: document.referrer,
+      isDirectAccess: isDirectAccess,
+      hasValidReferrer: hasValidReferrer
+    });
+    
+    // Always redirect to landing page unless we have BOTH a character ID AND came from landing
+    if (!currentCharacterId || !hasValidReferrer) {
+      console.log('Redirecting to landing page - missing character ID or invalid referrer');
+      // Clear any stale data
+      if (!hasValidReferrer) {
+        localStorage.removeItem('zevi-current-character-id');
+      }
       window.location.replace('landing.html');
       return;
     }
     
+    console.log('Valid access from landing page, initializing character:', currentCharacterId);
     // We have a character ID and came from landing page, initialize character
     initializeCharacterFromId(currentCharacterId);
   }
@@ -590,40 +603,67 @@
       }
     }
     
+    console.log('Loading character data into UI:', character.name, character);
+    
     // Load character-specific data with a delay to ensure systems are ready
     setTimeout(() => {
+      console.log('Loading character-specific data, checking system availability:');
+      console.log('HP system available:', typeof window.renderHPCircles, typeof window.hpCircles);
+      console.log('Stress system available:', typeof window.renderStressCircles, typeof window.stressCircles);
+      console.log('Hope system available:', typeof window.renderHopeCircles);
       // Load HP data
       if (character.hp) {
         const maxHP = character.hp.max || 4;
         const currentHP = character.hp.current || 0;
+        const hpArray = Array(maxHP).fill(null).map((_, i) => ({ active: i < currentHP }));
+        
         if (window.hpCircles !== undefined) {
-          window.hpCircles = Array(maxHP).fill(null).map((_, i) => ({ active: i < currentHP }));
+          window.hpCircles = hpArray;
         }
-        localStorage.setItem('zevi-hp-circles', JSON.stringify(Array(maxHP).fill(null).map((_, i) => ({ active: i < currentHP }))));
-        if (typeof renderHPCircles === 'function') renderHPCircles();
+        localStorage.setItem('zevi-hp-circles', JSON.stringify(hpArray));
+        if (typeof window.renderHPCircles === 'function') {
+          window.renderHPCircles();
+        }
+        console.log('Loaded HP data for character:', currentHP, '/', maxHP);
       }
       
       // Load Stress data
       if (character.stress) {
         const maxStress = character.stress.max || 4;
         const currentStress = character.stress.current || 0;
+        const stressArray = Array(maxStress).fill(null).map((_, i) => ({ active: i < currentStress }));
+        
         if (window.stressCircles !== undefined) {
-          window.stressCircles = Array(maxStress).fill(null).map((_, i) => ({ active: i < currentStress }));
+          window.stressCircles = stressArray;
         }
-        localStorage.setItem('zevi-stress-circles', JSON.stringify(Array(maxStress).fill(null).map((_, i) => ({ active: i < currentStress }))));
-        if (typeof renderStressCircles === 'function') renderStressCircles();
+        localStorage.setItem('zevi-stress-circles', JSON.stringify(stressArray));
+        if (typeof window.renderStressCircles === 'function') {
+          window.renderStressCircles();
+        }
+        console.log('Loaded Stress data for character:', currentStress, '/', maxStress);
       }
       
-             // Load Hope data
-       if (character.hope) {
-         const currentHope = character.hope.current || 0;
-         const maxHope = character.hope.max || 6;
-         localStorage.setItem('zevi-hope', currentHope);
-         localStorage.setItem('zevi-max-hope', maxHope);
-         if (typeof window.renderHopeCircles === 'function') {
-           window.renderHopeCircles();
-         }
-       }
+                     // Load Hope data
+        if (character.hope) {
+          const currentHope = character.hope.current || 0;
+          const maxHope = character.hope.max || 6;
+          localStorage.setItem('zevi-hope', currentHope);
+          localStorage.setItem('zevi-max-hope', maxHope);
+          console.log('Loaded Hope data for character:', currentHope, '/', maxHope);
+          if (typeof window.renderHopeCircles === 'function') {
+            window.renderHopeCircles();
+            console.log('Called renderHopeCircles()');
+          } else {
+            console.error('renderHopeCircles is not available!');
+          }
+        } else {
+          console.log('No hope data found for character, using defaults');
+          localStorage.setItem('zevi-hope', 0);
+          localStorage.setItem('zevi-max-hope', 6);
+          if (typeof window.renderHopeCircles === 'function') {
+            window.renderHopeCircles();
+          }
+        }
        
        // Load Damage Thresholds
        if (character.damageThresholds) {
@@ -643,7 +683,7 @@
            localStorage.setItem('zevi-severe-damage-value', character.damageThresholds.severe || 9);
          }
        }
-     }, 200);  // 200ms delay to ensure all systems are loaded
+           }, 500);  // 500ms delay to ensure all systems are loaded
   }
   
   // Save character field when it changes
