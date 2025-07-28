@@ -1866,7 +1866,6 @@
      max-width: 600px;
      width: 95%;
      max-height: 90vh;
-     overflow-y: auto;
      background: rgba(30, 30, 30, 0.95);
      border: 2px solid rgba(255, 255, 255, 0.2);
      border-radius: 20px;
@@ -1874,6 +1873,24 @@
      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
      transform: scale(0.9);
      transition: all 0.3s ease;
+     display: flex;
+     flex-direction: column;
+ }
+
+ .add-item-modal .modal-header {
+     padding: 1.5rem 2rem 1rem 2rem;
+     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+     flex-shrink: 0;
+ }
+
+ .add-item-modal .modal-body {
+     padding: 1rem 2rem 2rem 2rem;
+     flex: 1;
+ }
+
+ .add-item-modal .modal-body.scrollable {
+     overflow-y: auto;
+     max-height: calc(90vh - 80px);
  }
 
  .add-item-modal.show .modal-content {

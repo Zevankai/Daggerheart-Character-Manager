@@ -857,7 +857,8 @@ function showAddItemModal(defaultType = 'weapon') {
                 <button type="button" class="modal-close-btn" onclick="closeModal(this)" title="Close">×</button>
             </div>
             
-            <form id="add-item-form" class="add-item-form">
+            <div class="modal-body scrollable">
+                <form id="add-item-form" class="add-item-form">
                 <div class="form-row">
                                          <div class="form-group">
                          <label for="item-type">
@@ -956,6 +957,7 @@ function showAddItemModal(defaultType = 'weapon') {
                     </button>
                 </div>
             </form>
+            </div>
         </div>
     `;
     

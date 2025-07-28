@@ -486,30 +486,32 @@
  <script>
   // Initialize character management
   
-  // Auto-save character data periodically
+    // Auto-save character data periodically
   setInterval(() => {
     if (window.characterManager && window.characterManager.currentCharacter) {
       window.characterManager.saveCharacterData(window.characterManager.currentCharacter);
     }
   }, 30000); // Save every 30 seconds
   
-    // Check if user has a current character loaded
+  // Check if we're supposed to load a character (coming from character selection)
   document.addEventListener('DOMContentLoaded', () => {
     const currentCharacterId = localStorage.getItem('zevi-current-character-id');
+    const isDirectAccess = !document.referrer || !document.referrer.includes('landing.html');
     
-    // If no character ID at all, redirect to landing page immediately
-    if (!currentCharacterId || currentCharacterId === 'null' || currentCharacterId === '') {
-      console.log('No character ID found, redirecting to landing page');
+    // If no character ID or direct access, redirect to landing page
+    if (!currentCharacterId || isDirectAccess) {
+      console.log('No character ID or direct access, redirecting to landing page');
       window.location.href = 'landing.html';
       return;
     }
     
-    console.log('Found character ID:', currentCharacterId);
-    
-    // If we have a character ID, wait for character manager to load
+    // We have a character ID and came from landing page, initialize character
+    initializeCharacterFromId(currentCharacterId);
+  });
+  
+  function initializeCharacterFromId(characterId) {
     const waitForCharacterManager = (attempts = 0) => {
       if (attempts > 50) {
-        // Timeout after 2.5 seconds, redirect to landing
         console.warn('Character manager failed to load, redirecting to landing page');
         localStorage.removeItem('zevi-current-character-id');
         window.location.href = 'landing.html';
@@ -518,7 +520,7 @@
       
       if (window.characterManager) {
         try {
-          const character = window.characterManager.getCharacter(currentCharacterId);
+          const character = window.characterManager.getCharacter(characterId);
           if (character) {
             window.characterManager.currentCharacter = character;
             
@@ -537,8 +539,9 @@
             
             // Clear any creating character flag
             localStorage.removeItem('zevi-creating-character');
+            
+            console.log('Character loaded successfully:', character.name);
           } else {
-            // Character not found, redirect to landing
             console.warn('Character not found, redirecting to landing page');
             localStorage.removeItem('zevi-current-character-id');
             window.location.href = 'landing.html';
@@ -549,14 +552,12 @@
           window.location.href = 'landing.html';
         }
       } else {
-        // Character manager not ready, wait a bit more
         setTimeout(() => waitForCharacterManager(attempts + 1), 50);
       }
     };
     
-    // Start waiting for character manager
     waitForCharacterManager();
-  });
+  }
    
    // Initialize Characters tab content
    function initializeCharactersTab() {
