@@ -828,15 +828,31 @@
            window.characterManager.saveCharacterData(window.characterManager.currentCharacter);
          }
          
-         // Load the selected character
-         if (window.characterManager.loadCharacterData(character)) {
-           // Redirect based on character's layout
-           const layout = character.layout || 'daggerheart';
-           if (layout === 'dnd') {
+         // For D&D characters, redirect to D&D placeholder
+         const layout = character.layout || 'daggerheart';
+         if (layout === 'dnd') {
+           // Set character as current and redirect
+           if (window.characterManager.loadCharacterData(character)) {
              window.location.href = 'dnd-placeholder.html';
            } else {
-             window.location.href = 'index.html';
+             alert('Error loading character data. Please try again.');
            }
+           return;
+         }
+         
+         // For Daggerheart characters, load data directly (we're already on the right page)
+         if (window.characterManager.loadCharacterData(character)) {
+           // Set as current character
+           window.characterManager.currentCharacter = character;
+           localStorage.setItem('zevi-current-character-id', character.id);
+           
+           // Load character data into UI
+           loadCharacterIntoUI(character);
+           
+           // Update Characters tab
+           setTimeout(window.initializeCharactersTab, 100);
+           
+           console.log('Successfully loaded character from Characters tab:', character.name);
          } else {
            alert('Error loading character data. Please try again.');
          }

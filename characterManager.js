@@ -310,12 +310,28 @@ function showCharacterList() {
         characterManager.characters.forEach(character => {
             const characterCard = document.createElement('div');
             characterCard.className = 'character-card';
+            const layoutInfo = character.layout === 'dnd' ? 
+                { name: 'D&D 5e', icon: '🐉', class: 'dnd-layout' } : 
+                { name: 'Daggerheart', icon: '⚔️', class: 'daggerheart-layout' };
+            
             characterCard.innerHTML = `
                 <div class="character-info">
+                    ${character.characterImage ? 
+                        `<div class="character-image-preview">
+                           <img src="${character.characterImage}" alt="${character.name}" class="character-thumbnail">
+                         </div>` : 
+                        `<div class="character-image-placeholder">
+                           <span class="image-placeholder-icon">👤</span>
+                         </div>`
+                    }
                     <div class="character-details">
                         <h4>${character.name}</h4>
                         ${character.subtitle ? `<div class="character-meta">Subtitle: ${character.subtitle}</div>` : ''}
                         <div class="character-meta">Level: ${character.level}</div>
+                        <div class="character-meta">
+                            <span class="layout-icon ${layoutInfo.class}">${layoutInfo.icon}</span>
+                            System: ${layoutInfo.name}
+                        </div>
                         <div class="character-meta">Created: ${characterManager.formatDate(character.createdAt)}</div>
                         <div class="character-meta">Last Modified: ${characterManager.formatDate(character.lastModified)}</div>
                     </div>
