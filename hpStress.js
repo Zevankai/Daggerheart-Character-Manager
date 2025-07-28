@@ -8,10 +8,12 @@ let armorCircles = JSON.parse(localStorage.getItem('zevi-armor-circles')) || Arr
 
 function saveHPState() {
     localStorage.setItem('zevi-hp-circles', JSON.stringify(hpCircles));
+    saveCharacterHPData();
 }
 
 function saveStressState() {
     localStorage.setItem('zevi-stress-circles', JSON.stringify(stressCircles));
+    saveCharacterStressData();
 }
 
 function renderHPCircles() {
@@ -269,5 +271,46 @@ function removeArmorCircle() {
         armorCircles.pop();
         saveArmorState();
         renderArmorCircles();
+    }
+}
+
+// Save HP/Stress data to character-specific storage
+function saveCharacterHPData() {
+    if (window.characterManager && window.characterManager.currentCharacter) {
+        const character = window.characterManager.currentCharacter;
+        const currentHP = hpCircles.filter(circle => circle.active).length;
+        const maxHP = hpCircles.length;
+        
+        character.hp = { current: currentHP, max: maxHP };
+        character.lastModified = new Date().toISOString();
+        
+        window.characterManager.updateCharacterMetadata(character.id, {
+            hp: character.hp,
+            lastModified: character.lastModified
+        });
+        
+        if (typeof initializeCharactersTab === 'function') {
+            setTimeout(initializeCharactersTab, 10);
+        }
+    }
+}
+
+function saveCharacterStressData() {
+    if (window.characterManager && window.characterManager.currentCharacter) {
+        const character = window.characterManager.currentCharacter;
+        const currentStress = stressCircles.filter(circle => circle.active).length;
+        const maxStress = stressCircles.length;
+        
+        character.stress = { current: currentStress, max: maxStress };
+        character.lastModified = new Date().toISOString();
+        
+        window.characterManager.updateCharacterMetadata(character.id, {
+            stress: character.stress,
+            lastModified: character.lastModified
+        });
+        
+        if (typeof initializeCharactersTab === 'function') {
+            setTimeout(initializeCharactersTab, 10);
+        }
     }
 }

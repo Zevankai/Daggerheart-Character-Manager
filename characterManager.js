@@ -33,6 +33,10 @@ class CharacterManager {
             name: characterData.name || 'Unnamed Character',
             subtitle: characterData.subtitle || '',
             level: characterData.level || 1,
+            layout: characterData.layout || 'daggerheart',
+            characterImage: characterData.characterImage || null,
+            domain1: characterData.domain1 || 'Domain 1',
+            domain2: characterData.domain2 || 'Domain 2',
             domains: characterData.domains || [],
             attributes: characterData.attributes || {
                 might: 10,

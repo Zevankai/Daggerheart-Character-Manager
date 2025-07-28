@@ -16,6 +16,11 @@ function uploadCharacterImage(event) {
             characterImage: reader.result,
             lastModified: new Date().toISOString()
           });
+          
+          // Update Characters tab in real-time
+          if (typeof initializeCharactersTab === 'function') {
+            setTimeout(initializeCharactersTab, 10);
+          }
         }
       }
     };

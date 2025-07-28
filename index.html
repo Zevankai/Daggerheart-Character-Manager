@@ -17,14 +17,14 @@
    </div>
 
    <div class="name-box" data-color-target="name-box">
-    <input type="text" value="Character Name" />
-    <div class="subtitle" contenteditable="true">Community Ancestry Class (Subclass)</div>
+    <input type="text" id="characterName" value="Character Name" onblur="saveCharacterField('name', this.value)" onchange="saveCharacterField('name', this.value)" />
+    <div class="subtitle" id="characterSubtitle" contenteditable="true" onblur="saveCharacterField('subtitle', this.textContent)" onkeyup="saveCharacterField('subtitle', this.textContent)">Community Ancestry Class (Subclass)</div>
     <div class="domain-row">
-     <span class="domain-badge" contenteditable="true">Domain 1</span>
+     <span class="domain-badge" id="domain1" contenteditable="true" onblur="saveCharacterField('domain1', this.textContent)" onkeyup="saveCharacterField('domain1', this.textContent)">Domain 1</span>
      <span class="domain-divider">||</span>
-     <span class="level-display" id="charLevel" contenteditable="true">5</span>
+     <span class="level-display" id="charLevel" contenteditable="true" onblur="saveCharacterField('level', this.textContent)" onkeyup="saveCharacterField('level', this.textContent)">5</span>
      <span class="domain-divider">||</span>
-     <span class="domain-badge" contenteditable="true">Domain 2</span>
+     <span class="domain-badge" id="domain2" contenteditable="true" onblur="saveCharacterField('domain2', this.textContent)" onkeyup="saveCharacterField('domain2', this.textContent)">Domain 2</span>
     </div>
     
     <div class="hope-tracker-inline">
@@ -524,15 +524,8 @@
           if (character) {
             window.characterManager.currentCharacter = character;
             
-            // Load character image if it exists
-            if (character.characterImage) {
-              const img = document.getElementById("charImage");
-              const placeholder = document.getElementById("charPlaceholder");
-              if (img && placeholder) {
-                img.src = character.characterImage;
-                placeholder.style.display = 'none';
-              }
-            }
+            // Load character data into the UI
+            loadCharacterIntoUI(character);
             
             // Initialize Characters tab
             setTimeout(initializeCharactersTab, 100);
@@ -557,6 +550,107 @@
     };
     
     waitForCharacterManager();
+  }
+  
+  // Load character data into the UI elements
+  function loadCharacterIntoUI(character) {
+    // Load basic character info
+    const nameInput = document.getElementById('characterName');
+    const subtitleDiv = document.getElementById('characterSubtitle');
+    const levelSpan = document.getElementById('charLevel');
+    const domain1Span = document.getElementById('domain1');
+    const domain2Span = document.getElementById('domain2');
+    
+    if (nameInput) nameInput.value = character.name || 'Character Name';
+    if (subtitleDiv) subtitleDiv.textContent = character.subtitle || 'Community Ancestry Class (Subclass)';
+    if (levelSpan) levelSpan.textContent = character.level || '5';
+    if (domain1Span) domain1Span.textContent = character.domain1 || 'Domain 1';
+    if (domain2Span) domain2Span.textContent = character.domain2 || 'Domain 2';
+    
+    // Load character image
+    if (character.characterImage) {
+      const img = document.getElementById("charImage");
+      const placeholder = document.getElementById("charPlaceholder");
+      if (img && placeholder) {
+        img.src = character.characterImage;
+        placeholder.style.display = 'none';
+      }
+    } else {
+      const img = document.getElementById("charImage");
+      const placeholder = document.getElementById("charPlaceholder");
+      if (img && placeholder) {
+        img.src = '';
+        placeholder.style.display = 'block';
+      }
+    }
+    
+    // Load HP data
+    if (character.hp && window.hpCircles !== undefined) {
+      // Update global hpCircles array
+      const maxHP = character.hp.max || 4;
+      const currentHP = character.hp.current || 0;
+      window.hpCircles = Array(maxHP).fill(null).map((_, i) => ({ active: i < currentHP }));
+      localStorage.setItem('zevi-hp-circles', JSON.stringify(window.hpCircles));
+      if (typeof renderHPCircles === 'function') renderHPCircles();
+    }
+    
+    // Load Stress data
+    if (character.stress && window.stressCircles !== undefined) {
+      const maxStress = character.stress.max || 4;
+      const currentStress = character.stress.current || 0;
+      window.stressCircles = Array(maxStress).fill(null).map((_, i) => ({ active: i < currentStress }));
+      localStorage.setItem('zevi-stress-circles', JSON.stringify(window.stressCircles));
+      if (typeof renderStressCircles === 'function') renderStressCircles();
+    }
+    
+    // Load Hope data
+    if (character.hope) {
+      const currentHope = character.hope.current || 0;
+      const maxHope = character.hope.max || 6;
+      localStorage.setItem('zevi-hope', currentHope);
+      localStorage.setItem('zevi-max-hope', maxHope);
+      if (typeof renderHopeCircles === 'function') renderHopeCircles();
+    }
+  }
+  
+  // Save character field when it changes
+  function saveCharacterField(fieldName, value) {
+    if (window.characterManager && window.characterManager.currentCharacter) {
+      const character = window.characterManager.currentCharacter;
+      
+      // Update the character object
+      switch(fieldName) {
+        case 'name':
+          character.name = value;
+          break;
+        case 'subtitle':
+          character.subtitle = value;
+          break;
+        case 'level':
+          character.level = parseInt(value) || 1;
+          break;
+        case 'domain1':
+          character.domain1 = value;
+          break;
+        case 'domain2':
+          character.domain2 = value;
+          break;
+      }
+      
+      // Update the last modified time
+      character.lastModified = new Date().toISOString();
+      
+      // Save to localStorage
+      window.characterManager.updateCharacterMetadata(character.id, {
+        [fieldName]: value,
+        lastModified: character.lastModified
+      });
+      
+      // Update Characters tab in real-time
+      setTimeout(initializeCharactersTab, 10);
+      
+      console.log(`Updated character ${fieldName}:`, value);
+    }
   }
    
    // Initialize Characters tab content

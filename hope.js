@@ -26,6 +26,9 @@ function renderHopeCircles() {
 
     localStorage.setItem('zevi-hope', currentHope); // Update stored current hope in case it was capped
     localStorage.setItem('zevi-max-hope', currentMaxHope); // Ensure updated max hope is stored
+    
+    // Save to character data if character manager is available
+    saveCharacterHopeData(currentHope, currentMaxHope);
 
     // Create circles up to the currentMaxHope
     for (let i = 0; i < currentMaxHope; i++) {
@@ -97,5 +100,25 @@ document.addEventListener('DOMContentLoaded', () => {
         hopeDecrementBtn.addEventListener('click', () => {
             updateMaxHopeCircles(-1); // Remove one total circle
         });
+    }
+}
+
+// Save hope data to character-specific storage
+function saveCharacterHopeData(currentHope, maxHope) {
+    if (window.characterManager && window.characterManager.currentCharacter) {
+        const character = window.characterManager.currentCharacter;
+        character.hope = { current: currentHope, max: maxHope };
+        character.lastModified = new Date().toISOString();
+        
+        // Update character metadata
+        window.characterManager.updateCharacterMetadata(character.id, {
+            hope: character.hope,
+            lastModified: character.lastModified
+        });
+        
+        // Update Characters tab in real-time
+        if (typeof initializeCharactersTab === 'function') {
+            setTimeout(initializeCharactersTab, 10);
+        }
     }
 });
