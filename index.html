@@ -646,8 +646,8 @@
         lastModified: character.lastModified
       });
       
-      // Update Characters tab in real-time
-      setTimeout(initializeCharactersTab, 10);
+             // Update Characters tab in real-time
+       setTimeout(window.initializeCharactersTab, 10);
       
       console.log(`Updated character ${fieldName}:`, value);
     }
@@ -741,6 +741,9 @@
        }
      }
    }
+   
+   // Make function globally available
+   window.initializeCharactersTab = initializeCharactersTab;
    
    // Load character from Characters tab
    function loadCharacterFromTab(characterId) {

@@ -1,10 +1,43 @@
 // --- GLOBAL HELPER FUNCTIONS ---
+
+// Tab switching functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const tabButtons = document.querySelectorAll('button[data-target]');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            
+            // Remove active class from all buttons and panels
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabPanels.forEach(panel => panel.classList.remove('active'));
+            
+            // Add active class to clicked button and corresponding panel
+            this.classList.add('active');
+            const targetPanel = document.getElementById(targetId);
+            if (targetPanel) {
+                targetPanel.classList.add('active');
+            }
+        });
+    });
+});
 function uploadCharacterImage(event) {
+    const file = event.target.files[0];
+    if (!file) {
+        console.log('No file selected');
+        return;
+    }
+    
     const reader = new FileReader();
     reader.onload = function(){
       const img = document.getElementById("charImage");
-      img.src = reader.result;
-      document.getElementById("charPlaceholder").style.display = 'none';
+      const placeholder = document.getElementById("charPlaceholder");
+      
+      if (img && placeholder) {
+        img.src = reader.result;
+        placeholder.style.display = 'none';
+      }
       
       // Save image to character data
       const currentCharacterId = localStorage.getItem('zevi-current-character-id');
@@ -18,13 +51,20 @@ function uploadCharacterImage(event) {
           });
           
           // Update Characters tab in real-time
-          if (typeof initializeCharactersTab === 'function') {
-            setTimeout(initializeCharactersTab, 10);
+          if (typeof window.initializeCharactersTab === 'function') {
+            setTimeout(window.initializeCharactersTab, 10);
           }
+          
+          console.log('Character image uploaded and saved');
         }
       }
     };
-    reader.readAsDataURL(event.target.files[0]);
+    
+    reader.onerror = function() {
+        console.error('Error reading file');
+    };
+    
+    reader.readAsDataURL(file);
 }
 
 function uploadBackground(event) {

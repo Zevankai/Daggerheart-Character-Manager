@@ -117,8 +117,8 @@ function saveCharacterHopeData(currentHope, maxHope) {
         });
         
         // Update Characters tab in real-time
-        if (typeof initializeCharactersTab === 'function') {
-            setTimeout(initializeCharactersTab, 10);
+        if (typeof window.initializeCharactersTab === 'function') {
+            setTimeout(window.initializeCharactersTab, 10);
         }
     }
 });

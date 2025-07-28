@@ -289,8 +289,8 @@ function saveCharacterHPData() {
             lastModified: character.lastModified
         });
         
-        if (typeof initializeCharactersTab === 'function') {
-            setTimeout(initializeCharactersTab, 10);
+        if (typeof window.initializeCharactersTab === 'function') {
+            setTimeout(window.initializeCharactersTab, 10);
         }
     }
 }
@@ -309,8 +309,8 @@ function saveCharacterStressData() {
             lastModified: character.lastModified
         });
         
-        if (typeof initializeCharactersTab === 'function') {
-            setTimeout(initializeCharactersTab, 10);
+        if (typeof window.initializeCharactersTab === 'function') {
+            setTimeout(window.initializeCharactersTab, 10);
         }
     }
 }
