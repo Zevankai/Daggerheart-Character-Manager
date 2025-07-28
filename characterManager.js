@@ -199,11 +199,6 @@ class CharacterManager {
 
     // Initialize event listeners
     initializeEventListeners() {
-        // Check if user has existing characters on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            this.checkFirstTimeUser();
-        });
-
         // Handle page visibility change to save current character
         document.addEventListener('visibilitychange', () => {
             if (document.hidden && this.currentCharacter) {
@@ -217,6 +212,16 @@ class CharacterManager {
                 this.saveCharacterData(this.currentCharacter);
             }
         });
+        
+        // Check for first time user only if we're on landing page
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                this.checkFirstTimeUser();
+            });
+        } else {
+            // DOM already loaded
+            this.checkFirstTimeUser();
+        }
     }
 
     // Check if this is a first-time user or if they have characters
@@ -224,11 +229,20 @@ class CharacterManager {
         const hasCharacters = this.characters.length > 0;
         const currentCharacterId = localStorage.getItem('zevi-current-character-id');
         
-        if (hasCharacters && currentCharacterId) {
+        // Only auto-redirect if we're on the landing page AND there's a valid character
+        // Don't auto-redirect if we're on the main app page
+        if (window.location.pathname.includes('landing.html') && hasCharacters && currentCharacterId) {
             // Try to load the last character automatically
             const lastCharacter = this.getCharacter(currentCharacterId);
             if (lastCharacter) {
-                this.loadCharacterAndRedirect(lastCharacter);
+                this.loadCharacterData(lastCharacter);
+                // Redirect based on character's layout
+                const layout = lastCharacter.layout || 'daggerheart';
+                if (layout === 'dnd') {
+                    window.location.href = 'dnd-placeholder.html';
+                } else {
+                    window.location.href = 'index.html';
+                }
                 return;
             }
         }

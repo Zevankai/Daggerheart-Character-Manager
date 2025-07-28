@@ -497,65 +497,67 @@
     }
   }, 30000); // Save every 30 seconds
   
-  // Check if user has a current character loaded
+    // Check if user has a current character loaded
   document.addEventListener('DOMContentLoaded', () => {
-    // Add a small delay to ensure all scripts are loaded
-    setTimeout(() => {
-      const currentCharacterId = localStorage.getItem('zevi-current-character-id');
-      const isCreatingCharacter = localStorage.getItem('zevi-creating-character');
-      
-      if (!currentCharacterId) {
-        // No character loaded, redirect to landing page
+    const currentCharacterId = localStorage.getItem('zevi-current-character-id');
+    
+    // If no character ID at all, redirect to landing page immediately
+    if (!currentCharacterId) {
+      window.location.href = 'landing.html';
+      return;
+    }
+    
+    // If we have a character ID, wait for character manager to load
+    const waitForCharacterManager = (attempts = 0) => {
+      if (attempts > 50) {
+        // Timeout after 2.5 seconds, redirect to landing
+        console.warn('Character manager failed to load, redirecting to landing page');
+        localStorage.removeItem('zevi-current-character-id');
         window.location.href = 'landing.html';
         return;
       }
       
-      // Clear the creating character flag
-      if (isCreatingCharacter) {
-        localStorage.removeItem('zevi-creating-character');
-      }
-      
-      // Wait for character manager to be available and ready
-      const waitForCharacterManager = (attempts = 0) => {
-        if (attempts > 100) {
-          // Timeout after 5 seconds, something is wrong
-          localStorage.removeItem('zevi-current-character-id');
-          window.location.href = 'landing.html';
-          return;
-        }
-        
-        if (window.characterManager && window.characterManager.characters) {
-          // Character manager is ready, check for character
+      if (window.characterManager) {
+        try {
           const character = window.characterManager.getCharacter(currentCharacterId);
           if (character) {
             window.characterManager.currentCharacter = character;
             
-                         // Load character image if it exists
-             if (character.characterImage) {
-               const img = document.getElementById("charImage");
-               const placeholder = document.getElementById("charPlaceholder");
-               if (img && placeholder) {
-                 img.src = character.characterImage;
-                 placeholder.style.display = 'none';
-               }
-             }
-             
-             // Initialize Characters tab if it exists
-             setTimeout(initializeCharactersTab, 100);
+            // Load character image if it exists
+            if (character.characterImage) {
+              const img = document.getElementById("charImage");
+              const placeholder = document.getElementById("charPlaceholder");
+              if (img && placeholder) {
+                img.src = character.characterImage;
+                placeholder.style.display = 'none';
+              }
+            }
+            
+            // Initialize Characters tab
+            setTimeout(initializeCharactersTab, 100);
+            
+            // Clear any creating character flag
+            localStorage.removeItem('zevi-creating-character');
           } else {
-            // Character ID exists but character not found, redirect to landing
+            // Character not found, redirect to landing
+            console.warn('Character not found, redirecting to landing page');
             localStorage.removeItem('zevi-current-character-id');
             window.location.href = 'landing.html';
           }
-        } else {
-          // Character manager not ready, wait a bit more
-          setTimeout(() => waitForCharacterManager(attempts + 1), 50);
+        } catch (error) {
+          console.error('Error loading character:', error);
+          localStorage.removeItem('zevi-current-character-id');
+          window.location.href = 'landing.html';
         }
-      };
-      
-             waitForCharacterManager();
-     }, 200); // Increased delay to 200ms
-   });
+      } else {
+        // Character manager not ready, wait a bit more
+        setTimeout(() => waitForCharacterManager(attempts + 1), 50);
+      }
+    };
+    
+    // Start waiting for character manager
+    waitForCharacterManager();
+  });
    
    // Initialize Characters tab content
    function initializeCharactersTab() {
