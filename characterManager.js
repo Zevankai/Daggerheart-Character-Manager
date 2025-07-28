@@ -224,30 +224,16 @@ class CharacterManager {
       const hasCharacters = this.characters.length > 0;
       const currentCharacterId = localStorage.getItem('zevi-current-character-id');
       
-      // Only auto-redirect if we're on the landing page and not coming from a redirect loop
+      // Never auto-redirect - always let users choose from the landing page
+      // The landing page should always be the entry point
+      
+      // Clear any redirect flags since we're staying on the landing page
       const isOnLandingPage = window.location.pathname.includes('landing.html') || window.location.pathname === '/';
-      const hasRedirected = sessionStorage.getItem('zevi-redirect-attempted');
-      
-      if (hasCharacters && currentCharacterId && isOnLandingPage && !hasRedirected) {
-          // Try to load the last character automatically
-          const lastCharacter = this.getCharacter(currentCharacterId);
-          if (lastCharacter) {
-              // Set flag to prevent redirect loops
-              sessionStorage.setItem('zevi-redirect-attempted', 'true');
-              this.loadCharacterAndRedirect(lastCharacter);
-              return;
-          } else {
-              // Character ID exists but character not found - clear it
-              localStorage.removeItem('zevi-current-character-id');
-          }
-      }
-      
-      // Clear redirect flag if we're staying on the landing page
       if (isOnLandingPage) {
           sessionStorage.removeItem('zevi-redirect-attempted');
       }
       
-      // If no valid character or first time, disable load button if no characters
+      // If no characters exist, disable load button
       if (!hasCharacters) {
           const loadBtn = document.getElementById('loadCharacterCard');
           if (loadBtn) {
@@ -257,6 +243,18 @@ class CharacterManager {
               if (button) {
                   button.textContent = 'No Characters';
                   button.disabled = true;
+              }
+          }
+      } else {
+          // If characters exist, ensure load button is enabled
+          const loadBtn = document.getElementById('loadCharacterCard');
+          if (loadBtn) {
+              loadBtn.style.opacity = '1';
+              loadBtn.style.pointerEvents = 'auto';
+              const button = loadBtn.querySelector('.option-btn');
+              if (button) {
+                  button.textContent = 'Load Character';
+                  button.disabled = false;
               }
           }
       }
@@ -276,7 +274,8 @@ class CharacterManager {
   // Load character and redirect to main app
   loadCharacterAndRedirect(character) {
       if (this.loadCharacterData(character)) {
-          // Clear any redirect flags before successful navigation
+          // Set flag to indicate we're coming from landing page with a character selection
+          sessionStorage.setItem('zevi-from-landing', 'true');
           sessionStorage.removeItem('zevi-redirect-attempted');
           window.location.href = 'index.html';
       } else {
@@ -338,7 +337,7 @@ function closeCharacterModal() {
 function loadCharacter(characterId) {
   const character = characterManager.getCharacter(characterId);
   if (character) {
-      // Clear redirect flags
+      // Clear any redirect flags
       sessionStorage.removeItem('zevi-redirect-attempted');
       characterManager.loadCharacterAndRedirect(character);
   } else {
@@ -355,7 +354,7 @@ function createNewCharacter() {
   localStorage.removeItem('zevi-hope');
   localStorage.removeItem('zevi-downtime');
   
-  // Clear redirect flags
+  // Clear any redirect flags
   sessionStorage.removeItem('zevi-redirect-attempted');
   
   // Create a new character entry
