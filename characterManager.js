@@ -322,30 +322,26 @@ function closeCharacterModal() {
 function loadCharacter(characterId) {
     const character = characterManager.getCharacter(characterId);
     if (character) {
-        characterManager.loadCharacterAndRedirect(character);
+        // Load character data
+        if (characterManager.loadCharacterData(character)) {
+            // Redirect based on character's layout (default to Daggerheart for legacy characters)
+            const layout = character.layout || 'daggerheart';
+            if (layout === 'dnd') {
+                window.location.href = 'dnd-placeholder.html';
+            } else {
+                window.location.href = 'index.html';
+            }
+        } else {
+            alert('Error loading character data. Please try again.');
+        }
     } else {
         alert('Character not found!');
     }
 }
 
 function createNewCharacter() {
-    // Clear any existing character data
-    localStorage.removeItem('zevi-current-character-id');
-    localStorage.removeItem('zevi-equipment');
-    localStorage.removeItem('zevi-journal');
-    localStorage.removeItem('zevi-experiences');
-    localStorage.removeItem('zevi-hope');
-    localStorage.removeItem('zevi-downtime');
-    
-    // Create a new character entry
-    const newCharacter = characterManager.createCharacter({
-        name: 'New Character',
-        subtitle: '',
-        level: 1
-    });
-    
-    // Load the new character and redirect
-    characterManager.loadCharacterAndRedirect(newCharacter);
+    // Redirect to layout selection page instead of creating character immediately
+    window.location.href = 'layoutSelection.html';
 }
 
 function showDeleteConfirmation(characterId, characterName) {

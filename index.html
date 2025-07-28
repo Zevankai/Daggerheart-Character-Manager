@@ -268,7 +268,16 @@
    </div>
 
    <div id="characters-tab-content" class="tab-panel">
-    <p style="text-align: center;">Content for Characters will go here.</p>
+    <div class="character-management-container">
+     <h2>Character Management</h2>
+     <div class="character-actions">
+      <button class="option-btn primary-btn" onclick="createNewCharacter()">Create New Character</button>
+      <button class="option-btn secondary-btn" onclick="goToCharacterSelection()">Character Selection</button>
+     </div>
+     <div id="current-character-info" class="current-character-info">
+      <!-- Current character info will be populated here -->
+     </div>
+    </div>
    </div>
    <div id="settings-tab-content" class="tab-panel">
     <div class="settings-container">
@@ -521,15 +530,18 @@
           if (character) {
             window.characterManager.currentCharacter = character;
             
-            // Load character image if it exists
-            if (character.characterImage) {
-              const img = document.getElementById("charImage");
-              const placeholder = document.getElementById("charPlaceholder");
-              if (img && placeholder) {
-                img.src = character.characterImage;
-                placeholder.style.display = 'none';
-              }
-            }
+                         // Load character image if it exists
+             if (character.characterImage) {
+               const img = document.getElementById("charImage");
+               const placeholder = document.getElementById("charPlaceholder");
+               if (img && placeholder) {
+                 img.src = character.characterImage;
+                 placeholder.style.display = 'none';
+               }
+             }
+             
+             // Initialize Characters tab if it exists
+             setTimeout(initializeCharactersTab, 100);
           } else {
             // Character ID exists but character not found, redirect to landing
             localStorage.removeItem('zevi-current-character-id');
@@ -541,8 +553,58 @@
         }
       };
       
-      waitForCharacterManager();
-    }, 200); // Increased delay to 200ms
-  });
+             waitForCharacterManager();
+     }, 200); // Increased delay to 200ms
+   });
+   
+   // Initialize Characters tab content
+   function initializeCharactersTab() {
+     if (window.characterManager && window.characterManager.currentCharacter) {
+       const character = window.characterManager.currentCharacter;
+       const infoDiv = document.getElementById('current-character-info');
+       if (infoDiv) {
+         const layoutInfo = character.layout === 'dnd' ? 
+           { name: 'D&D 5e', icon: '🐉' } : 
+           { name: 'Daggerheart', icon: '⚔️' };
+         
+         infoDiv.innerHTML = `
+           <div class="current-character-card">
+             <h3>Current Character</h3>
+             ${character.characterImage ? 
+               `<div class="character-image-display">
+                  <img src="${character.characterImage}" alt="${character.name}" class="character-display-image">
+                </div>` : 
+               `<div class="character-image-placeholder">
+                  <span class="image-placeholder-icon">👤</span>
+                </div>`
+             }
+             <div class="character-info">
+               <h4>${character.name}</h4>
+               ${character.subtitle ? `<p class="character-subtitle">${character.subtitle}</p>` : ''}
+               <p class="character-level">Level: ${character.level}</p>
+               <p class="character-system">
+                 <span class="system-icon">${layoutInfo.icon}</span>
+                 System: ${layoutInfo.name}
+               </p>
+               <p class="character-dates">
+                 <small>Created: ${characterManager.formatDate ? characterManager.formatDate(character.createdAt) : character.createdAt}</small><br>
+                 <small>Last Modified: ${characterManager.formatDate ? characterManager.formatDate(character.lastModified) : character.lastModified}</small>
+               </p>
+             </div>
+           </div>
+         `;
+       }
+     }
+   }
+   
+   // Add tab click listeners to initialize Characters tab when clicked
+   document.addEventListener('DOMContentLoaded', () => {
+     const charactersTabBtn = document.querySelector('[data-target="characters-tab-content"]');
+     if (charactersTabBtn) {
+       charactersTabBtn.addEventListener('click', () => {
+         setTimeout(initializeCharactersTab, 100); // Small delay to ensure tab is active
+       });
+     }
+   });
  </script>
 </html>
