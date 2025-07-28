@@ -219,6 +219,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.warn('renderExperiences function not found. Ensure experiences.js is loaded.');
                 }
             }
+            if (targetPanelId === 'characters-tab-content') {
+                if (window.populateCharactersTab && typeof window.populateCharactersTab === 'function') {
+                    window.populateCharactersTab();
+                } else {
+                    console.warn('populateCharactersTab function not found. Ensure character management is loaded.');
+                }
+            }
         });
     });
 
@@ -374,6 +381,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Save evasion value when it changes
         evasionValue.addEventListener('input', () => {
             localStorage.setItem('zevi-evasion', evasionValue.value);
+            
+            // Trigger character auto-save
+            if (window.characterManager && window.characterManager.currentCharacter) {
+                window.characterManager.saveBasicCharacterData(window.characterManager.currentCharacter);
+            }
         });
 
         // Handle blur to ensure valid value
@@ -381,6 +393,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (evasionValue.value === '' || isNaN(evasionValue.value)) {
                 evasionValue.value = 10; // Default value
                 localStorage.setItem('zevi-evasion', '10');
+            }
+            
+            // Trigger character auto-save
+            if (window.characterManager && window.characterManager.currentCharacter) {
+                window.characterManager.saveBasicCharacterData(window.characterManager.currentCharacter);
             }
         });
 

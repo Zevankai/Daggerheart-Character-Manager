@@ -1,0 +1,135 @@
+(cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF'
+diff --git a/layoutSelection.html b/layoutSelection.html
+--- a/layoutSelection.html
++++ b/layoutSelection.html
+@@ -0,0 +1,128 @@
++<!DOCTYPE html>
++<html lang="en">
++<head>
++    <meta charset="UTF-8">
++    <meta name="viewport" content="width=device-width, initial-scale=1.0">
++    <title>Choose Your Adventure - ZEVI Character Sheet</title>
++    <link rel="stylesheet" href="style.css">
++    <link rel="stylesheet" href="landing.css">
++    <link rel="stylesheet" href="layoutSelection.css">
++</head>
++<body class="layout-selection-body">
++    <div class="layout-selection-container">
++        <div class="layout-header">
++            <h1 class="layout-title">Choose Your System</h1>
++            <p class="layout-subtitle">Select the tabletop RPG system for your character</p>
++        </div>
++        
++        <div class="layout-content">
++            <div class="layout-options">
++                <div class="layout-card daggerheart-card" id="daggerheartCard">
++                    <div class="layout-icon">⚔️</div>
++                    <h3>Daggerheart</h3>
++                    <p class="layout-description">The new fantasy RPG from Critical Role. Experience narrative-focused gameplay with unique mechanics.</p>
++                    <div class="layout-features">
++                        <span class="feature-badge">Narrative Focus</span>
++                        <span class="feature-badge">Hope & Fear</span>
++                        <span class="feature-badge">Domain System</span>
++                    </div>
++                    <button class="layout-btn daggerheart-btn" onclick="selectLayout('daggerheart')">
++                        Choose Daggerheart
++                    </button>
++                </div>
++                
++                <div class="layout-card dnd-card" id="dndCard">
++                    <div class="layout-icon">🐉</div>
++                    <h3>Dungeons & Dragons</h3>
++                    <p class="layout-description">The classic fantasy RPG. Adventure awaits with the world's most popular tabletop game.</p>
++                    <div class="layout-features">
++                        <span class="feature-badge">Classic System</span>
++                        <span class="feature-badge">Levels & Classes</span>
++                        <span class="feature-badge">Coming Soon</span>
++                    </div>
++                    <button class="layout-btn dnd-btn" onclick="selectLayout('dnd')">
++                        Choose D&D
++                    </button>
++                </div>
++            </div>
++        </div>
++        
++        <div class="layout-footer">
++            <button class="back-btn" onclick="goBackToLanding()">← Back to Character Selection</button>
++        </div>
++    </div>
++
++    <script src="characterManager.js"></script>
++    <script>
++        let pendingCharacter = null;
++
++        function selectLayout(layout) {
++            if (layout === 'daggerheart') {
++                // Create character and go to Daggerheart sheet
++                createCharacterWithLayout('daggerheart');
++            } else if (layout === 'dnd') {
++                // Create character and go to D&D placeholder
++                createCharacterWithLayout('dnd');
++            }
++        }
++
++        function createCharacterWithLayout(layout) {
++            // Clear any existing character data
++            localStorage.removeItem('zevi-current-character-id');
++            localStorage.removeItem('zevi-equipment');
++            localStorage.removeItem('zevi-journal');
++            localStorage.removeItem('zevi-experiences');
++            localStorage.removeItem('zevi-hope');
++            localStorage.removeItem('zevi-downtime');
++            
++            // Create a new character entry with layout
++            const newCharacter = characterManager.createCharacter({
++                name: 'New Character',
++                subtitle: '',
++                level: 1,
++                layout: layout
++            });
++            
++            // Set current character ID immediately
++            localStorage.setItem('zevi-current-character-id', newCharacter.id);
++            
++            // Set flag to indicate we're creating a new character
++            localStorage.setItem('zevi-creating-character', 'true');
++            
++            // Load the character data
++            characterManager.loadCharacterData(newCharacter);
++            
++            // Redirect based on layout
++            if (layout === 'daggerheart') {
++                window.location.href = 'index.html';
++            } else if (layout === 'dnd') {
++                window.location.href = 'dnd-placeholder.html';
++            }
++        }
++
++        function goBackToLanding() {
++            window.location.href = 'landing.html';
++        }
++
++        // Add visual feedback for card selection
++        document.addEventListener('DOMContentLoaded', () => {
++            const cards = document.querySelectorAll('.layout-card');
++            
++            cards.forEach(card => {
++                card.addEventListener('click', (e) => {
++                    // Remove selected class from all cards
++                    cards.forEach(c => c.classList.remove('selected'));
++                    // Add selected class to clicked card
++                    card.classList.add('selected');
++                    
++                    // Trigger layout selection if clicking the card (not just the button)
++                    if (!e.target.classList.contains('layout-btn')) {
++                        const layoutType = card.id === 'daggerheartCard' ? 'daggerheart' : 'dnd';
++                        card.querySelector('.layout-btn').focus();
++                    }
++                });
++            });
++        });
++    </script>
++</body>
++</html>
+EOF
+)
