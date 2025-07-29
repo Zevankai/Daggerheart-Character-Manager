@@ -18,6 +18,39 @@ class CharactersPageManager {
         // No additional event listeners needed here
     }
 
+    // Get characters from new system
+    getCharactersFromNewSystem() {
+        const characters = [];
+        
+        // Look for all character files in localStorage
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('zevi-character-file-')) {
+                try {
+                    const characterData = JSON.parse(localStorage.getItem(key));
+                    const characterId = key.replace('zevi-character-file-', '');
+                    
+                    // Create character object in old format for compatibility
+                    characters.push({
+                        id: characterId,
+                        name: characterData.name || 'Unnamed Character',
+                        platform: 'Daggerheart', // Default platform
+                        level: characterData.level || 5,
+                        imageUrl: characterData.imageUrl || '',
+                        createdAt: characterData.createdAt || new Date().toISOString(),
+                        lastModified: characterData.lastModified || new Date().toISOString()
+                    });
+                } catch (error) {
+                    console.error('Error parsing character data for key:', key, error);
+                }
+            }
+        });
+        
+        // Sort by creation date (newest first)
+        characters.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        
+        return characters;
+    }
+
     // Display characters list
     refreshCharactersList() {
         console.log('=== REFRESH CHARACTERS LIST: Starting ===');
@@ -36,8 +69,17 @@ class CharactersPageManager {
             return;
         }
 
-        console.log('Character manager available:', !!window.characterManager);
-        const characters = window.characterManager ? window.characterManager.characters : [];
+        // Get characters from new system first, fallback to old system
+        let characters = [];
+        
+        if (window.app && window.app.initialized) {
+            console.log('Loading characters from new app system');
+            characters = this.getCharactersFromNewSystem();
+        } else {
+            console.log('Falling back to old character manager');
+            characters = window.characterManager ? window.characterManager.characters : [];
+        }
+        
         console.log('Characters found:', characters.length);
         console.log('Characters data:', characters);
         
@@ -303,9 +345,47 @@ class CharactersPageManager {
         }
     }
 
-    saveNewCharacter(name, platform, level, imageUrl) {
+    async saveNewCharacter(name, platform, level, imageUrl) {
         console.log('=== SAVE NEW CHARACTER: Saving character ===');
         
+        // Use the new app controller if available
+        if (window.app && window.app.initialized) {
+            console.log('Using new app controller to create character');
+            
+            try {
+                const newCharacterId = await window.app.createNewCharacter();
+                
+                // Update the character with the provided data
+                const characterData = window.app.characterData.loadCharacterData(newCharacterId);
+                characterData.name = name;
+                characterData.level = level;
+                characterData.imageUrl = imageUrl;
+                
+                // Save the updated character
+                window.app.characterData.saveCharacterData(newCharacterId, characterData);
+                
+                console.log('Character created successfully with new app:', name, 'ID:', newCharacterId);
+                
+                // Close modal and refresh list
+                this.closeCreateCharacterModal();
+                this.refreshCharactersList();
+                
+                // Auto-load the new character if we're on the main page
+                if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
+                    console.log('Auto-loading new character...');
+                    await window.app.switchToCharacter(newCharacterId);
+                }
+                
+                console.log('=== CREATE CHARACTER: Process complete ===');
+                return;
+                
+            } catch (error) {
+                console.error('Failed to create character with new app:', error);
+            }
+        }
+        
+        // Fallback to old system
+        console.log('Falling back to old character manager');
         if (!window.characterManager) {
             console.error('Character manager not available');
             return;
@@ -316,7 +396,7 @@ class CharactersPageManager {
             platform,
             level,
             imageUrl,
-            subtitle: '' // Default empty subtitle since we removed the field
+            subtitle: ''
         };
 
         console.log('Creating character with data:', characterData);
@@ -328,10 +408,7 @@ class CharactersPageManager {
         window.characterManager.saveCharacters();
         
         // Close modal and refresh list
-        console.log('Closing modal...');
         this.closeCreateCharacterModal();
-        
-        console.log('Refreshing character list...');
         this.refreshCharactersList();
         
         // Auto-load the new character if we're on the main page

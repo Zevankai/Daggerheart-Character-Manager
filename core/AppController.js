@@ -34,6 +34,14 @@ class AppController {
             // Set up event listeners
             this.setupEventListeners();
 
+            // Remove any old save buttons that might exist
+            this.removeOldSaveButtons();
+
+            // Set up periodic button removal (in case other scripts create them)
+            setInterval(() => {
+                this.removeOldSaveButtons();
+            }, 5000); // Check every 5 seconds
+
             // Load current character if one exists
             await this.loadCurrentCharacter();
 
@@ -64,6 +72,54 @@ class AppController {
         }
 
         console.log('Event listeners set up');
+    }
+
+    // Remove any old save buttons that might exist
+    removeOldSaveButtons() {
+        console.log('Removing old save buttons...');
+        
+        // Remove buttons by ID
+        const buttonIds = [
+            'simpleSaveBtn',
+            'cleanupBtn', 
+            'manualSaveBtn',
+            'saveBtn'
+        ];
+        
+        buttonIds.forEach(id => {
+            const button = document.getElementById(id);
+            if (button) {
+                console.log('Removing button:', id);
+                button.remove();
+            }
+        });
+        
+        // Remove buttons by class
+        const buttonClasses = [
+            'simple-save-btn',
+            'cleanup-btn',
+            'manual-save-btn'
+        ];
+        
+        buttonClasses.forEach(className => {
+            const buttons = document.querySelectorAll(`.${className}`);
+            buttons.forEach(button => {
+                console.log('Removing button with class:', className);
+                button.remove();
+            });
+        });
+        
+        // Remove any buttons containing save-related text
+        const allButtons = document.querySelectorAll('button');
+        allButtons.forEach(button => {
+            const text = button.textContent.toLowerCase();
+            if (text.includes('💾') || text.includes('save character') || text.includes('free storage') || text.includes('🧹')) {
+                console.log('Removing button with save-related text:', button.textContent);
+                button.remove();
+            }
+        });
+        
+        console.log('Old save buttons removed');
     }
 
     // Handle character image upload
@@ -241,6 +297,9 @@ class AppController {
         // Save the new character
         this.characterData.saveCharacterData(newId, defaultData);
 
+        // Update character directory for compatibility with old character manager
+        this.updateCharacterDirectory();
+
         // Switch to the new character
         await this.switchToCharacter(newId);
 
@@ -248,11 +307,50 @@ class AppController {
         return newId;
     }
 
+    // Update character directory (for compatibility with old systems)
+    updateCharacterDirectory() {
+        const characters = [];
+        
+        // Get all character files
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('zevi-character-file-')) {
+                try {
+                    const characterData = JSON.parse(localStorage.getItem(key));
+                    const characterId = key.replace('zevi-character-file-', '');
+                    
+                    characters.push({
+                        id: characterId,
+                        name: characterData.name || 'Unnamed Character',
+                        platform: 'Daggerheart',
+                        level: characterData.level || 5,
+                        imageUrl: characterData.imageUrl || '',
+                        createdAt: characterData.createdAt || new Date().toISOString(),
+                        lastModified: characterData.lastModified || new Date().toISOString()
+                    });
+                } catch (error) {
+                    console.error('Error parsing character data for key:', key, error);
+                }
+            }
+        });
+
+        // Save directory for old character manager compatibility
+        localStorage.setItem('zevi-characters', JSON.stringify(characters));
+        localStorage.setItem('zevi-character-directory', JSON.stringify(characters));
+        
+        // Update old character manager if it exists
+        if (window.characterManager) {
+            window.characterManager.characters = characters;
+        }
+    }
+
     // Delete character
     deleteCharacter(characterId) {
         console.log('Deleting character:', characterId);
         
         this.characterData.deleteCharacterData(characterId);
+        
+        // Update character directory
+        this.updateCharacterDirectory();
         
         // If this was the current character, clear current state
         if (this.characterData.getCurrentCharacterId() === characterId) {
