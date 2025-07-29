@@ -45,70 +45,13 @@ function debugCharacterData() {
 // Make debug function globally available
 window.debugCharacterData = debugCharacterData;
 
+// Image upload is now handled by AppController
 function uploadCharacterImage(event) {
-    if (!event.target.files || !event.target.files[0]) {
-        console.warn('No file selected for character image upload');
-        return;
+    if (window.app && window.app.initialized) {
+        window.app.handleImageUpload(event);
+    } else {
+        console.warn('App not initialized, cannot upload image');
     }
-    
-    console.log('Character image upload started');
-    const reader = new FileReader();
-    
-    reader.onload = async function(){
-        console.log('Image file read successfully');
-        
-        const img = document.getElementById("charImage");
-        const placeholder = document.getElementById("charPlaceholder");
-        
-        if (img) {
-            img.src = reader.result;
-            img.style.display = 'block';
-            console.log('Character image displayed in UI');
-        }
-        
-        if (placeholder) {
-            placeholder.style.display = 'none';
-        }
-        
-        // Save the image using the simple character save system
-        if (window.simpleCharacterSave && window.simpleCharacterSave.currentCharacterId) {
-            console.log('Saving character image via Simple Save for character:', window.simpleCharacterSave.currentCharacterId);
-            
-            // Update the character manager's character object for immediate feedback
-            if (window.characterManager && window.characterManager.currentCharacter) {
-                window.characterManager.currentCharacter.imageUrl = reader.result;
-                
-                // Update character metadata in directory
-                window.characterManager.updateCharacterMetadata(
-                    window.characterManager.currentCharacter.id, 
-                    { 
-                        imageUrl: reader.result,
-                        lastModified: new Date().toISOString()
-                    }
-                );
-                
-                console.log('Character manager updated with new image');
-            }
-            
-            // Immediately save the character to capture the image
-            window.simpleCharacterSave.saveCurrentCharacter();
-            console.log('Character image saved via simple save system');
-            
-        } else {
-            console.warn('Simple Character Save not available or no current character');
-            console.log('Current character ID:', window.simpleCharacterSave?.currentCharacterId);
-        }
-        
-        // Reset the file input so the same file can be uploaded again if needed
-        event.target.value = '';
-    };
-    
-    reader.onerror = function() {
-        console.error('Error reading image file');
-        alert('Error reading image file. Please try again.');
-    };
-    
-    reader.readAsDataURL(event.target.files[0]);
 }
 
 function uploadBackground(event) {
@@ -239,16 +182,8 @@ function applySavedColors() {
 }
 
 
-// Add keyboard shortcut for saving (now handled by simpleCharacterSave.js)
-document.addEventListener('keydown', function(event) {
-    // Ctrl+S or Cmd+S to save
-    if ((event.ctrlKey || event.metaKey) && event.key === 's') {
-        event.preventDefault();
-        if (window.simpleCharacterSave) {
-            window.simpleCharacterSave.saveCurrentCharacter();
-        }
-    }
-});
+// Keyboard shortcuts are now handled by AppController
+// This is kept for compatibility but should not be needed
 
 // --- DOMContentLoaded for main script logic ---
 document.addEventListener('DOMContentLoaded', () => {

@@ -68,9 +68,14 @@
         </div>
     </div>
 
-    <script src="simpleCharacterSave.js"></script>
-    <script src="characterFileSystem.js"></script>
-    <script src="characterManager.js"></script>
+            <!-- Core Modules -->
+        <script src="core/CharacterData.js"></script>
+        <script src="core/UIManager.js"></script>
+        <script src="core/AutoSave.js"></script>
+        <script src="core/AppController.js"></script>
+        
+        <!-- Legacy modules for compatibility -->
+        <script src="characterManager.js"></script>
     <script>
         // Debug logging for landing page
         console.log('=== LANDING.HTML: Page loaded ===');

@@ -180,19 +180,15 @@ class CharactersPageManager {
         console.log('Character found:', character);
         
         if (character) {
-            console.log('Loading character via simple save system...');
+            console.log('Loading character via new app system...');
             
-            // Use simple character save system
-            if (window.simpleCharacterSave) {
-                window.simpleCharacterSave.switchToCharacter(characterId);
-            }
-            
-            // Also use the file system as backup
-            if (window.characterManager.loadCharacterData) {
-                try {
+            // Use the new app controller
+            if (window.app && window.app.initialized) {
+                await window.app.switchToCharacter(characterId);
+            } else {
+                // Fallback to old system if new app not ready
+                if (window.characterManager.loadCharacterData) {
                     await window.characterManager.loadCharacterData(character);
-                } catch (error) {
-                    console.log('File system load failed, using simple system only');
                 }
             }
             
