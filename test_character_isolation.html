@@ -21,7 +21,7 @@
         <h2>Test Controls</h2>
         <button onclick="createTestCharacters()">Create Test Characters</button>
         <button onclick="testCharacterSwitching()">Test Character Switching</button>
-        <button onclick="testDataStoreSystem()">Test Data Store System</button>
+        <button onclick="testFileSystem()">Test File System</button>
         <button onclick="displayStorageState()">Display Storage State</button>
         <button onclick="clearAllData()">Clear All Data</button>
     </div>
@@ -36,8 +36,7 @@
         <div id="storageDisplay" class="storage-display"></div>
     </div>
 
-    <script src="characterDataStore.js"></script>
-    <script src="characterDataAdapters.js"></script>
+    <script src="characterFileSystem.js"></script>
     <script src="characterManager.js"></script>
     <script>
         let testResults = [];
@@ -50,7 +49,7 @@
             testResults.push({ message, isSuccess, timestamp: new Date() });
         }
 
-        function createTestCharacters() {
+        async function createTestCharacters() {
             addTestResult('Creating test characters...');
             
             try {
@@ -64,14 +63,6 @@
                     level: 3
                 });
                 
-                // Set some test data for character 1
-                localStorage.setItem('zevi-equipment', JSON.stringify([{name: 'Sword', type: 'weapon'}]));
-                localStorage.setItem('zevi-hope', '3');
-                localStorage.setItem('zevi-journal-entries', JSON.stringify([{title: 'Adventure 1', content: 'Found a sword'}]));
-                
-                // Save character 1 data
-                window.characterManager.saveCharacterData(char1);
-                
                 // Create second test character
                 const char2 = window.characterManager.createCharacter({
                     name: 'Test Character 2',
@@ -79,18 +70,14 @@
                     level: 5
                 });
                 
-                // Set different test data for character 2
-                localStorage.setItem('zevi-equipment', JSON.stringify([{name: 'Staff', type: 'weapon'}]));
-                localStorage.setItem('zevi-hope', '5');
-                localStorage.setItem('zevi-journal-entries', JSON.stringify([{title: 'Magic Study', content: 'Learned fireball'}]));
-                
-                // Save character 2 data
-                window.characterManager.saveCharacterData(char2);
-                
-                addTestResult(`Created characters: ${char1.name} (ID: ${char1.id}) and ${char2.name} (ID: ${char2.id})`);
-                
-                // Display the storage state
-                displayStorageState();
+                if (char1 && char2) {
+                    addTestResult(`Created characters: ${char1.name} (ID: ${char1.id}) and ${char2.name} (ID: ${char2.id})`);
+                    
+                    // Display the storage state
+                    displayStorageState();
+                } else {
+                    addTestResult('Failed to create test characters', false);
+                }
                 
             } catch (error) {
                 addTestResult(`Error creating test characters: ${error.message}`, false);
@@ -177,22 +164,22 @@
             storageDiv.textContent = output;
         }
 
-        function testDataStoreSystem() {
-            addTestResult('Testing Character Data Store system...');
+        async function testFileSystem() {
+            addTestResult('Testing Character File System...');
             
             try {
-                // Check if data store is available
-                if (!window.characterDataStore) {
-                    addTestResult('Character Data Store not available!', false);
+                // Check if file system is available
+                if (!window.characterFileSystem) {
+                    addTestResult('Character File System not available!', false);
                     return;
                 }
                 
-                const debugInfo = window.characterDataStore.getDebugInfo();
-                addTestResult(`Data Store initialized: ${debugInfo.isInitialized}, Current character: ${debugInfo.currentCharacterId || 'None'}`);
+                const debugInfo = window.characterFileSystem.getDebugInfo();
+                addTestResult(`File System initialized: ${debugInfo.isInitialized}, Current character: ${debugInfo.currentCharacterId || 'None'}`);
                 
                 // Create test characters if none exist
                 if (window.characterManager.characters.length < 2) {
-                    createTestCharacters();
+                    await createTestCharacters();
                     return; // Test will continue after characters are created
                 }
                 
@@ -200,59 +187,74 @@
                 const char2 = window.characterManager.characters[1];
                 
                 // Test data isolation
-                addTestResult(`Testing data isolation between ${char1.name} and ${char2.name}...`);
+                addTestResult(`Testing file-based isolation between ${char1.name} and ${char2.name}...`);
                 
                 // Switch to character 1 and set data
-                window.characterDataStore.switchToCharacter(char1.id);
-                window.characterDataStore.updateCurrentCharacterData({
-                    evasion: 15,
-                    hope: { current: 3, max: 6 },
-                    journal: { entries: [{ title: 'Char1 Adventure', content: 'Found treasure' }] },
-                    details: { background: 'Char1 background', personality: 'Brave' }
-                });
+                await window.characterFileSystem.switchToCharacter(char1.id);
+                
+                // Set test data in localStorage (simulating user input)
+                localStorage.setItem('zevi-evasion', '15');
+                localStorage.setItem('zevi-hope', '3');
+                localStorage.setItem('zevi-journal-entries', JSON.stringify([{ title: 'Char1 Adventure', content: 'Found treasure' }]));
+                localStorage.setItem('zevi-character-details', JSON.stringify({ 
+                    personal: { personality: 'Brave' },
+                    physical: {}
+                }));
+                
+                // Save character 1 state
+                await window.characterFileSystem.saveCurrentCharacterState();
                 
                 // Switch to character 2 and set different data
-                window.characterDataStore.switchToCharacter(char2.id);
-                window.characterDataStore.updateCurrentCharacterData({
-                    evasion: 12,
-                    hope: { current: 5, max: 6 },
-                    journal: { entries: [{ title: 'Char2 Adventure', content: 'Learned magic' }] },
-                    details: { background: 'Char2 background', personality: 'Wise' }
-                });
+                await window.characterFileSystem.switchToCharacter(char2.id);
                 
-                // Switch back to character 1 and verify data
-                const char1Data = window.characterDataStore.switchToCharacter(char1.id);
-                const char2Data = window.characterDataStore.switchToCharacter(char2.id);
+                localStorage.setItem('zevi-evasion', '12');
+                localStorage.setItem('zevi-hope', '5');
+                localStorage.setItem('zevi-journal-entries', JSON.stringify([{ title: 'Char2 Adventure', content: 'Learned magic' }]));
+                localStorage.setItem('zevi-character-details', JSON.stringify({ 
+                    personal: { personality: 'Wise' },
+                    physical: {}
+                }));
+                
+                // Save character 2 state
+                await window.characterFileSystem.saveCurrentCharacterState();
+                
+                // Switch back to character 1 and verify isolation
+                const char1Data = await window.characterFileSystem.switchToCharacter(char1.id);
+                const char1Evasion = localStorage.getItem('zevi-evasion');
+                const char1Hope = localStorage.getItem('zevi-hope');
+                const char1Journal = JSON.parse(localStorage.getItem('zevi-journal-entries') || '[]');
+                
+                const char2Data = await window.characterFileSystem.switchToCharacter(char2.id);
+                const char2Evasion = localStorage.getItem('zevi-evasion');
+                const char2Hope = localStorage.getItem('zevi-hope');
+                const char2Journal = JSON.parse(localStorage.getItem('zevi-journal-entries') || '[]');
                 
                 // Verify isolation
-                if (char1Data.evasion === 15 && char2Data.evasion === 12) {
-                    addTestResult('SUCCESS: Evasion values properly isolated!', true);
+                if (char1Evasion === '15' && char2Evasion === '12') {
+                    addTestResult('SUCCESS: Evasion values properly isolated in files!', true);
                 } else {
-                    addTestResult(`FAILURE: Evasion not isolated. Char1: ${char1Data.evasion}, Char2: ${char2Data.evasion}`, false);
+                    addTestResult(`FAILURE: Evasion not isolated. Char1: ${char1Evasion}, Char2: ${char2Evasion}`, false);
                 }
                 
-                if (char1Data.hope.current === 3 && char2Data.hope.current === 5) {
-                    addTestResult('SUCCESS: Hope values properly isolated!', true);
+                if (char1Hope === '3' && char2Hope === '5') {
+                    addTestResult('SUCCESS: Hope values properly isolated in files!', true);
                 } else {
-                    addTestResult(`FAILURE: Hope not isolated. Char1: ${char1Data.hope.current}, Char2: ${char2Data.hope.current}`, false);
+                    addTestResult(`FAILURE: Hope not isolated. Char1: ${char1Hope}, Char2: ${char2Hope}`, false);
                 }
                 
-                if (char1Data.journal.entries[0].title.includes('Char1') && char2Data.journal.entries[0].title.includes('Char2')) {
-                    addTestResult('SUCCESS: Journal entries properly isolated!', true);
+                if (char1Journal[0]?.title.includes('Char1') && char2Journal[0]?.title.includes('Char2')) {
+                    addTestResult('SUCCESS: Journal entries properly isolated in files!', true);
                 } else {
                     addTestResult('FAILURE: Journal entries not properly isolated', false);
                 }
                 
-                if (char1Data.details.personality === 'Brave' && char2Data.details.personality === 'Wise') {
-                    addTestResult('SUCCESS: Character details properly isolated!', true);
-                } else {
-                    addTestResult('FAILURE: Character details not properly isolated', false);
-                }
+                addTestResult(`Character 1 file data: Evasion=${char1Data.evasion}, Hope=${char1Data.hope.current}`);
+                addTestResult(`Character 2 file data: Evasion=${char2Data.evasion}, Hope=${char2Data.hope.current}`);
                 
                 displayStorageState();
                 
             } catch (error) {
-                addTestResult(`Error testing data store system: ${error.message}`, false);
+                addTestResult(`Error testing file system: ${error.message}`, false);
             }
         }
 

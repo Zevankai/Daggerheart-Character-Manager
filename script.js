@@ -1,38 +1,35 @@
 // --- GLOBAL HELPER FUNCTIONS ---
 function uploadCharacterImage(event) {
     const reader = new FileReader();
-    reader.onload = function(){
+    reader.onload = async function(){
       const img = document.getElementById("charImage");
       img.src = reader.result;
       document.getElementById("charPlaceholder").style.display = 'none';
       
-      // IMPORTANT: Save the image to the current character using CharacterDataStore
-      if (window.characterDataStore) {
-          console.log('Saving character image via CharacterDataStore');
+      // Save the image using the file system
+      if (window.characterFileSystem && window.characterFileSystem.currentCharacterId) {
+          console.log('Saving character image via File System');
           
-          const success = window.characterDataStore.updateCurrentCharacterData({
-              imageUrl: reader.result
-          });
+          // The file system will automatically save the image when it saves the character state
+          // We just need to make sure the image is in the DOM so it gets captured
           
-          if (success) {
-              console.log('Character image saved successfully');
+          // Also update the character manager's character object for immediate feedback
+          if (window.characterManager && window.characterManager.currentCharacter) {
+              window.characterManager.currentCharacter.imageUrl = reader.result;
               
-              // Also update the character manager's character object
-              if (window.characterManager && window.characterManager.currentCharacter) {
-                  window.characterManager.currentCharacter.imageUrl = reader.result;
-                  window.characterManager.updateCharacterMetadata(
-                      window.characterManager.currentCharacter.id, 
-                      { 
-                          imageUrl: reader.result,
-                          lastModified: new Date().toISOString()
-                      }
-                  );
-              }
-          } else {
-              console.error('Failed to save character image');
+              // Update character metadata in directory
+              window.characterManager.updateCharacterMetadata(
+                  window.characterManager.currentCharacter.id, 
+                  { 
+                      imageUrl: reader.result,
+                      lastModified: new Date().toISOString()
+                  }
+              );
           }
+          
+          console.log('Character image will be saved with next character state save');
       } else {
-          console.warn('CharacterDataStore not available');
+          console.warn('Character File System not available or no current character');
       }
     };
     reader.readAsDataURL(event.target.files[0]);
@@ -404,34 +401,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // Evasion value functionality
     const evasionValue = document.getElementById('evasionValue');
     if (evasionValue) {
-        // Load saved evasion value using CharacterDataStore
-        setTimeout(() => {
-            if (window.characterDataStore) {
-                const data = window.characterDataStore.getCurrentCharacterData();
-                if (data && data.evasion !== undefined) {
-                    evasionValue.value = data.evasion;
-                }
-            }
-        }, 300); // Wait for character data to load
+        // Evasion value is now managed by the file system
+        // It will be loaded when a character is switched to
+        // and saved automatically when the character state is saved
 
-        // Save evasion value when it changes
+        // Save evasion value when it changes to localStorage for immediate use
         evasionValue.addEventListener('input', () => {
-            if (window.characterDataStore) {
-                window.characterDataStore.updateCurrentCharacterData({
-                    evasion: parseInt(evasionValue.value) || 10
-                });
-            }
+            localStorage.setItem('zevi-evasion', evasionValue.value);
         });
 
         // Handle blur to ensure valid value
         evasionValue.addEventListener('blur', () => {
             if (evasionValue.value === '' || isNaN(evasionValue.value)) {
                 evasionValue.value = 10; // Default value
-                if (window.characterDataStore) {
-                    window.characterDataStore.updateCurrentCharacterData({
-                        evasion: 10
-                    });
-                }
+                localStorage.setItem('zevi-evasion', '10');
             }
         });
 

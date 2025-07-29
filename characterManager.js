@@ -1,75 +1,67 @@
 // Character Manager - Handles character storage and management
 class CharacterManager {
   constructor() {
-      this.characters = this.loadCharacters();
+      this.characters = [];
       this.currentCharacter = null;
       this.initializeEventListeners();
   }
 
-  // Load all characters from localStorage
+  // Load all characters from file system
   loadCharacters() {
-      try {
-          const stored = localStorage.getItem('zevi-characters');
-          return stored ? JSON.parse(stored) : [];
-      } catch (error) {
-          console.error('Error loading characters:', error);
-          return [];
+      if (window.characterFileSystem) {
+          this.characters = window.characterFileSystem.getAllCharacters();
+          return this.characters;
       }
+      return [];
   }
 
-  // Save all characters to localStorage
+  // Save characters is handled by the file system
   saveCharacters() {
-      try {
-          localStorage.setItem('zevi-characters', JSON.stringify(this.characters));
-      } catch (error) {
-          console.error('Error saving characters:', error);
-      }
+      // Characters are automatically saved by the file system
+      // This method exists for compatibility
+      console.log('Characters are managed by file system');
   }
 
   // Create a new character with basic structure
   createCharacter(characterData = {}) {
-      const characterId = Date.now().toString();
+      console.log('Creating character via file system');
       
-      const newCharacter = {
-          id: characterId,
-          name: characterData.name || 'Unnamed Character',
-          subtitle: characterData.subtitle || '',
-          level: characterData.level || 1,
-          platform: characterData.platform || 'Daggerheart', // Default to Daggerheart
-          imageUrl: characterData.imageUrl || '', // Character portrait URL
-          createdAt: new Date().toISOString(),
-          lastModified: new Date().toISOString()
-      };
-
-      // Add to characters list
-      this.characters.push(newCharacter);
-      this.saveCharacters();
-      
-      // Create comprehensive character data using the data store
-      if (window.characterDataStore) {
-          console.log('Creating comprehensive character data via CharacterDataStore');
-          window.characterDataStore.createCharacterData(characterId, characterData);
+      if (window.characterFileSystem) {
+          // Create character file with complete data
+          const characterFile = window.characterFileSystem.createCharacterFile(characterData);
+          
+          // Reload characters list
+          this.loadCharacters();
+          
+          // Return the basic character info for compatibility
+          return {
+              id: characterFile.id,
+              name: characterFile.name,
+              subtitle: characterFile.subtitle,
+              level: characterFile.level,
+              platform: characterFile.platform,
+              imageUrl: characterFile.imageUrl,
+              createdAt: characterFile.createdAt,
+              lastModified: characterFile.lastModified
+          };
       }
       
-      return newCharacter;
+      console.error('Character file system not available');
+      return null;
   }
 
   // Delete a character
   deleteCharacter(characterId) {
-      const index = this.characters.findIndex(char => char.id === characterId);
-      if (index !== -1) {
-          // Use CharacterDataStore to clear character data
-          if (window.characterDataStore) {
-              window.characterDataStore.deleteCharacterData(characterId);
-          } else {
-              // Fallback to manual clearing
-              this.clearCharacterStorage(this.characters[index]);
-          }
+      if (window.characterFileSystem) {
+          window.characterFileSystem.deleteCharacterFile(characterId);
           
-          this.characters.splice(index, 1);
-          this.saveCharacters();
+          // Reload characters list
+          this.loadCharacters();
+          
           return true;
       }
+      
+      console.error('Character file system not available');
       return false;
   }
 
@@ -90,35 +82,33 @@ class CharacterManager {
       return false;
   }
 
-  // Load character data from localStorage
-  loadCharacterData(character) {
+  // Load character data using file system
+  async loadCharacterData(character) {
       try {
           console.log('=== LOADING CHARACTER DATA ===', character.name, 'ID:', character.id);
           
-          // Use the new CharacterDataStore system
-          if (window.characterDataStore) {
-              console.log('Using CharacterDataStore for character switching');
+          if (window.characterFileSystem) {
+              console.log('Using Character File System for character switching');
               
-              // Switch to the character using the data store
-              const characterData = window.characterDataStore.switchToCharacter(character.id);
+              // Switch to the character using the file system
+              const characterData = await window.characterFileSystem.switchToCharacter(character.id);
               
-              // Update the character object with the loaded data
-              Object.assign(character, characterData);
-              
-              // Set current character
-              this.currentCharacter = character;
-              
-              console.log('Character data loaded successfully via CharacterDataStore');
-              return true;
+              if (characterData) {
+                  // Update the character object with the loaded data
+                  Object.assign(character, characterData);
+                  
+                  // Set current character
+                  this.currentCharacter = character;
+                  
+                  console.log('Character data loaded successfully via File System');
+                  return true;
+              } else {
+                  console.error('Failed to load character from file system');
+                  return false;
+              }
           } else {
-              console.error('CharacterDataStore not available - falling back to old system');
-              
-              // Fallback to old system
-              localStorage.setItem('zevi-current-character-id', character.id);
-              this.currentCharacter = character;
-              this.populateUIFields(character);
-              
-              return true;
+              console.error('Character File System not available');
+              return false;
           }
       } catch (error) {
           console.error('Error loading character data:', error);
@@ -781,8 +771,13 @@ function loadCharacter(characterId) {
   }
 }
 
-function createNewCharacter() {
+async function createNewCharacter() {
   console.log('=== CREATE NEW CHARACTER: Starting fresh character creation ===');
+  
+  // Reset to generic state first
+  if (window.characterFileSystem) {
+      await window.characterFileSystem.resetToGenericState();
+  }
   
   // Create a new character entry
   const newCharacter = characterManager.createCharacter({
@@ -791,13 +786,14 @@ function createNewCharacter() {
       level: 1
   });
   
-  console.log('New character created:', newCharacter.name, 'ID:', newCharacter.id);
-  
-  // The proxy system will automatically handle data isolation
-  // when we switch to the new character context
-  
-  // Load the new character and redirect
-  characterManager.loadCharacterAndRedirect(newCharacter);
+  if (newCharacter) {
+      console.log('New character created:', newCharacter.name, 'ID:', newCharacter.id);
+      
+      // Load the new character and redirect
+      characterManager.loadCharacterAndRedirect(newCharacter);
+  } else {
+      console.error('Failed to create new character');
+  }
 }
 
 function showDeleteConfirmation(characterId, characterName) {

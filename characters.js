@@ -168,7 +168,7 @@ class CharactersPageManager {
     }
 
     // Load a character
-    loadCharacter(characterId) {
+    async loadCharacter(characterId) {
         console.log('=== LOAD CHARACTER: Starting load for ID:', characterId);
         
         if (!window.characterManager) {
@@ -176,23 +176,15 @@ class CharactersPageManager {
             return;
         }
 
-        // IMPORTANT: Save current character data before switching
-        if (window.characterManager.currentCharacter) {
-            console.log('Saving current character data before switching...');
-            console.log('Current character:', window.characterManager.currentCharacter.name, 'ID:', window.characterManager.currentCharacter.id);
-            
-            // Use CharacterManager's comprehensive save method
-            window.characterManager.saveCharacterData(window.characterManager.currentCharacter);
-        }
-
+        // File system automatically saves current character when switching
         const character = window.characterManager.getCharacter(characterId);
         console.log('Character found:', character);
         
         if (character) {
-            console.log('Loading character data...');
+            console.log('Loading character data via file system...');
             
-            // Use the enhanced character manager functionality
-            const loadSuccess = window.characterManager.loadCharacterData(character);
+            // Use the file system to load character
+            const loadSuccess = await window.characterManager.loadCharacterData(character);
             console.log('Character data load result:', loadSuccess);
             
             if (loadSuccess) {
@@ -208,9 +200,6 @@ class CharactersPageManager {
                     document.getElementById('domain-vault-tab-content').classList.add('active');
                     console.log('Switched to domain vault tab');
                 }
-                
-                // All system refreshes are now handled by CharacterManager.restoreAllCharacterSystems
-                console.log('Character systems will be restored by CharacterManager');
                 
                 console.log('=== LOAD CHARACTER: Character loaded successfully:', character.name);
                 
@@ -231,7 +220,9 @@ class CharactersPageManager {
                 document.body.appendChild(notification);
                 
                 setTimeout(() => {
-                    document.body.removeChild(notification);
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
                 }, 3000);
             } else {
                 console.error('Failed to load character data');
