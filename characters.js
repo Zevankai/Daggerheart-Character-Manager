@@ -325,27 +325,78 @@ class CharactersPageManager {
 
     // Confirm character deletion
     confirmDeleteCharacter() {
-        if (!this.currentEditingCharacter) return;
+        console.log('=== DELETE MODAL: confirmDeleteCharacter called ===');
+        
+        if (!this.currentEditingCharacter) {
+            console.error('No current editing character found');
+            return;
+        }
+        
+        console.log('Setting up delete for character:', this.currentEditingCharacter.name);
         
         this.currentDeleteCharacter = this.currentEditingCharacter;
-        document.getElementById('deleteCharacterNameDisplay').textContent = this.currentEditingCharacter.name;
+        const nameDisplay = document.getElementById('deleteCharacterNameDisplay');
+        const modal = document.getElementById('deleteCharacterConfirmModal');
+        
+        if (!nameDisplay || !modal) {
+            console.error('Delete modal elements not found:', {
+                nameDisplay: !!nameDisplay,
+                modal: !!modal
+            });
+            return;
+        }
+        
+        nameDisplay.textContent = this.currentEditingCharacter.name;
         
         // Close edit modal and show delete confirmation
+        console.log('Closing edit modal...');
         this.closeEditCharacterModal();
-        document.getElementById('deleteCharacterConfirmModal').style.display = 'flex';
+        
+        console.log('Showing delete confirmation modal...');
+        modal.style.display = 'flex';
+        modal.style.visibility = 'visible';
+        modal.style.opacity = '1';
+        modal.setAttribute('data-visible', 'true');
+        modal.style.zIndex = '10001';
+        
+        console.log('Delete modal should now be visible');
+        
+        // Fallback check
+        setTimeout(() => {
+            const computedStyle = window.getComputedStyle(modal);
+            if (computedStyle.display === 'none' || computedStyle.visibility === 'hidden') {
+                console.error('DELETE MODAL STILL NOT VISIBLE!');
+                console.log('Computed display:', computedStyle.display);
+                console.log('Computed visibility:', computedStyle.visibility);
+                alert('Delete modal display issue. Check console for details.');
+            } else {
+                console.log('Delete modal is visible successfully');
+            }
+        }, 100);
     }
 
     // Execute character deletion
     executeCharacterDelete() {
-        if (!this.currentDeleteCharacter || !window.characterManager) return;
+        console.log('=== DELETE CHARACTER: executeCharacterDelete called ===');
+        
+        if (!this.currentDeleteCharacter || !window.characterManager) {
+            console.error('Cannot delete character:', {
+                currentDeleteCharacter: !!this.currentDeleteCharacter,
+                characterManager: !!window.characterManager
+            });
+            return;
+        }
 
+        console.log('Deleting character:', this.currentDeleteCharacter.name);
         const success = window.characterManager.deleteCharacter(this.currentDeleteCharacter.id);
         
         if (success) {
+            console.log('Character deleted successfully');
             this.closeDeleteCharacterConfirmModal();
             this.refreshCharactersList();
-            console.log('Character deleted:', this.currentDeleteCharacter.name);
+            console.log('Character deletion process complete');
         } else {
+            console.error('Failed to delete character');
             alert('Error deleting character. Please try again.');
         }
         
@@ -472,8 +523,22 @@ class CharactersPageManager {
     }
 
     closeDeleteCharacterConfirmModal() {
-        document.getElementById('deleteCharacterConfirmModal').style.display = 'none';
+        console.log('=== DELETE MODAL: closeDeleteCharacterConfirmModal called ===');
+        
+        const modal = document.getElementById('deleteCharacterConfirmModal');
+        if (!modal) {
+            console.error('Delete modal element not found!');
+            return;
+        }
+        
+        console.log('Closing delete modal...');
+        modal.style.display = 'none';
+        modal.style.visibility = 'hidden';
+        modal.style.opacity = '0';
+        modal.removeAttribute('data-visible');
+        
         this.currentDeleteCharacter = null;
+        console.log('Delete modal closed successfully');
     }
 }
 

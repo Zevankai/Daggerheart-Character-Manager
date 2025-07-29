@@ -4451,6 +4451,28 @@
 .small-modal {
     max-width: 400px;
     width: 90vw;
+    background: var(--glass-background-color);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    display: block;
+}
+
+.small-modal .modal-content {
+    padding: 1rem 0;
+}
+
+.small-modal .modal-content p {
+    margin: 0 0 1rem 0;
+    color: var(--text-color);
+    line-height: 1.5;
+}
+
+.small-modal .modal-content p:last-child {
+    margin-bottom: 0;
 }
 
 .warning-text {
@@ -4612,4 +4634,28 @@
 .modal-buttons .button.primary-btn:hover {
     background: var(--accent-color-dark);
     border-color: var(--accent-color-dark);
+}
+
+.modal-buttons .button.danger-btn {
+    background: #ff6b6b;
+    color: white;
+    border-color: #ff6b6b;
+}
+
+.modal-buttons .button.danger-btn:hover {
+    background: #ff5252;
+    border-color: #ff5252;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(255, 107, 107, 0.3);
+}
+
+/* Ensure small modal gets proper styling */
+.modal-overlay .modal.small-modal {
+    background: var(--glass-background-color);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    display: block;
 }
