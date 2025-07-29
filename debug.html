@@ -41,6 +41,7 @@
         <button onclick="testCreateCharacter()">Test: Create Character and Load</button>
         <button onclick="testClearAndStart()">Test: Clear All & Start Fresh</button>
         <button onclick="testCreateSampleCharacters()">Test: Create Sample Characters</button>
+        <button onclick="testCharacterModal()">Test: Character Modal Display</button>
     </div>
 
     <script>
@@ -188,6 +189,47 @@
             refreshStorageInfo();
 
             alert('Sample characters created with different platforms! Navigate to the main app and click the "Characters" tab to see them.');
+        }
+        
+        function testCharacterModal() {
+            // Create a simple modal test
+            const modalHTML = `
+                <div id="testModal" style="
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.8);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 10000;
+                ">
+                    <div style="
+                        background: white;
+                        padding: 2rem;
+                        border-radius: 8px;
+                        max-width: 400px;
+                        text-align: center;
+                        color: black;
+                    ">
+                        <h3>Modal Test Successful!</h3>
+                        <p>If you can see this, modals are working.</p>
+                        <button onclick="document.getElementById('testModal').remove()">Close</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            
+            setTimeout(() => {
+                const testModal = document.getElementById('testModal');
+                if (testModal) {
+                    testModal.remove();
+                    alert('Modal test completed. Now try the character modal in the main app.');
+                }
+            }, 3000);
         }
         
         // Load storage info on page load

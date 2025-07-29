@@ -365,20 +365,76 @@ class CharactersPageManager {
 
     // Modal control functions
     showCreateCharacterModal() {
+        console.log('=== MODAL DEBUG: showCreateCharacterModal called ===');
+        
         // Reset form
-        document.getElementById('newCharacterName').value = '';
-        document.getElementById('newCharacterPlatform').value = 'Daggerheart';
-        document.getElementById('newCharacterSubtitle').value = '';
-        document.getElementById('newCharacterLevel').value = '1';
-        document.getElementById('newCharacterImage').value = '';
-        document.getElementById('characterImagePreview').innerHTML = `
+        const nameInput = document.getElementById('newCharacterName');
+        const platformSelect = document.getElementById('newCharacterPlatform');
+        const subtitleInput = document.getElementById('newCharacterSubtitle');
+        const levelInput = document.getElementById('newCharacterLevel');
+        const imageInput = document.getElementById('newCharacterImage');
+        const imagePreview = document.getElementById('characterImagePreview');
+        const modal = document.getElementById('createCharacterModal');
+        
+        if (!nameInput || !platformSelect || !subtitleInput || !levelInput || !imageInput || !imagePreview || !modal) {
+            console.error('MODAL ERROR: One or more form elements not found');
+            console.log('Elements found:', {
+                nameInput: !!nameInput,
+                platformSelect: !!platformSelect,
+                subtitleInput: !!subtitleInput,
+                levelInput: !!levelInput,
+                imageInput: !!imageInput,
+                imagePreview: !!imagePreview,
+                modal: !!modal
+            });
+            return;
+        }
+        
+        console.log('All form elements found, resetting form');
+        
+        nameInput.value = '';
+        platformSelect.value = 'Daggerheart';
+        subtitleInput.value = '';
+        levelInput.value = '1';
+        imageInput.value = '';
+        imagePreview.innerHTML = `
             <div class="image-placeholder">
                 <span>📷</span>
                 <p>Click to add character portrait</p>
             </div>
         `;
         
-        document.getElementById('createCharacterModal').style.display = 'flex';
+        console.log('Form reset complete, showing modal');
+        console.log('Modal element:', modal);
+        console.log('Modal current style:', modal.style.display);
+        
+        // Force modal to display with multiple methods
+        modal.style.display = 'flex';
+        modal.style.visibility = 'visible';
+        modal.style.opacity = '1';
+        modal.setAttribute('data-visible', 'true');
+        
+        console.log('Modal display set to flex');
+        console.log('Modal computed style:', window.getComputedStyle(modal).display);
+        
+        // Ensure modal is in front
+        modal.style.zIndex = '10001';
+        
+        console.log('=== MODAL DEBUG: Modal should now be visible ===');
+        
+        // Fallback check - if modal still not visible after 100ms, show alert
+        setTimeout(() => {
+            const computedStyle = window.getComputedStyle(modal);
+            if (computedStyle.display === 'none' || computedStyle.visibility === 'hidden') {
+                console.error('MODAL STILL NOT VISIBLE!');
+                console.log('Computed display:', computedStyle.display);
+                console.log('Computed visibility:', computedStyle.visibility);
+                console.log('Computed opacity:', computedStyle.opacity);
+                alert('Modal display issue detected. Check browser console for details. Try refreshing the page.');
+            } else {
+                console.log('Modal is now visible successfully');
+            }
+        }, 100);
     }
 
     closeCreateCharacterModal() {

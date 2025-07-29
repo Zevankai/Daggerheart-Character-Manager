@@ -810,6 +810,12 @@
     align-items: center;
     z-index: 1000;
  }
+
+ /* When modal is shown via JavaScript */
+ .modal-overlay[style*="display: flex"] {
+    display: flex !important;
+}
+
  .modal {
     background: rgba(0, 0, 0, 0.9);
     border: 1px solid rgba(255, 255, 255, 0.3);
@@ -4330,11 +4336,16 @@
 }
 
 /* Character Modals */
-.character-modal {
+.modal-overlay .modal.character-modal {
     max-width: 600px;
     width: 90vw;
     max-height: 90vh;
     overflow-y: auto;
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    padding: 2rem;
+    display: block; /* Ensure character modals display properly */
 }
 
 .character-form {
@@ -4437,7 +4448,7 @@
     margin-top: 0.5rem;
 }
 
-/* Responsive Design */
+/* Responsive Design for Characters Page */
 @media (max-width: 768px) {
     .characters-header {
         flex-direction: column;
@@ -4487,8 +4498,29 @@
         height: 150px;
     }
     
-    .character-modal {
+    .modal-overlay .modal.character-modal {
         width: 95vw;
         margin: 1rem;
+        padding: 1rem;
     }
+}
+
+/* When modal is shown via JavaScript */
+.modal-overlay[style*="display: flex"] {
+    display: flex !important;
+}
+
+/* Additional fixes for character modals */
+#createCharacterModal[style*="display: flex"],
+#editCharacterModal[style*="display: flex"],
+#deleteCharacterConfirmModal[style*="display: flex"] {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+#createCharacterModal[data-visible="true"],
+#editCharacterModal[data-visible="true"],
+#deleteCharacterConfirmModal[data-visible="true"] {
+    display: flex !important;
 }
