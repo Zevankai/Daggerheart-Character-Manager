@@ -20,33 +20,55 @@ class CharactersPageManager {
 
     // Display characters list
     refreshCharactersList() {
+        console.log('=== REFRESH CHARACTERS LIST: Starting ===');
+        
         const grid = document.getElementById('charactersGrid');
         const emptyState = document.getElementById('charactersEmptyState');
         
-        if (!grid || !emptyState) return;
+        console.log('Grid element:', grid);
+        console.log('Empty state element:', emptyState);
+        
+        if (!grid || !emptyState) {
+            console.error('Required elements not found:', {
+                grid: !!grid,
+                emptyState: !!emptyState
+            });
+            return;
+        }
 
+        console.log('Character manager available:', !!window.characterManager);
         const characters = window.characterManager ? window.characterManager.characters : [];
+        console.log('Characters found:', characters.length);
+        console.log('Characters data:', characters);
         
         // Clear existing content
         grid.innerHTML = '';
         
         if (characters.length === 0) {
+            console.log('No characters found, showing empty state');
             grid.style.display = 'none';
             emptyState.style.display = 'block';
             return;
         }
 
+        console.log('Showing characters grid');
         grid.style.display = 'grid';
         emptyState.style.display = 'none';
 
         // Create character cards
-        characters.forEach(character => {
+        console.log('Creating character cards...');
+        characters.forEach((character, index) => {
+            console.log(`Creating card for character ${index + 1}:`, character.name);
             const card = this.createCharacterCard(character);
+            console.log('Card created:', card);
             grid.appendChild(card);
         });
 
+        console.log('Characters added to grid, applying filters...');
         // Apply current filters
         this.filterCharacters();
+        
+        console.log('=== REFRESH CHARACTERS LIST: Complete ===');
     }
 
     // Create a character card element
@@ -147,18 +169,57 @@ class CharactersPageManager {
 
     // Load a character
     loadCharacter(characterId) {
+        console.log('=== LOAD CHARACTER: Starting load for ID:', characterId);
+        
         if (!window.characterManager) {
             console.error('Character manager not available');
             return;
         }
 
         const character = window.characterManager.getCharacter(characterId);
+        console.log('Character found:', character);
+        
         if (character) {
+            console.log('Loading character data...');
+            
             // Use the existing character manager functionality
-            window.characterManager.loadCharacterData(character);
+            const loadSuccess = window.characterManager.loadCharacterData(character);
+            console.log('Character data load result:', loadSuccess);
+            
             window.characterManager.currentCharacter = character;
             
+            // Update the character name in the header
+            const nameInput = document.querySelector('.name-box input[type="text"]');
+            if (nameInput) {
+                nameInput.value = character.name;
+                console.log('Updated character name in header');
+            }
+            
+            // Update the character image if it exists
+            const charImage = document.getElementById('charImage');
+            const charPlaceholder = document.getElementById('charPlaceholder');
+            if (character.imageUrl && charImage) {
+                charImage.src = character.imageUrl;
+                charImage.style.display = 'block';
+                if (charPlaceholder) {
+                    charPlaceholder.style.display = 'none';
+                }
+                console.log('Updated character image');
+            } else if (charImage && charPlaceholder) {
+                charImage.style.display = 'none';
+                charPlaceholder.style.display = 'flex';
+                console.log('No character image, showing placeholder');
+            }
+            
+            // Update level display
+            const levelDisplay = document.getElementById('charLevel');
+            if (levelDisplay) {
+                levelDisplay.textContent = character.level || 1;
+                console.log('Updated character level');
+            }
+            
             // Switch to main character view (first tab)
+            console.log('Switching to main character view...');
             const firstTab = document.querySelector('.tabs button[data-target="domain-vault-tab-content"]');
             if (firstTab) {
                 // Trigger tab switch
@@ -167,10 +228,40 @@ class CharactersPageManager {
                 
                 firstTab.classList.add('active');
                 document.getElementById('domain-vault-tab-content').classList.add('active');
+                console.log('Switched to domain vault tab');
             }
             
-            console.log('Character loaded:', character.name);
+            // Trigger refresh of all character-dependent systems
+            console.log('Triggering system refreshes...');
+            
+            // Refresh HP/Stress if available
+            if (window.initializeHPStress && typeof window.initializeHPStress === 'function') {
+                setTimeout(() => window.initializeHPStress(), 100);
+            }
+            
+            // Refresh Hope if available
+            if (window.initializeHope && typeof window.initializeHope === 'function') {
+                setTimeout(() => window.initializeHope(), 100);
+            }
+            
+            // Refresh Equipment if available
+            if (window.initializeEquipment && typeof window.initializeEquipment === 'function') {
+                setTimeout(() => window.initializeEquipment(), 100);
+            }
+            
+            // Refresh Experiences if available
+            if (window.renderExperiences && typeof window.renderExperiences === 'function') {
+                setTimeout(() => window.renderExperiences(), 100);
+            }
+            
+            // Refresh Journal if available
+            if (window.renderJournalEntries && typeof window.renderJournalEntries === 'function') {
+                setTimeout(() => window.renderJournalEntries(), 100);
+            }
+            
+            console.log('=== LOAD CHARACTER: Character loaded successfully:', character.name);
         } else {
+            console.error('Character not found for ID:', characterId);
             alert('Character not found!');
         }
     }

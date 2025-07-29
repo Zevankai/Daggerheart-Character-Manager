@@ -480,14 +480,31 @@
 </div>
 
 <div id="create-experience-modal" class="modal-overlay">
-    <div class="modal">
-        <h3>Create New Experience</h3>
-        <input type="text" id="experience-title-input" placeholder="Experience Title">
-        <textarea id="experience-description-input" placeholder="Describe this experience..."></textarea>
-        <label for="experience-modifier-input">Modifier (-2 to +2):</label>
-        <input type="number" id="experience-modifier-input" value="0" min="-2" max="2">
+    <div class="modal small-modal">
+        <div class="modal-header">
+            <h3>Create New Experience</h3>
+            <button type="button" class="modal-close-btn" onclick="window.closeCreateExperienceModal()" title="Close">×</button>
+        </div>
+        
+        <div class="modal-content">
+            <div class="form-group">
+                <label for="experience-title-input">Experience Title</label>
+                <input type="text" id="experience-title-input" placeholder="Experience Title">
+            </div>
+            
+            <div class="form-group">
+                <label for="experience-description-input">Description</label>
+                <textarea id="experience-description-input" placeholder="Describe this experience..." rows="4"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="experience-modifier-input">Modifier (-2 to +2)</label>
+                <input type="number" id="experience-modifier-input" value="0" min="-2" max="2">
+            </div>
+        </div>
+        
         <div class="modal-buttons">
-            <button class="button" onclick="window.saveNewExperience()">Save Experience</button>
+            <button class="button primary-btn" onclick="window.saveNewExperience()">Save Experience</button>
             <button class="button" onclick="window.closeCreateExperienceModal()">Cancel</button>
         </div>
     </div>
