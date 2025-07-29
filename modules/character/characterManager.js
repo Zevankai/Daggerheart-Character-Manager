@@ -184,85 +184,17 @@ function loadCharacter(characterId) {
 }
 
 async function createNewCharacter() {
-    console.log('=== CREATE NEW CHARACTER: Starting ===');
+    console.log('=== CREATE NEW CHARACTER (Landing Page): Starting ===');
     
-    try {
-        // Wait for systems to be ready with timeout
-        const waitForSystems = async (maxWaitTime = 5000) => {
-            const startTime = Date.now();
-            
-            while (Date.now() - startTime < maxWaitTime) {
-                // Check if comprehensive integration is ready
-                if (window.comprehensiveIntegration && window.comprehensiveIntegration.isInitialized) {
-                    console.log('✅ Comprehensive integration system ready');
-                    return 'comprehensive';
-                }
-                
-                // Check if old app system is ready
-                if (window.app && window.app.initialized) {
-                    console.log('✅ Old app system ready');
-                    return 'app';
-                }
-                
-                // Wait 100ms before checking again
-                await new Promise(resolve => setTimeout(resolve, 100));
-            }
-            
-            return null;
-        };
-        
-        console.log('⏳ Waiting for character creation systems to be ready...');
-        
-        // Log current system status
-        console.log('System Status Check:');
-        console.log('- window.comprehensiveCharacterSave:', !!window.comprehensiveCharacterSave);
-        console.log('- window.comprehensiveIntegration:', !!window.comprehensiveIntegration);
-        console.log('- comprehensiveIntegration.isInitialized:', window.comprehensiveIntegration?.isInitialized);
-        console.log('- window.app:', !!window.app);
-        console.log('- app.initialized:', window.app?.initialized);
-        
-        const availableSystem = await waitForSystems();
-        
-        if (availableSystem === 'comprehensive') {
-            console.log('Using comprehensive integration system');
-            const newCharacterId = await window.comprehensiveIntegration.createNewCharacter({
-                name: 'New Character',
-                level: '1'
-            });
-            
-            if (newCharacterId) {
-                console.log('New character created:', newCharacterId);
-                // Redirect to main page
-                window.location.href = 'index.html';
-                return;
-            } else {
-                console.error('Comprehensive system failed to create character');
-            }
-        } else if (availableSystem === 'app') {
-            console.log('Using old app system');
-            const newCharacterId = await window.app.createNewCharacter();
-            console.log('New character created:', newCharacterId);
-            
-            // Redirect to main page
-            window.location.href = 'index.html';
-            return;
-        }
-        
-        // If we get here, no system was ready - use basic fallback
-        console.warn('No advanced system ready, using basic character creation');
-        const newCharacterId = await createBasicCharacter();
-        if (newCharacterId) {
-            console.log('Basic character created:', newCharacterId);
-            window.location.href = 'index.html';
-            return;
-        }
-        
-        console.error('All character creation methods failed');
-        alert('Character creation system is still loading. Please wait a moment and try again.');
-        
-    } catch (error) {
-        console.error('Error creating character:', error);
-        alert('Error creating character. Please try again.');
+    if (window.universalCharacterCreation) {
+        console.log('✅ Using UniversalCharacterCreation system');
+        await window.universalCharacterCreation.createCharacterAndNavigate({
+            name: 'New Character',
+            level: '1'
+        }, 'main');
+    } else {
+        console.error('❌ UniversalCharacterCreation not available');
+        alert('Character creation system not loaded. Please refresh the page and try again.');
     }
 }
 

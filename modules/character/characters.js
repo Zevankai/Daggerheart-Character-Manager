@@ -384,7 +384,7 @@ class CharactersPageManager {
 
     // Create new character
     createCharacter() {
-        console.log('=== CREATE CHARACTER: Starting character creation ===');
+        console.log('=== CREATE CHARACTER (Main Page): Starting character creation ===');
         
         const name = document.getElementById('newCharacterName').value.trim();
         const platform = document.getElementById('newCharacterPlatform').value;
@@ -397,9 +397,37 @@ class CharactersPageManager {
             return;
         }
 
-        // Create character without image (image can be added later on character page)
-        console.log('Creating character without image');
-        this.saveNewCharacter(name, platform, level, '');
+        // Use universal character creation system
+        if (window.universalCharacterCreation) {
+            console.log('✅ Using UniversalCharacterCreation system');
+            
+            window.universalCharacterCreation.createCharacterAndNavigate({
+                name,
+                platform,
+                level: level.toString()
+            }, null).then(result => {
+                if (result.success) {
+                    // Close modal and refresh list
+                    this.closeCreateCharacterModal();
+                    this.refreshCharactersList();
+                    
+                    // Auto-load the new character if we're on the main page
+                    if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
+                        console.log('Auto-loading new character...');
+                        if (window.charactersPageManager) {
+                            window.charactersPageManager.loadCharacter(result.characterId);
+                        }
+                    }
+                }
+            }).catch(error => {
+                console.error('Character creation failed:', error);
+                alert('Failed to create character. Please try again.');
+            });
+        } else {
+            console.error('❌ UniversalCharacterCreation not available, falling back to old method');
+            // Fallback to old method
+            this.saveNewCharacter(name, platform, level, '');
+        }
     }
 
     async saveNewCharacter(name, platform, level, imageUrl) {
