@@ -92,6 +92,8 @@ class CharacterManager {
   // Load character data from localStorage
   loadCharacterData(character) {
       try {
+          console.log('=== LOADING CHARACTER DATA ===', character.name);
+          
           // Load all character-specific data
           const equipment = localStorage.getItem(`zevi-equipment-${character.id}`);
           const journal = localStorage.getItem(`zevi-journal-${character.id}`);
@@ -99,50 +101,119 @@ class CharacterManager {
           const hope = localStorage.getItem(`zevi-hope-${character.id}`);
           const downtime = localStorage.getItem(`zevi-downtime-${character.id}`);
 
-          // Set the current character context
-          localStorage.setItem('zevi-current-character-id', character.id);
-
-          // Load equipment data
+          // Set character-specific data as current
           if (equipment) {
               localStorage.setItem('zevi-equipment', equipment);
           } else {
               localStorage.removeItem('zevi-equipment');
           }
-
-          // Load journal data
+          
           if (journal) {
               localStorage.setItem('zevi-journal', journal);
           } else {
               localStorage.removeItem('zevi-journal');
           }
-
-          // Load experiences data
+          
           if (experiences) {
               localStorage.setItem('zevi-experiences', experiences);
           } else {
               localStorage.removeItem('zevi-experiences');
           }
-
-          // Load hope data
+          
           if (hope) {
               localStorage.setItem('zevi-hope', hope);
           } else {
               localStorage.removeItem('zevi-hope');
           }
-
-          // Load downtime data
+          
           if (downtime) {
               localStorage.setItem('zevi-downtime', downtime);
           } else {
               localStorage.removeItem('zevi-downtime');
           }
 
+          // Set current character
+          localStorage.setItem('zevi-current-character-id', character.id);
+
+          // Set current character
           this.currentCharacter = character;
+          
+          // Populate UI fields with character data
+          this.populateUIFields(character);
+
+          console.log('Character data loaded successfully');
           return true;
       } catch (error) {
           console.error('Error loading character data:', error);
           return false;
       }
+  }
+
+  // Populate UI fields with character data
+  populateUIFields(character) {
+      console.log('Populating UI fields with character data:', character);
+
+      // Character name
+      const nameInput = document.querySelector('.name-box input[type="text"]');
+      if (nameInput && character.name) {
+          nameInput.value = character.name;
+      }
+
+      // Character level
+      const levelInput = document.getElementById('charLevel');
+      if (levelInput && character.level) {
+          levelInput.textContent = character.level;
+      }
+
+      // Character subtitle
+      const subtitleInput = document.querySelector('.name-box .subtitle');
+      if (subtitleInput && character.subtitle) {
+          subtitleInput.textContent = character.subtitle;
+      }
+
+      // Domain badges
+      const domainBadges = document.querySelectorAll('.name-box .domain-badge');
+      if (character.domain1 && domainBadges[0]) {
+          domainBadges[0].textContent = character.domain1;
+      }
+      if (character.domain2 && domainBadges[1]) {
+          domainBadges[1].textContent = character.domain2;
+      }
+
+      // Attribute values
+      if (character.attributes) {
+          Object.keys(character.attributes).forEach(attr => {
+              const input = document.querySelector(`[data-attribute="${attr}"]`);
+              if (input) {
+                  input.value = character.attributes[attr];
+              }
+          });
+      }
+
+      // Evasion
+      const evasionInput = document.getElementById('evasionValue');
+      if (evasionInput && character.evasion) {
+          evasionInput.value = character.evasion;
+      }
+
+      // Character image
+      const charImage = document.getElementById('charImage');
+      const charPlaceholder = document.getElementById('charPlaceholder');
+      if (character.imageUrl && charImage) {
+          charImage.src = character.imageUrl;
+          charImage.style.display = 'block';
+          if (charPlaceholder) {
+              charPlaceholder.style.display = 'none';
+          }
+      } else if (charImage && charPlaceholder) {
+          charImage.style.display = 'none';
+          charPlaceholder.style.display = 'flex';
+      }
+
+      // HP and Stress values will be handled by their respective initialization functions
+      // Hope value will be handled by hope initialization function
+
+      console.log('UI fields populated successfully');
   }
 
   // Save current character data to character-specific storage

@@ -186,38 +186,6 @@ class CharactersPageManager {
             const loadSuccess = window.characterManager.loadCharacterData(character);
             console.log('Character data load result:', loadSuccess);
             
-            window.characterManager.currentCharacter = character;
-            
-            // Update the character name in the header
-            const nameInput = document.querySelector('.name-box input[type="text"]');
-            if (nameInput) {
-                nameInput.value = character.name;
-                console.log('Updated character name in header');
-            }
-            
-            // Update the character image if it exists
-            const charImage = document.getElementById('charImage');
-            const charPlaceholder = document.getElementById('charPlaceholder');
-            if (character.imageUrl && charImage) {
-                charImage.src = character.imageUrl;
-                charImage.style.display = 'block';
-                if (charPlaceholder) {
-                    charPlaceholder.style.display = 'none';
-                }
-                console.log('Updated character image');
-            } else if (charImage && charPlaceholder) {
-                charImage.style.display = 'none';
-                charPlaceholder.style.display = 'flex';
-                console.log('No character image, showing placeholder');
-            }
-            
-            // Update level display
-            const levelDisplay = document.getElementById('charLevel');
-            if (levelDisplay) {
-                levelDisplay.textContent = character.level || 1;
-                console.log('Updated character level');
-            }
-            
             // Switch to main character view (first tab)
             console.log('Switching to main character view...');
             const firstTab = document.querySelector('.tabs button[data-target="domain-vault-tab-content"]');
@@ -231,33 +199,49 @@ class CharactersPageManager {
                 console.log('Switched to domain vault tab');
             }
             
-            // Trigger refresh of all character-dependent systems
+            // Trigger refresh of all character-dependent systems with delay to ensure UI is updated
             console.log('Triggering system refreshes...');
             
-            // Refresh HP/Stress if available
-            if (window.initializeHPStress && typeof window.initializeHPStress === 'function') {
-                setTimeout(() => window.initializeHPStress(), 100);
-            }
-            
-            // Refresh Hope if available
-            if (window.initializeHope && typeof window.initializeHope === 'function') {
-                setTimeout(() => window.initializeHope(), 100);
-            }
-            
-            // Refresh Equipment if available
-            if (window.initializeEquipment && typeof window.initializeEquipment === 'function') {
-                setTimeout(() => window.initializeEquipment(), 100);
-            }
-            
-            // Refresh Experiences if available
-            if (window.renderExperiences && typeof window.renderExperiences === 'function') {
-                setTimeout(() => window.renderExperiences(), 100);
-            }
-            
-            // Refresh Journal if available
-            if (window.renderJournalEntries && typeof window.renderJournalEntries === 'function') {
-                setTimeout(() => window.renderJournalEntries(), 100);
-            }
+            setTimeout(() => {
+                // Refresh HP/Stress if available
+                if (window.initializeHPStress && typeof window.initializeHPStress === 'function') {
+                    console.log('Refreshing HP/Stress system');
+                    window.initializeHPStress();
+                }
+                
+                // Refresh Hope if available
+                if (window.initializeHope && typeof window.initializeHope === 'function') {
+                    console.log('Refreshing Hope system');
+                    window.initializeHope();
+                }
+                
+                // Refresh Equipment if available
+                if (window.initializeEquipment && typeof window.initializeEquipment === 'function') {
+                    console.log('Refreshing Equipment system');
+                    window.initializeEquipment();
+                }
+                
+                // Refresh Experiences if available
+                if (window.renderExperiences && typeof window.renderExperiences === 'function') {
+                    console.log('Refreshing Experiences system');
+                    window.renderExperiences();
+                }
+                
+                // Refresh Journal if available
+                if (window.renderJournalEntries && typeof window.renderJournalEntries === 'function') {
+                    console.log('Refreshing Journal system');
+                    window.renderJournalEntries();
+                }
+
+                // Initialize auto-save for the new character
+                if (window.autoSaveManager && typeof window.autoSaveManager.initialize === 'function') {
+                    console.log('Reinitializing auto-save system');
+                    window.autoSaveManager.isInitialized = false; // Reset flag
+                    window.autoSaveManager.initialize();
+                }
+                
+                console.log('All system refreshes completed');
+            }, 200);
             
             console.log('=== LOAD CHARACTER: Character loaded successfully:', character.name);
         } else {
