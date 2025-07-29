@@ -770,6 +770,11 @@ class CharacterFileSystem {
         });
         
         console.log('Comprehensive character state saved successfully');
+        
+        // Show auto-save indicator if available
+        if (typeof showAutoSaveStatus === 'function') {
+            showAutoSaveStatus();
+        }
     }
     
     // Helper to get UI values safely

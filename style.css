@@ -164,19 +164,89 @@
  }
  
  .name-box {
-    background: rgba(255,255,255,0.12);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
-    text-align: center;
-    width: 100%;
-    max-width: 350px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
- }
+   background: rgba(255,255,255,0.12);
+   border: 1px solid rgba(255,255,255,0.2);
+   border-radius: 10px;
+   padding: 20px;
+   margin-bottom: 20px;
+   text-align: center;
+   width: 100%;
+   max-width: 350px;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+}
+
+/* Character header row with save button */
+.character-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.character-header-row input[type="text"] {
+  flex: 1;
+  max-width: 200px;
+}
+
+/* Manual save button */
+.manual-save-btn {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  white-space: nowrap;
+}
+
+.manual-save-btn:hover {
+  background: linear-gradient(135deg, #45a049, #4CAF50);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.manual-save-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.manual-save-btn.saving {
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+  cursor: not-allowed;
+}
+
+.manual-save-btn.saved {
+  background: linear-gradient(135deg, #2196F3, #1976D2);
+}
+
+/* Save status indicator */
+.save-status {
+  font-size: 12px;
+  margin-bottom: 10px;
+  min-height: 16px;
+  opacity: 0.8;
+}
+
+.save-status.success {
+  color: #4CAF50;
+}
+
+.save-status.error {
+  color: #f44336;
+}
+
+.save-status.saving {
+  color: #ff9800;
+}
  
  .hope-section {
     background: rgba(255,255,255,0.12);

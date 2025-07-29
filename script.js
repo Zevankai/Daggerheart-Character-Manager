@@ -1,4 +1,138 @@
 // --- GLOBAL HELPER FUNCTIONS ---
+
+// Manual save character function
+async function manualSaveCharacter() {
+    console.log('=== MANUAL SAVE CHARACTER TRIGGERED ===');
+    
+    const saveBtn = document.getElementById('manualSaveBtn');
+    const saveStatus = document.getElementById('saveStatus');
+    
+    if (!window.characterFileSystem || !window.characterFileSystem.currentCharacterId) {
+        updateSaveStatus('error', 'No character loaded to save!');
+        return;
+    }
+    
+    try {
+        // Update button state
+        saveBtn.className = 'manual-save-btn saving';
+        saveBtn.textContent = '💾 Saving...';
+        saveBtn.disabled = true;
+        
+        updateSaveStatus('saving', 'Saving character data...');
+        
+        // Perform the save
+        console.log('Saving character:', window.characterFileSystem.currentCharacterId);
+        await window.characterFileSystem.saveCurrentCharacterState();
+        
+        // Update character manager if available
+        if (window.characterManager && window.characterManager.currentCharacter) {
+            // Get current data from UI for character manager
+            const nameInput = document.querySelector('.name-box input[type="text"]');
+            if (nameInput) {
+                window.characterManager.currentCharacter.name = nameInput.value;
+            }
+            
+            // Update character directory
+            window.characterManager.updateCharacterMetadata(
+                window.characterManager.currentCharacter.id,
+                {
+                    name: window.characterManager.currentCharacter.name,
+                    lastModified: new Date().toISOString()
+                }
+            );
+        }
+        
+        // Success state
+        saveBtn.className = 'manual-save-btn saved';
+        saveBtn.textContent = '✅ Saved!';
+        updateSaveStatus('success', 'Character saved successfully!');
+        
+        console.log('Manual save completed successfully');
+        
+        // Reset button after delay
+        setTimeout(() => {
+            saveBtn.className = 'manual-save-btn';
+            saveBtn.textContent = '💾 Save Character';
+            saveBtn.disabled = false;
+            updateSaveStatus('', '');
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Manual save failed:', error);
+        
+        // Error state
+        saveBtn.className = 'manual-save-btn';
+        saveBtn.textContent = '❌ Save Failed';
+        saveBtn.disabled = false;
+        updateSaveStatus('error', 'Save failed: ' + error.message);
+        
+        // Reset button after delay
+        setTimeout(() => {
+            saveBtn.textContent = '💾 Save Character';
+            updateSaveStatus('', '');
+        }, 3000);
+    }
+}
+
+// Update save status display
+function updateSaveStatus(type, message) {
+    const saveStatus = document.getElementById('saveStatus');
+    if (saveStatus) {
+        saveStatus.textContent = message;
+        saveStatus.className = 'save-status' + (type ? ' ' + type : '');
+    }
+}
+
+// Auto-save indicator (called by the file system)
+function showAutoSaveStatus() {
+    const saveStatus = document.getElementById('saveStatus');
+    if (saveStatus) {
+        saveStatus.textContent = 'Auto-saved';
+        saveStatus.className = 'save-status success';
+        
+        setTimeout(() => {
+            saveStatus.textContent = '';
+            saveStatus.className = 'save-status';
+        }, 2000);
+    }
+}
+
+// Debug function to inspect current character data
+function debugCharacterData() {
+    if (!window.characterFileSystem || !window.characterFileSystem.currentCharacterId) {
+        console.log('No character loaded');
+        return;
+    }
+    
+    const characterId = window.characterFileSystem.currentCharacterId;
+    console.log('=== DEBUG CHARACTER DATA ===');
+    console.log('Current Character ID:', characterId);
+    
+    // Get the character file data
+    const characterData = window.characterFileSystem.loadCharacterFile(characterId);
+    console.log('Character File Data:', characterData);
+    
+    // Get current localStorage data
+    console.log('Current localStorage data:');
+    console.log('- Evasion:', localStorage.getItem('zevi-evasion'));
+    console.log('- Hope:', localStorage.getItem('zevi-hope'));
+    console.log('- Equipment:', localStorage.getItem('zevi-equipment'));
+    console.log('- Journal:', localStorage.getItem('zevi-journal-entries'));
+    console.log('- Details:', localStorage.getItem('zevi-character-details'));
+    
+    // Get current UI values
+    console.log('Current UI values:');
+    const nameInput = document.querySelector('.name-box input[type="text"]');
+    console.log('- Name:', nameInput?.value);
+    const evasionInput = document.getElementById('evasionValue');
+    console.log('- Evasion UI:', evasionInput?.value);
+    
+    return characterData;
+}
+
+// Make debug function globally available
+window.debugCharacterData = debugCharacterData;
+
 function uploadCharacterImage(event) {
     if (!event.target.files || !event.target.files[0]) {
         console.warn('No file selected for character image upload');
@@ -192,6 +326,15 @@ function applySavedColors() {
     }
 }
 
+
+// Add keyboard shortcut for saving
+document.addEventListener('keydown', function(event) {
+    // Ctrl+S or Cmd+S to save
+    if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+        event.preventDefault();
+        manualSaveCharacter();
+    }
+});
 
 // --- DOMContentLoaded for main script logic ---
 document.addEventListener('DOMContentLoaded', () => {

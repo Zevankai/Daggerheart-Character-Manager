@@ -17,7 +17,13 @@
    </div>
 
    <div class="name-box" data-color-target="name-box">
-    <input type="text" value="Character Name" />
+    <div class="character-header-row">
+      <input type="text" value="Character Name" />
+      <button id="manualSaveBtn" class="manual-save-btn" onclick="manualSaveCharacter()" title="Save Character Data">
+        💾 Save Character
+      </button>
+    </div>
+    <div class="save-status" id="saveStatus"></div>
     <div class="subtitle" contenteditable="true">Community Ancestry Class (Subclass)</div>
     <div class="domain-row">
      <span class="domain-badge" contenteditable="true">Domain 1</span>
