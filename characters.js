@@ -191,7 +191,6 @@ class CharactersPageManager {
         document.getElementById('editCharacterId').value = character.id;
         document.getElementById('editCharacterName').value = character.name;
         document.getElementById('editCharacterPlatform').value = character.platform || 'Daggerheart';
-        document.getElementById('editCharacterSubtitle').value = character.subtitle || '';
         document.getElementById('editCharacterLevel').value = character.level || 1;
         
         // Set image preview
@@ -213,10 +212,13 @@ class CharactersPageManager {
 
     // Create new character
     createCharacter() {
+        console.log('=== CREATE CHARACTER: Starting character creation ===');
+        
         const name = document.getElementById('newCharacterName').value.trim();
         const platform = document.getElementById('newCharacterPlatform').value;
-        const subtitle = document.getElementById('newCharacterSubtitle').value.trim();
         const level = parseInt(document.getElementById('newCharacterLevel').value) || 1;
+        
+        console.log('Character data:', { name, platform, level });
         
         if (!name) {
             alert('Please enter a character name');
@@ -228,36 +230,49 @@ class CharactersPageManager {
         let imageUrl = '';
         
         if (imageFile) {
+            console.log('Image file found, processing...');
             // Convert to data URL for storage
             const reader = new FileReader();
             reader.onload = (e) => {
                 imageUrl = e.target.result;
-                this.saveNewCharacter(name, platform, subtitle, level, imageUrl);
+                this.saveNewCharacter(name, platform, level, imageUrl);
             };
             reader.readAsDataURL(imageFile);
         } else {
-            this.saveNewCharacter(name, platform, subtitle, level, imageUrl);
+            console.log('No image file, proceeding without image');
+            this.saveNewCharacter(name, platform, level, imageUrl);
         }
     }
 
-    saveNewCharacter(name, platform, subtitle, level, imageUrl) {
-        if (!window.characterManager) return;
+    saveNewCharacter(name, platform, level, imageUrl) {
+        console.log('=== SAVE NEW CHARACTER: Saving character ===');
+        
+        if (!window.characterManager) {
+            console.error('Character manager not available');
+            return;
+        }
 
         const characterData = {
             name,
             platform,
-            subtitle,
             level,
-            imageUrl
+            imageUrl,
+            subtitle: '' // Default empty subtitle since we removed the field
         };
 
+        console.log('Creating character with data:', characterData);
         const newCharacter = window.characterManager.createCharacter(characterData);
         
+        console.log('Character created successfully:', newCharacter.name);
+        
         // Close modal and refresh list
+        console.log('Closing modal...');
         this.closeCreateCharacterModal();
+        
+        console.log('Refreshing character list...');
         this.refreshCharactersList();
         
-        console.log('Character created:', newCharacter.name);
+        console.log('=== CREATE CHARACTER: Process complete ===');
     }
 
     // Save character edits
@@ -266,7 +281,6 @@ class CharactersPageManager {
 
         const name = document.getElementById('editCharacterName').value.trim();
         const platform = document.getElementById('editCharacterPlatform').value;
-        const subtitle = document.getElementById('editCharacterSubtitle').value.trim();
         const level = parseInt(document.getElementById('editCharacterLevel').value) || 1;
         
         if (!name) {
@@ -281,12 +295,12 @@ class CharactersPageManager {
             // Convert to data URL for storage
             const reader = new FileReader();
             reader.onload = (e) => {
-                this.updateCharacterData(name, platform, subtitle, level, e.target.result);
+                this.updateCharacterData(name, platform, '', level, e.target.result);
             };
             reader.readAsDataURL(imageFile);
         } else {
             // Keep existing image
-            this.updateCharacterData(name, platform, subtitle, level, this.currentEditingCharacter.imageUrl);
+            this.updateCharacterData(name, platform, '', level, this.currentEditingCharacter.imageUrl);
         }
     }
 
@@ -370,18 +384,16 @@ class CharactersPageManager {
         // Reset form
         const nameInput = document.getElementById('newCharacterName');
         const platformSelect = document.getElementById('newCharacterPlatform');
-        const subtitleInput = document.getElementById('newCharacterSubtitle');
         const levelInput = document.getElementById('newCharacterLevel');
         const imageInput = document.getElementById('newCharacterImage');
         const imagePreview = document.getElementById('characterImagePreview');
         const modal = document.getElementById('createCharacterModal');
         
-        if (!nameInput || !platformSelect || !subtitleInput || !levelInput || !imageInput || !imagePreview || !modal) {
+        if (!nameInput || !platformSelect || !levelInput || !imageInput || !imagePreview || !modal) {
             console.error('MODAL ERROR: One or more form elements not found');
             console.log('Elements found:', {
                 nameInput: !!nameInput,
                 platformSelect: !!platformSelect,
-                subtitleInput: !!subtitleInput,
                 levelInput: !!levelInput,
                 imageInput: !!imageInput,
                 imagePreview: !!imagePreview,
@@ -394,7 +406,6 @@ class CharactersPageManager {
         
         nameInput.value = '';
         platformSelect.value = 'Daggerheart';
-        subtitleInput.value = '';
         levelInput.value = '1';
         imageInput.value = '';
         imagePreview.innerHTML = `
@@ -438,7 +449,21 @@ class CharactersPageManager {
     }
 
     closeCreateCharacterModal() {
-        document.getElementById('createCharacterModal').style.display = 'none';
+        console.log('=== MODAL DEBUG: closeCreateCharacterModal called ===');
+        
+        const modal = document.getElementById('createCharacterModal');
+        if (!modal) {
+            console.error('Modal element not found!');
+            return;
+        }
+        
+        console.log('Closing modal...');
+        modal.style.display = 'none';
+        modal.style.visibility = 'hidden';
+        modal.style.opacity = '0';
+        modal.removeAttribute('data-visible');
+        
+        console.log('Modal closed successfully');
     }
 
     closeEditCharacterModal() {
