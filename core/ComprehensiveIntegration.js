@@ -25,20 +25,29 @@ class ComprehensiveIntegration {
 
         console.log('✅ Comprehensive save system ready, setting up integration...');
         
-        // Set up autosaving
-        this.setupAutosave();
-        
-        // Set up event listeners
-        this.setupEventListeners();
-        
-        // Load current character if exists
-        await this.loadCurrentCharacter();
-        
-        this.isInitialized = true;
-        console.log('🚀 ComprehensiveIntegration ready!');
-        
-        // Dispatch ready event
-        window.dispatchEvent(new CustomEvent('comprehensiveIntegrationReady'));
+        try {
+            // Set up autosaving
+            console.log('⚙️ Setting up autosave...');
+            this.setupAutosave();
+            
+            // Set up event listeners
+            console.log('🎧 Setting up event listeners...');
+            this.setupEventListeners();
+            
+            // Load current character if exists
+            console.log('📂 Loading current character...');
+            await this.loadCurrentCharacter();
+            
+            this.isInitialized = true;
+            console.log('🚀 ComprehensiveIntegration ready!');
+            
+            // Dispatch ready event
+            window.dispatchEvent(new CustomEvent('comprehensiveIntegrationReady'));
+            
+        } catch (error) {
+            console.error('❌ Error during ComprehensiveIntegration initialization:', error);
+            this.isInitialized = false;
+        }
     }
 
     /**

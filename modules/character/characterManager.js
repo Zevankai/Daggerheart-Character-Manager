@@ -187,8 +187,43 @@ async function createNewCharacter() {
     console.log('=== CREATE NEW CHARACTER: Starting ===');
     
     try {
-        // Try comprehensive integration system first
-        if (window.comprehensiveIntegration && window.comprehensiveIntegration.isInitialized) {
+        // Wait for systems to be ready with timeout
+        const waitForSystems = async (maxWaitTime = 5000) => {
+            const startTime = Date.now();
+            
+            while (Date.now() - startTime < maxWaitTime) {
+                // Check if comprehensive integration is ready
+                if (window.comprehensiveIntegration && window.comprehensiveIntegration.isInitialized) {
+                    console.log('✅ Comprehensive integration system ready');
+                    return 'comprehensive';
+                }
+                
+                // Check if old app system is ready
+                if (window.app && window.app.initialized) {
+                    console.log('✅ Old app system ready');
+                    return 'app';
+                }
+                
+                // Wait 100ms before checking again
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            return null;
+        };
+        
+        console.log('⏳ Waiting for character creation systems to be ready...');
+        
+        // Log current system status
+        console.log('System Status Check:');
+        console.log('- window.comprehensiveCharacterSave:', !!window.comprehensiveCharacterSave);
+        console.log('- window.comprehensiveIntegration:', !!window.comprehensiveIntegration);
+        console.log('- comprehensiveIntegration.isInitialized:', window.comprehensiveIntegration?.isInitialized);
+        console.log('- window.app:', !!window.app);
+        console.log('- app.initialized:', window.app?.initialized);
+        
+        const availableSystem = await waitForSystems();
+        
+        if (availableSystem === 'comprehensive') {
             console.log('Using comprehensive integration system');
             const newCharacterId = await window.comprehensiveIntegration.createNewCharacter({
                 name: 'New Character',
@@ -203,23 +238,75 @@ async function createNewCharacter() {
             } else {
                 console.error('Comprehensive system failed to create character');
             }
-        }
-        
-        // Fallback to old app system
-        if (window.app && window.app.initialized) {
-            console.log('Falling back to old app system');
+        } else if (availableSystem === 'app') {
+            console.log('Using old app system');
             const newCharacterId = await window.app.createNewCharacter();
             console.log('New character created:', newCharacterId);
             
             // Redirect to main page
             window.location.href = 'index.html';
-        } else {
-            console.error('No character creation system available');
-            alert('Character creation system not ready. Please refresh the page and try again.');
+            return;
         }
+        
+        // If we get here, no system was ready - use basic fallback
+        console.warn('No advanced system ready, using basic character creation');
+        const newCharacterId = await createBasicCharacter();
+        if (newCharacterId) {
+            console.log('Basic character created:', newCharacterId);
+            window.location.href = 'index.html';
+            return;
+        }
+        
+        console.error('All character creation methods failed');
+        alert('Character creation system is still loading. Please wait a moment and try again.');
+        
     } catch (error) {
         console.error('Error creating character:', error);
         alert('Error creating character. Please try again.');
+    }
+}
+
+// Basic character creation fallback
+async function createBasicCharacter() {
+    try {
+        console.log('🔧 Creating character with basic method...');
+        
+        // Generate a simple character ID
+        const newCharacterId = 'char_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        
+        // Create basic character data
+        const characterData = {
+            id: newCharacterId,
+            name: 'New Character',
+            level: '1',
+            platform: 'Daggerheart',
+            imageUrl: '',
+            createdAt: new Date().toISOString(),
+            lastModified: new Date().toISOString()
+        };
+        
+        // Save to comprehensive system if available
+        if (window.comprehensiveCharacterSave) {
+            window.comprehensiveCharacterSave.setCurrentCharacter(newCharacterId);
+            const success = window.comprehensiveCharacterSave.saveCharacter(newCharacterId);
+            if (success) {
+                console.log('✅ Basic character saved to comprehensive system');
+                return newCharacterId;
+            }
+        }
+        
+        // Fallback to simple localStorage
+        const characters = JSON.parse(localStorage.getItem('zevi-characters') || '[]');
+        characters.push(characterData);
+        localStorage.setItem('zevi-characters', JSON.stringify(characters));
+        localStorage.setItem('zevi-current-character-id', newCharacterId);
+        
+        console.log('✅ Basic character saved to localStorage');
+        return newCharacterId;
+        
+    } catch (error) {
+        console.error('❌ Basic character creation failed:', error);
+        return null;
     }
 }
 
