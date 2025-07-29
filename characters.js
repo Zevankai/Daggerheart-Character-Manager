@@ -14,13 +14,8 @@ class CharactersPageManager {
     }
 
     setupEventListeners() {
-        // Tab switching listener
-        const charactersTab = document.querySelector('[data-target="characters-tab-content"]');
-        if (charactersTab) {
-            charactersTab.addEventListener('click', () => {
-                setTimeout(() => this.refreshCharactersList(), 100);
-            });
-        }
+        // The main script.js now handles tab switching for characters
+        // No additional event listeners needed here
     }
 
     // Display characters list

@@ -219,6 +219,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.warn('renderExperiences function not found. Ensure experiences.js is loaded.');
                 }
             }
+            if (targetPanelId === 'characters-tab-content') {
+                if (window.charactersPageManager && typeof window.charactersPageManager.refreshCharactersList === 'function') {
+                    console.log('Characters tab clicked - refreshing characters list');
+                    window.charactersPageManager.refreshCharactersList();
+                } else {
+                    console.warn('charactersPageManager not found. Ensure characters.js is loaded.');
+                }
+            }
         });
     });
 
@@ -232,6 +240,8 @@ document.addEventListener('DOMContentLoaded', () => {
             window.renderJournalEntries();
         } else if (initialTargetPanelId === 'experiences-tab-content' && window.renderExperiences) {
             window.renderExperiences();
+        } else if (initialTargetPanelId === 'characters-tab-content' && window.charactersPageManager) {
+            window.charactersPageManager.refreshCharactersList();
         }
     }
 
