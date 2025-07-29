@@ -70,26 +70,26 @@ class ComprehensiveIntegration {
         // Save on character name change
         const nameInput = document.querySelector('.name-box input[type="text"]');
         if (nameInput) {
-            nameInput.addEventListener('blur', () => this.scheduleImediateSave());
+            nameInput.addEventListener('blur', () => this.scheduleImmediateSave());
         }
 
         // Save on level change
         const levelInput = document.querySelector('#charLevel');
         if (levelInput) {
-            levelInput.addEventListener('blur', () => this.scheduleImediateSave());
+            levelInput.addEventListener('blur', () => this.scheduleImmediateSave());
         }
 
         // Save on image upload
         const imageUpload = document.querySelector('#charUpload');
         if (imageUpload) {
             imageUpload.addEventListener('change', () => {
-                setTimeout(() => this.scheduleImediateSave(), 1000); // Allow time for image processing
+                setTimeout(() => this.scheduleImmediateSave(), 1000); // Allow time for image processing
             });
         }
 
         // Save on tab switches
         document.querySelectorAll('.tabs button').forEach(button => {
-            button.addEventListener('click', () => this.scheduleImediateSave());
+            button.addEventListener('click', () => this.scheduleImmediateSave());
         });
 
         // Save on circle interactions
@@ -97,29 +97,34 @@ class ComprehensiveIntegration {
             if (e.target.classList.contains('circle') || 
                 e.target.classList.contains('tracker-btn') ||
                 e.target.closest('.trackers-wrapper')) {
-                this.scheduleImediateSave();
+                this.scheduleImmediateSave();
             }
         });
 
         // Save on attribute changes
         document.querySelectorAll('.attribute-value').forEach(input => {
-            input.addEventListener('change', () => this.scheduleImediateSave());
+            input.addEventListener('change', () => this.scheduleImmediateSave());
         });
 
         // Save on contenteditable changes
         document.querySelectorAll('[contenteditable="true"]').forEach(element => {
-            element.addEventListener('blur', () => this.scheduleImediateSave());
+            element.addEventListener('blur', () => this.scheduleImmediateSave());
         });
     }
 
     /**
      * Schedule an immediate save (debounced)
      */
-    scheduleImediateSave() {
+    scheduleImmediateSave() {
         const now = Date.now();
         if (now - this.lastSaveTime > 1000) { // Debounce to max once per second
             setTimeout(() => this.performAutosave(), 100);
         }
+    }
+
+    // Keep old method name for compatibility
+    scheduleImediateSave() {
+        return this.scheduleImmediateSave();
     }
 
     /**
@@ -327,6 +332,9 @@ class ComprehensiveIntegration {
                 }
             };
 
+            // Set as current character first
+            window.comprehensiveCharacterSave.setCurrentCharacter(newCharacterId);
+
             // Clear current UI to defaults
             this.clearUIToDefaults();
 
@@ -350,10 +358,7 @@ class ComprehensiveIntegration {
                 }
             }
 
-            // Set as current character
-            window.comprehensiveCharacterSave.setCurrentCharacter(newCharacterId);
-
-            // Save the new character
+            // Save the new character with current state
             const success = window.comprehensiveCharacterSave.saveCharacter(newCharacterId);
             
             if (success) {

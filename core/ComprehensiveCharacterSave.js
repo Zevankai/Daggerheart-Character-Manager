@@ -520,18 +520,38 @@ class ComprehensiveCharacterSave {
 
         try {
             // Restore in specific order to avoid conflicts
+            console.log('📝 Restoring basic info...');
             await this.restoreBasicInfo(characterData.basicInfo);
+            
+            console.log('🎨 Restoring appearance...');
             await this.restoreAppearance(characterData.appearance);
+            
+            console.log('📊 Restoring stats...');
             await this.restoreStats(characterData.stats);
+            
+            console.log('💾 Restoring localStorage...');
             await this.restoreLocalStorage(characterData.localStorage);
+            
+            console.log('⭕ Restoring trackers...');
             await this.restoreTrackers(characterData.trackers);
+            
+            console.log('🎒 Restoring equipment...');
             await this.restoreEquipment(characterData.equipment);
+            
+            console.log('📋 Restoring character sheet...');
             await this.restoreCharacterSheet(characterData.characterSheet);
+            
+            console.log('📐 Restoring layout...');
             await this.restoreLayout(characterData.layout);
+            
+            console.log('⚙️ Restoring UI preferences...');
             await this.restoreUIPreferences(characterData.uiPreferences);
+            
+            console.log('🎨 Restoring customizations...');
             await this.restoreCustomizations(characterData.customizations);
 
             // Refresh all systems
+            console.log('🔄 Refreshing all systems...');
             this.refreshAllSystems();
 
             console.log('✅ Character state restoration complete');
@@ -685,8 +705,18 @@ class ComprehensiveCharacterSave {
      * Restore individual circle tracker
      */
     restoreCircleTracker(type, trackerData) {
+        console.log(`🔵 Restoring ${type} tracker:`, trackerData);
+        
         const tracker = document.querySelector(`#${type}-tracker`);
-        if (!tracker || !trackerData.circles) return;
+        if (!tracker) {
+            console.warn(`⚠️ Tracker element not found: #${type}-tracker`);
+            return;
+        }
+        
+        if (!trackerData.circles || trackerData.circles.length === 0) {
+            console.warn(`⚠️ No circle data for ${type} tracker`);
+            return;
+        }
 
         // Clear existing circles
         tracker.innerHTML = '';
@@ -696,24 +726,47 @@ class ComprehensiveCharacterSave {
             const circle = document.createElement('div');
             circle.className = circleData.classes.join(' ');
             if (circleData.style) circle.setAttribute('style', circleData.style);
+            
+            // Add click handlers for circles
+            circle.addEventListener('click', function() {
+                if (window[`toggle${type.charAt(0).toUpperCase() + type.slice(1)}Circle`]) {
+                    window[`toggle${type.charAt(0).toUpperCase() + type.slice(1)}Circle`](index);
+                }
+            });
+            
             tracker.appendChild(circle);
+            console.log(`✅ Restored ${type} circle ${index}:`, circleData.classes);
         });
 
         // Restore localStorage data
         if (trackerData.localStorageData) {
             localStorage.setItem(`zevi-${type}-circles`, JSON.stringify(trackerData.localStorageData));
+            console.log(`💾 Restored ${type} localStorage:`, trackerData.localStorageData);
         }
         if (trackerData.current !== undefined) {
             localStorage.setItem(`zevi-${type}-current`, trackerData.current.toString());
+            console.log(`📊 Restored ${type} current:`, trackerData.current);
         }
+        
+        console.log(`✅ ${type} tracker restoration complete`);
     }
 
     /**
      * Restore hope tracker
      */
     restoreHopeTracker(hopeData) {
+        console.log('🌟 Restoring hope tracker:', hopeData);
+        
         const tracker = document.querySelector('#hope-tracker');
-        if (!tracker || !hopeData.circles) return;
+        if (!tracker) {
+            console.warn('⚠️ Hope tracker element not found');
+            return;
+        }
+        
+        if (!hopeData.circles || hopeData.circles.length === 0) {
+            console.warn('⚠️ No hope circle data');
+            return;
+        }
 
         // Clear existing circles
         tracker.innerHTML = '';
@@ -723,13 +776,25 @@ class ComprehensiveCharacterSave {
             const circle = document.createElement('div');
             circle.className = circleData.classes.join(' ');
             if (circleData.style) circle.setAttribute('style', circleData.style);
+            
+            // Add click handlers for hope circles
+            circle.addEventListener('click', function() {
+                if (window.toggleHopeCircle) {
+                    window.toggleHopeCircle(index);
+                }
+            });
+            
             tracker.appendChild(circle);
+            console.log(`✅ Restored hope circle ${index}:`, circleData.classes);
         });
 
         // Restore localStorage data
         if (hopeData.localStorageData) {
             localStorage.setItem('zevi-hope', JSON.stringify(hopeData.localStorageData));
+            console.log('💾 Restored hope localStorage:', hopeData.localStorageData);
         }
+        
+        console.log('✅ Hope tracker restoration complete');
     }
 
     /**
@@ -989,14 +1054,27 @@ class ComprehensiveCharacterSave {
             const savedData = localStorage.getItem(saveKey);
             
             if (!savedData) {
-                console.warn(`⚠️ No saved data found for character ${characterId}`);
-                return false;
+                console.warn(`⚠️ No saved data found for character ${characterId}, creating default save`);
+                
+                // Set as current character first
+                this.setCurrentCharacter(characterId);
+                
+                // Create a default save with current UI state
+                const defaultData = this.captureCompleteCharacterState();
+                localStorage.setItem(saveKey, JSON.stringify(defaultData));
+                
+                console.log(`📝 Created default save for character ${characterId}`);
+                return true;
             }
 
             const characterData = JSON.parse(savedData);
+            
+            // Set as current character first
+            this.setCurrentCharacter(characterId);
+            
+            // Restore the character state
             await this.restoreCompleteCharacterState(characterData);
             
-            this.setCurrentCharacter(characterId);
             console.log(`📂 Character ${characterId} loaded successfully`);
             return true;
         } catch (error) {

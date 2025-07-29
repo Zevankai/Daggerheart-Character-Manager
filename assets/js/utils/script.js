@@ -31,13 +31,42 @@ function debugCharacterData() {
 // Make debug function globally available
 window.debugCharacterData = debugCharacterData;
 
-// Image upload is now handled by AppController
+// Image upload with comprehensive save system
 function uploadCharacterImage(event) {
-    if (window.app && window.app.initialized) {
-        window.app.handleImageUpload(event);
-    } else {
-        console.warn('App not initialized, cannot upload image');
-    }
+    const file = event.target.files[0];
+    if (!file) return;
+
+    console.log('📸 Uploading character image...');
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const imageUrl = e.target.result;
+        
+        // Update the character image display
+        const charImage = document.querySelector('#charImage');
+        const charPlaceholder = document.querySelector('#charPlaceholder');
+        
+        if (charImage && charPlaceholder) {
+            charImage.src = imageUrl;
+            charImage.style.display = 'block';
+            charPlaceholder.style.display = 'none';
+        }
+
+        console.log('✅ Character image updated');
+
+        // Trigger immediate save if comprehensive system is available
+        if (window.comprehensiveIntegration && window.comprehensiveIntegration.isInitialized) {
+            setTimeout(() => {
+                window.comprehensiveIntegration.scheduleImmediateSave();
+                console.log('💾 Triggered save after image upload');
+            }, 500);
+        } else if (window.app && window.app.initialized) {
+            // Fallback to old system
+            window.app.handleImageUpload(event);
+        }
+    };
+
+    reader.readAsDataURL(file);
 }
 
 function uploadBackground(event) {
