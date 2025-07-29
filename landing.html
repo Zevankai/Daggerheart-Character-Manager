@@ -69,5 +69,59 @@
     </div>
 
     <script src="characterManager.js"></script>
+    <script>
+        // Debug logging for landing page
+        console.log('=== LANDING.HTML: Page loaded ===');
+        console.log('Current pathname:', window.location.pathname);
+        
+        // Check for debug parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const clearStorage = urlParams.get('clear');
+        
+        if (clearStorage) {
+            console.log('CLEAR STORAGE: Clearing all ZEVI data from landing page');
+            // Clear all ZEVI related data
+            const keys = Object.keys(localStorage);
+            keys.forEach(key => {
+                if (key.startsWith('zevi-')) {
+                    localStorage.removeItem(key);
+                }
+            });
+            sessionStorage.removeItem('zevi-redirect-guard');
+            console.log('Storage cleared from landing page');
+        }
+        
+        // Log all localStorage and sessionStorage contents
+        console.log('=== LOCALSTORAGE CONTENTS ===');
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            const value = localStorage.getItem(key);
+            console.log(key + ':', value);
+        }
+        
+        console.log('=== SESSIONSTORAGE CONTENTS ===');
+        for (let i = 0; i < sessionStorage.length; i++) {
+            const key = sessionStorage.key(i);
+            const value = sessionStorage.getItem(key);
+            console.log(key + ':', value);
+        }
+        
+        // Log specific ZEVI keys
+        const zeviKeys = [
+            'zevi-current-character-id',
+            'zevi-characters',
+            'zevi-equipment',
+            'zevi-journal',
+            'zevi-experiences',
+            'zevi-hope',
+            'zevi-downtime'
+        ];
+        
+        console.log('=== SPECIFIC ZEVI KEYS ===');
+        zeviKeys.forEach(key => {
+            const value = localStorage.getItem(key);
+            console.log(key + ':', value || '(not set)');
+        });
+    </script>
 </body>
 </html>

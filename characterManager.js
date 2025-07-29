@@ -199,45 +199,67 @@ class CharacterManager {
 
   // Initialize event listeners
   initializeEventListeners() {
-      // Check if user has existing characters on page load
-      document.addEventListener('DOMContentLoaded', () => {
-          this.checkFirstTimeUser();
-      });
+    // Check if user has existing characters on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('=== CHARACTER MANAGER: DOMContentLoaded called ===');
+      // Only run checkFirstTimeUser on landing page, not on index page
+      if (window.location.pathname.includes('landing.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/')) {
+        console.log('On landing page or root, running checkFirstTimeUser');
+        this.checkFirstTimeUser();
+      } else {
+        console.log('Not on landing page, skipping checkFirstTimeUser');
+      }
+    });
 
-      // Handle page visibility change to save current character
-      document.addEventListener('visibilitychange', () => {
-          if (document.hidden && this.currentCharacter) {
-              this.saveCharacterData(this.currentCharacter);
-          }
-      });
+    // Handle page visibility change to save current character
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && this.currentCharacter) {
+        this.saveCharacterData(this.currentCharacter);
+      }
+    });
 
-      // Handle page unload to save current character
-      window.addEventListener('beforeunload', () => {
-          if (this.currentCharacter) {
-              this.saveCharacterData(this.currentCharacter);
-          }
-      });
+    // Handle page unload to save current character
+    window.addEventListener('beforeunload', () => {
+      if (this.currentCharacter) {
+        this.saveCharacterData(this.currentCharacter);
+      }
+    });
   }
 
   // Check if this is a first-time user or if they have characters
   checkFirstTimeUser() {
+    console.log('=== CHARACTER MANAGER: checkFirstTimeUser called ===');
+    console.log('Current pathname:', window.location.pathname);
+    
     // Add guard to prevent infinite redirects
     const redirectGuard = sessionStorage.getItem('zevi-redirect-guard');
+    console.log('Redirect guard in character manager:', redirectGuard);
+    
     if (redirectGuard && parseInt(redirectGuard) > Date.now() - 5000) {
       console.warn('Redirect guard active in character manager - skipping auto-redirect');
+      console.log('Guard time:', parseInt(redirectGuard), 'Current time:', Date.now(), 'Diff:', Date.now() - parseInt(redirectGuard));
       return;
     }
 
     const hasCharacters = this.characters.length > 0;
     const currentCharacterId = localStorage.getItem('zevi-current-character-id');
     
+    console.log('Has characters:', hasCharacters);
+    console.log('Current character ID:', currentCharacterId);
+    console.log('Characters array:', this.characters);
+    
     if (hasCharacters && currentCharacterId) {
       // Try to load the last character automatically
       const lastCharacter = this.getCharacter(currentCharacterId);
+      console.log('Last character lookup result:', lastCharacter);
+      
       if (lastCharacter) {
         // Only auto-redirect if we're on the landing page
         if (window.location.pathname.includes('landing.html')) {
+          console.log('On landing page, attempting auto-redirect to character');
           this.loadCharacterAndRedirect(lastCharacter);
+        } else {
+          console.log('Not on landing page, skipping auto-redirect');
         }
         return;
       } else {
@@ -247,8 +269,11 @@ class CharacterManager {
       }
     }
     
+    console.log('No valid character found or no characters exist');
+    
     // If no valid character or first time, disable load button if no characters
     if (!hasCharacters) {
+      console.log('No characters exist, disabling load button');
       const loadBtn = document.getElementById('loadCharacterCard');
       if (loadBtn) {
         loadBtn.style.opacity = '0.6';
@@ -275,11 +300,17 @@ class CharacterManager {
 
   // Load character and redirect to main app
   loadCharacterAndRedirect(character) {
+    console.log('=== CHARACTER MANAGER: loadCharacterAndRedirect called ===');
+    console.log('Character to load:', character);
+    
     if (this.loadCharacterData(character)) {
+      console.log('Character data loaded successfully, redirecting to index.html');
       // Set redirect guard before redirecting
       sessionStorage.setItem('zevi-redirect-guard', Date.now().toString());
+      console.log('Set redirect guard before redirect:', Date.now().toString());
       window.location.href = 'index.html';
     } else {
+      console.error('Failed to load character data');
       alert('Error loading character data. Please try again.');
     }
   }

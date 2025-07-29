@@ -460,16 +460,16 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
- <script src="hpStress.js"></script>
- <script src="hope.js"></script>
- <script src="script.js"></script>
- <script src="downtime.js"></script>
- <script src="journal.js"></script>
- <script src="experiences.js"></script>
- <script src="details.js"></script>
- <script src="settings.js"></script>
- <script src="equipment.js"></script>
- <script src="characterManager.js"></script>
+<script src="characterManager.js"></script>
+<script src="hpStress.js"></script>
+<script src="hope.js"></script>
+<script src="script.js"></script>
+<script src="downtime.js"></script>
+<script src="journal.js"></script>
+<script src="experiences.js"></script>
+<script src="details.js"></script>
+<script src="settings.js"></script>
+<script src="equipment.js"></script>
  <script>
   // Initialize character management
   function goToCharacterSelection() {
@@ -488,46 +488,112 @@
     }
   }, 30000); // Save every 30 seconds
   
-  // Check if user has a current character loaded
-  document.addEventListener('DOMContentLoaded', () => {
+  // Flag to prevent multiple initializations
+  let indexPageInitialized = false;
+  
+  // Character loading logic for index page
+  function initializeIndexPage() {
+    if (indexPageInitialized) {
+      console.log('Index page already initialized, skipping...');
+      return;
+    }
+    
+    indexPageInitialized = true;
+    console.log('=== INDEX.HTML: Initializing page ===');
+    
+    // Check for debug parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const debugMode = urlParams.get('debug');
+    const clearStorage = urlParams.get('clear');
+    
+    if (debugMode) {
+      console.log('DEBUG MODE: Detailed logging enabled');
+    }
+    
+    if (clearStorage) {
+      console.log('CLEAR STORAGE: Clearing all ZEVI data');
+      // Clear all ZEVI related data
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key.startsWith('zevi-')) {
+          localStorage.removeItem(key);
+        }
+      });
+      sessionStorage.removeItem('zevi-redirect-guard');
+      console.log('Storage cleared, staying on index page');
+      return; // Stay on this page
+    }
+    
     // Add a guard to prevent infinite redirects
     const redirectGuard = sessionStorage.getItem('zevi-redirect-guard');
+    console.log('Redirect guard value:', redirectGuard);
+    console.log('Current time:', Date.now());
+    
     if (redirectGuard && parseInt(redirectGuard) > Date.now() - 5000) {
       console.warn('Redirect guard active - preventing potential infinite loop');
+      console.log('Guard time:', parseInt(redirectGuard), 'Current time:', Date.now(), 'Diff:', Date.now() - parseInt(redirectGuard));
       return;
     }
 
     const currentCharacterId = localStorage.getItem('zevi-current-character-id');
+    console.log('Current character ID:', currentCharacterId);
+    
     if (!currentCharacterId) {
+      console.log('No character ID found, redirecting to landing page');
       // Set redirect guard before redirecting
       sessionStorage.setItem('zevi-redirect-guard', Date.now().toString());
+      console.log('Set redirect guard:', Date.now().toString());
       // No character loaded, redirect to landing page
       window.location.href = 'landing.html';
     } else {
+      console.log('Character ID found, checking character manager...');
       // Wait for character manager to be ready
+      let attempts = 0;
       const checkCharacterManager = () => {
+        attempts++;
+        console.log('Checking character manager, attempt:', attempts);
+        
         if (window.characterManager) {
+          console.log('Character manager found');
           // Set the current character for the character manager
           const character = window.characterManager.getCharacter(currentCharacterId);
+          console.log('Character lookup result:', character);
+          
           if (character) {
+            console.log('Character found successfully:', character.name);
             window.characterManager.currentCharacter = character;
             // Clear redirect guard on successful load
             sessionStorage.removeItem('zevi-redirect-guard');
+            console.log('Cleared redirect guard - character loaded successfully');
           } else {
-            console.error('Character not found:', currentCharacterId);
+            console.error('Character not found for ID:', currentCharacterId);
             // Character ID exists but character not found - clear invalid ID and redirect
             localStorage.removeItem('zevi-current-character-id');
             sessionStorage.setItem('zevi-redirect-guard', Date.now().toString());
+            console.log('Cleared invalid character ID and set redirect guard');
             window.location.href = 'landing.html';
           }
         } else {
-          // Wait a bit longer for character manager to load
-          setTimeout(checkCharacterManager, 100);
+          console.log('Character manager not ready, attempt:', attempts);
+          if (attempts < 50) { // Maximum 5 seconds of waiting
+            // Wait a bit longer for character manager to load
+            setTimeout(checkCharacterManager, 100);
+          } else {
+            console.error('Character manager failed to load after 5 seconds');
+            sessionStorage.setItem('zevi-redirect-guard', Date.now().toString());
+            window.location.href = 'landing.html';
+          }
         }
       };
       
       checkCharacterManager();
     }
+  }
+  
+  // Check if user has a current character loaded
+  document.addEventListener('DOMContentLoaded', () => {
+    // Short delay to ensure character manager is loaded
+    setTimeout(initializeIndexPage, 50);
   });
  </script>
 </html>

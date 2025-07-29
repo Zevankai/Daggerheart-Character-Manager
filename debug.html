@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug ZEVI Character Sheet</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        button { margin: 5px; padding: 10px; }
+        .storage-info { background: #f0f0f0; padding: 10px; margin: 10px 0; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>ZEVI Character Sheet Debug</h1>
+    
+    <div class="section">
+        <h2>Storage Management</h2>
+        <button onclick="clearAllStorage()">Clear All Storage</button>
+        <button onclick="clearSessionStorage()">Clear Session Storage Only</button>
+        <button onclick="clearZeviData()">Clear ZEVI Data Only</button>
+        <button onclick="refreshStorageInfo()">Refresh Storage Info</button>
+    </div>
+    
+    <div class="section">
+        <h2>Navigation</h2>
+        <button onclick="goToLanding()">Go to Landing Page</button>
+        <button onclick="goToMain()">Go to Main App</button>
+    </div>
+    
+    <div class="section">
+        <h2>Current Storage Contents</h2>
+        <div id="storageInfo" class="storage-info">
+            Loading...
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>Test Actions</h2>
+        <button onclick="testCreateCharacter()">Test: Create Character and Load</button>
+        <button onclick="testClearAndStart()">Test: Clear All & Start Fresh</button>
+    </div>
+
+    <script>
+        function clearAllStorage() {
+            localStorage.clear();
+            sessionStorage.clear();
+            console.log('All storage cleared');
+            refreshStorageInfo();
+        }
+        
+        function clearSessionStorage() {
+            sessionStorage.clear();
+            console.log('Session storage cleared');
+            refreshStorageInfo();
+        }
+        
+        function clearZeviData() {
+            const keys = Object.keys(localStorage);
+            keys.forEach(key => {
+                if (key.startsWith('zevi-')) {
+                    localStorage.removeItem(key);
+                }
+            });
+            
+            const sessionKeys = Object.keys(sessionStorage);
+            sessionKeys.forEach(key => {
+                if (key.startsWith('zevi-')) {
+                    sessionStorage.removeItem(key);
+                }
+            });
+            
+            console.log('ZEVI data cleared');
+            refreshStorageInfo();
+        }
+        
+        function refreshStorageInfo() {
+            const storageDiv = document.getElementById('storageInfo');
+            let info = '<h3>localStorage:</h3><pre>';
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                info += key + ': ' + (value.length > 100 ? value.substring(0, 100) + '...' : value) + '\n';
+            }
+            
+            info += '</pre><h3>sessionStorage:</h3><pre>';
+            
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                const value = sessionStorage.getItem(key);
+                info += key + ': ' + value + '\n';
+            }
+            
+            info += '</pre>';
+            storageDiv.innerHTML = info;
+        }
+        
+        function goToLanding() {
+            window.location.href = 'landing.html';
+        }
+        
+        function goToMain() {
+            window.location.href = 'index.html';
+        }
+        
+        function testCreateCharacter() {
+            // Create a test character
+            const testCharacter = {
+                id: Date.now().toString(),
+                name: 'Test Character',
+                subtitle: 'Test Subtitle',
+                level: 1,
+                createdAt: new Date().toISOString(),
+                lastModified: new Date().toISOString()
+            };
+            
+            // Store it
+            localStorage.setItem('zevi-characters', JSON.stringify([testCharacter]));
+            localStorage.setItem('zevi-current-character-id', testCharacter.id);
+            
+            console.log('Test character created:', testCharacter);
+            refreshStorageInfo();
+            
+            alert('Test character created. Try navigating to landing or main page.');
+        }
+        
+        function testClearAndStart() {
+            clearAllStorage();
+            goToLanding();
+        }
+        
+        // Load storage info on page load
+        document.addEventListener('DOMContentLoaded', refreshStorageInfo);
+    </script>
+</body>
+</html>
