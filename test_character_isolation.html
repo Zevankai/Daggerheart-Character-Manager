@@ -21,6 +21,7 @@
         <h2>Test Controls</h2>
         <button onclick="createTestCharacters()">Create Test Characters</button>
         <button onclick="testCharacterSwitching()">Test Character Switching</button>
+        <button onclick="testProxySystem()">Test Proxy System</button>
         <button onclick="displayStorageState()">Display Storage State</button>
         <button onclick="clearAllData()">Clear All Data</button>
     </div>
@@ -35,6 +36,7 @@
         <div id="storageDisplay" class="storage-display"></div>
     </div>
 
+    <script src="characterStorageProxy.js"></script>
     <script src="characterManager.js"></script>
     <script>
         let testResults = [];
@@ -174,8 +176,72 @@
             storageDiv.textContent = output;
         }
 
+        function testProxySystem() {
+            addTestResult('Testing proxy system...');
+            
+            try {
+                // Check if proxy is active
+                if (!window.characterStorageProxy) {
+                    addTestResult('Proxy system not available!', false);
+                    return;
+                }
+                
+                const debugInfo = window.characterStorageProxy.getDebugInfo();
+                addTestResult(`Proxy active: ${debugInfo.isActive}, Current character: ${debugInfo.currentCharacterId || 'None'}`);
+                
+                // Create test characters if none exist
+                if (window.characterManager.characters.length < 2) {
+                    createTestCharacters();
+                    return; // Test will continue after characters are created
+                }
+                
+                const char1 = window.characterManager.characters[0];
+                const char2 = window.characterManager.characters[1];
+                
+                // Test proxy redirection
+                window.characterStorageProxy.loadCharacterContext(char1.id);
+                localStorage.setItem('zevi-hope', '10');
+                localStorage.setItem('zevi-equipment', JSON.stringify([{name: 'Proxy Test Sword'}]));
+                
+                window.characterStorageProxy.loadCharacterContext(char2.id);
+                localStorage.setItem('zevi-hope', '20');
+                localStorage.setItem('zevi-equipment', JSON.stringify([{name: 'Proxy Test Staff'}]));
+                
+                // Switch back and verify isolation
+                window.characterStorageProxy.loadCharacterContext(char1.id);
+                const char1Hope = localStorage.getItem('zevi-hope');
+                const char1Equipment = localStorage.getItem('zevi-equipment');
+                
+                window.characterStorageProxy.loadCharacterContext(char2.id);
+                const char2Hope = localStorage.getItem('zevi-hope');
+                const char2Equipment = localStorage.getItem('zevi-equipment');
+                
+                if (char1Hope === '10' && char2Hope === '20') {
+                    addTestResult('SUCCESS: Proxy system correctly isolates hope values!', true);
+                } else {
+                    addTestResult(`FAILURE: Hope values not isolated. Char1: ${char1Hope}, Char2: ${char2Hope}`, false);
+                }
+                
+                if (char1Equipment.includes('Sword') && char2Equipment.includes('Staff')) {
+                    addTestResult('SUCCESS: Proxy system correctly isolates equipment!', true);
+                } else {
+                    addTestResult('FAILURE: Equipment not properly isolated', false);
+                }
+                
+                displayStorageState();
+                
+            } catch (error) {
+                addTestResult(`Error testing proxy system: ${error.message}`, false);
+            }
+        }
+
         function clearAllData() {
             addTestResult('Clearing all test data...');
+            
+            // Temporarily deactivate proxy to clear everything
+            if (window.characterStorageProxy) {
+                window.characterStorageProxy.deactivate();
+            }
             
             // Clear all ZEVI-related localStorage
             const keys = Object.keys(localStorage);
@@ -189,6 +255,11 @@
             window.characterManager.characters = [];
             window.characterManager.currentCharacter = null;
             window.characterManager.saveCharacters();
+            
+            // Reactivate proxy
+            if (window.characterStorageProxy) {
+                window.characterStorageProxy.activate();
+            }
             
             addTestResult('All test data cleared');
             displayStorageState();

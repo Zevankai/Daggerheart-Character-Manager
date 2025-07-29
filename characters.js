@@ -331,7 +331,10 @@ class CharactersPageManager {
         console.log('Creating character with data:', characterData);
         const newCharacter = window.characterManager.createCharacter(characterData);
         
-        console.log('Character created successfully:', newCharacter.name);
+        console.log('Character created successfully:', newCharacter.name, 'ID:', newCharacter.id);
+        
+        // Ensure the character is properly saved
+        window.characterManager.saveCharacters();
         
         // Close modal and refresh list
         console.log('Closing modal...');
@@ -339,6 +342,12 @@ class CharactersPageManager {
         
         console.log('Refreshing character list...');
         this.refreshCharactersList();
+        
+        // Auto-load the new character if we're on the main page
+        if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
+            console.log('Auto-loading new character...');
+            this.loadCharacter(newCharacter.id);
+        }
         
         console.log('=== CREATE CHARACTER: Process complete ===');
     }

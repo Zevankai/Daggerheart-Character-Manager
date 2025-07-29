@@ -5,6 +5,25 @@ function uploadCharacterImage(event) {
       const img = document.getElementById("charImage");
       img.src = reader.result;
       document.getElementById("charPlaceholder").style.display = 'none';
+      
+      // IMPORTANT: Save the image to the current character
+      if (window.characterManager && window.characterManager.currentCharacter) {
+          console.log('Saving character image to current character');
+          window.characterManager.currentCharacter.imageUrl = reader.result;
+          
+          // Update the character metadata
+          window.characterManager.updateCharacterMetadata(
+              window.characterManager.currentCharacter.id, 
+              { 
+                  imageUrl: reader.result,
+                  lastModified: new Date().toISOString()
+              }
+          );
+          
+          console.log('Character image saved successfully');
+      } else {
+          console.warn('No current character to save image to');
+      }
     };
     reader.readAsDataURL(event.target.files[0]);
 }

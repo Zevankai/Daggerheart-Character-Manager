@@ -63,8 +63,14 @@ class CharacterManager {
   deleteCharacter(characterId) {
       const index = this.characters.findIndex(char => char.id === characterId);
       if (index !== -1) {
-          // Also clear the individual character storage
-          this.clearCharacterStorage(this.characters[index]);
+          // Use proxy system to clear character data
+          if (window.characterStorageProxy) {
+              window.characterStorageProxy.clearCharacterData(characterId);
+          } else {
+              // Fallback to manual clearing
+              this.clearCharacterStorage(this.characters[index]);
+          }
+          
           this.characters.splice(index, 1);
           this.saveCharacters();
           return true;
@@ -100,18 +106,19 @@ class CharacterManager {
               console.log('Current character:', this.currentCharacter.name, 'ID:', this.currentCharacter.id);
               console.log('New character:', character.name, 'ID:', character.id);
               
-              // Save current state to the previous character's storage
-              this.saveCharacterData(this.currentCharacter);
-              
-              // IMPORTANT: Clear all global character data before loading new character
-              this.clearGlobalCharacterData();
+              // The proxy system will handle saving automatically
+              console.log('Proxy system will handle character data isolation automatically');
           }
           
-          // Load all character-specific data and set as current global data
-          this.loadCharacterSpecificData(character.id);
+          // Use the proxy system to switch character context
+          if (window.characterStorageProxy) {
+              window.characterStorageProxy.loadCharacterContext(character.id);
+          } else {
+              // Fallback to manual system
+              localStorage.setItem('zevi-current-character-id', character.id);
+          }
 
           // Set current character
-          localStorage.setItem('zevi-current-character-id', character.id);
           this.currentCharacter = character;
           
           // Populate UI fields with character data
@@ -305,18 +312,23 @@ class CharacterManager {
           evasionInput.value = character.evasion;
       }
 
-      // Character image
+      // Character image - IMPORTANT: Always update the character object with current imageUrl
       const charImage = document.getElementById('charImage');
       const charPlaceholder = document.getElementById('charPlaceholder');
+      
+      console.log('Character image URL:', character.imageUrl);
+      
       if (character.imageUrl && charImage) {
           charImage.src = character.imageUrl;
           charImage.style.display = 'block';
           if (charPlaceholder) {
               charPlaceholder.style.display = 'none';
           }
+          console.log('Character image set successfully');
       } else if (charImage && charPlaceholder) {
           charImage.style.display = 'none';
           charPlaceholder.style.display = 'flex';
+          console.log('No character image - showing placeholder');
       }
 
       // HP and Stress values will be handled by their respective initialization functions
@@ -783,18 +795,6 @@ function loadCharacter(characterId) {
 function createNewCharacter() {
   console.log('=== CREATE NEW CHARACTER: Starting fresh character creation ===');
   
-  // Save current character data if one exists
-  if (characterManager.currentCharacter) {
-      console.log('Saving current character before creating new one');
-      characterManager.saveCharacterData(characterManager.currentCharacter);
-  }
-  
-  // Clear all global character data to ensure fresh start
-  characterManager.clearGlobalCharacterData();
-  
-  // Clear current character ID
-  localStorage.removeItem('zevi-current-character-id');
-  
   // Create a new character entry
   const newCharacter = characterManager.createCharacter({
       name: 'New Character',
@@ -803,6 +803,9 @@ function createNewCharacter() {
   });
   
   console.log('New character created:', newCharacter.name, 'ID:', newCharacter.id);
+  
+  // The proxy system will automatically handle data isolation
+  // when we switch to the new character context
   
   // Load the new character and redirect
   characterManager.loadCharacterAndRedirect(newCharacter);
