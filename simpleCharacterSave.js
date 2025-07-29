@@ -49,11 +49,20 @@ class SimpleCharacterSave {
         statusDiv.id = 'simpleSaveStatus';
         statusDiv.className = 'simple-save-status';
         
+        // Create cleanup button
+        const cleanupBtn = document.createElement('button');
+        cleanupBtn.id = 'cleanupBtn';
+        cleanupBtn.className = 'cleanup-btn';
+        cleanupBtn.innerHTML = '🧹 Free Storage';
+        cleanupBtn.onclick = () => this.performCleanup();
+        cleanupBtn.title = 'Clean up old data to free storage space';
+        
         // Add to name box at the top
         nameBox.insertBefore(saveBtn, nameBox.firstChild);
+        nameBox.insertBefore(cleanupBtn, nameBox.firstChild);
         nameBox.insertBefore(statusDiv, nameBox.firstChild);
         
-        console.log('Save button added to page');
+        console.log('Save and cleanup buttons added to page');
     }
     
     // Save current character data
@@ -67,21 +76,36 @@ class SimpleCharacterSave {
         this.showStatus('Saving...', 'saving');
         
         try {
-            // Collect ALL data from the page
+            // Clean up old data first to free space
+            this.cleanupOldData();
+            
+            // Collect essential data from the page
             const characterData = this.collectAllData();
             
-            console.log('Collected data:', characterData);
+            console.log('Collected data size:', JSON.stringify(characterData).length, 'characters');
+            
+            // Check if data is too large
+            const dataString = JSON.stringify(characterData);
+            if (dataString.length > 1000000) { // 1MB limit
+                throw new Error('Character data too large. Try removing some journal entries or equipment.');
+            }
             
             // Save to localStorage with character-specific key
             const saveKey = `simple-character-${this.currentCharacterId}`;
-            localStorage.setItem(saveKey, JSON.stringify(characterData));
+            localStorage.setItem(saveKey, dataString);
             
             console.log('Data saved to:', saveKey);
             this.showStatus('✅ SAVED!', 'success');
             
         } catch (error) {
             console.error('Save failed:', error);
-            this.showStatus('❌ Save failed: ' + error.message, 'error');
+            
+            if (error.name === 'QuotaExceededError' || error.message.includes('quota')) {
+                this.showStatus('❌ Storage full! Try: 1) Clear browser data, 2) Remove journal entries, 3) Remove equipment', 'error');
+                this.suggestCleanup();
+            } else {
+                this.showStatus('❌ Save failed: ' + error.message, 'error');
+            }
         }
     }
     
@@ -133,26 +157,63 @@ class SimpleCharacterSave {
         return element[property] || '';
     }
     
-    // Get current character image URL
+    // Get current character image URL (optimized to avoid large data URLs)
     getCurrentImageUrl() {
         const img = document.getElementById('charImage');
         if (img && img.src && !img.src.includes('placeholder')) {
+            // Don't save large data URLs to avoid quota issues
+            if (img.src.startsWith('data:') && img.src.length > 50000) {
+                console.log('Image too large for localStorage, skipping');
+                return '';
+            }
             return img.src;
         }
         return '';
     }
     
-    // Get all character-related localStorage data
+    // Get essential character-related localStorage data (optimized for size)
     getAllLocalStorageData() {
         const data = {};
-        const keys = Object.keys(localStorage);
         
-        keys.forEach(key => {
-            if (key.startsWith('zevi-') && 
-                key !== 'zevi-characters' && 
-                key !== 'zevi-current-character-id' &&
-                key !== 'zevi-character-directory') {
-                data[key] = localStorage.getItem(key);
+        // Only save essential character data, not everything
+        const essentialKeys = [
+            'zevi-equipment',
+            'zevi-journal-entries', 
+            'zevi-character-details',
+            'zevi-experiences',
+            'zevi-hope',
+            'zevi-max-hope',
+            'zevi-projects',
+            'zevi-hp-circles',
+            'zevi-stress-circles',
+            'zevi-armor-circles',
+            'zevi-minor-damage-value',
+            'zevi-major-damage-value',
+            'zevi-active-armor-count',
+            'zevi-total-armor-circles',
+            'zevi-evasion'
+        ];
+        
+        essentialKeys.forEach(key => {
+            const value = localStorage.getItem(key);
+            if (value) {
+                // Compress data if it's JSON
+                try {
+                    const parsed = JSON.parse(value);
+                    // Only save if it's not empty
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        data[key] = value;
+                    } else if (typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+                        data[key] = value;
+                    } else if (typeof parsed !== 'object') {
+                        data[key] = value;
+                    }
+                } catch {
+                    // Not JSON, save as is if not empty
+                    if (value.trim()) {
+                        data[key] = value;
+                    }
+                }
             }
         });
         
@@ -321,6 +382,84 @@ class SimpleCharacterSave {
         this.loadCharacterData(characterId);
     }
     
+    // Clean up old data to free storage space
+    cleanupOldData() {
+        try {
+            console.log('Cleaning up old data...');
+            
+            // Remove old character file system data
+            Object.keys(localStorage).forEach(key => {
+                if (key.startsWith('zevi-character-file-') || 
+                    key.startsWith('zevi-character-data-')) {
+                    localStorage.removeItem(key);
+                }
+            });
+            
+            console.log('Old data cleaned up');
+        } catch (error) {
+            console.error('Error cleaning up:', error);
+        }
+    }
+    
+    // Perform cleanup to free storage space
+    performCleanup() {
+        console.log('=== PERFORMING STORAGE CLEANUP ===');
+        this.showStatus('Cleaning up storage...', 'saving');
+        
+        try {
+            let itemsRemoved = 0;
+            let spaceFreed = 0;
+            
+            // Remove old character file system data
+            Object.keys(localStorage).forEach(key => {
+                if (key.startsWith('zevi-character-file-') || 
+                    key.startsWith('zevi-character-data-')) {
+                    const size = localStorage.getItem(key).length;
+                    localStorage.removeItem(key);
+                    itemsRemoved++;
+                    spaceFreed += size;
+                }
+            });
+            
+            console.log(`Cleanup complete: ${itemsRemoved} items removed, ${spaceFreed} characters freed`);
+            this.showStatus(`✅ Freed ${Math.round(spaceFreed/1000)}KB of storage!`, 'success');
+            
+        } catch (error) {
+            console.error('Cleanup failed:', error);
+            this.showStatus('❌ Cleanup failed: ' + error.message, 'error');
+        }
+    }
+    
+    // Suggest cleanup options to user
+    suggestCleanup() {
+        console.log('=== STORAGE CLEANUP SUGGESTIONS ===');
+        console.log('1. Click the "🧹 Free Storage" button');
+        console.log('2. Clear browser data: Settings > Privacy > Clear browsing data');
+        console.log('3. Remove journal entries you don\'t need');
+        console.log('4. Remove equipment items you don\'t need');
+        console.log('5. Use smaller character images');
+        console.log('6. Run: localStorage.clear() in console (WARNING: loses all data)');
+        
+        // Show storage usage
+        let totalSize = 0;
+        Object.keys(localStorage).forEach(key => {
+            totalSize += localStorage.getItem(key).length;
+        });
+        console.log('Total localStorage usage:', totalSize, 'characters');
+        
+        // Show largest items
+        const items = [];
+        Object.keys(localStorage).forEach(key => {
+            const size = localStorage.getItem(key).length;
+            items.push({ key, size });
+        });
+        items.sort((a, b) => b.size - a.size);
+        console.log('Largest localStorage items:');
+        items.slice(0, 10).forEach(item => {
+            console.log(`- ${item.key}: ${item.size} characters`);
+        });
+    }
+    
     // Debug function
     debug() {
         console.log('=== SIMPLE CHARACTER SAVE DEBUG ===');
@@ -332,16 +471,24 @@ class SimpleCharacterSave {
             const savedData = localStorage.getItem(saveKey);
             console.log('Saved data exists:', !!savedData);
             if (savedData) {
+                console.log('Saved data size:', savedData.length, 'characters');
                 console.log('Saved data:', JSON.parse(savedData));
             }
         }
         
+        // Show storage usage
+        let totalSize = 0;
         console.log('Current localStorage data:');
         Object.keys(localStorage).forEach(key => {
-            if (key.startsWith('zevi-')) {
-                console.log(`- ${key}:`, localStorage.getItem(key));
+            const value = localStorage.getItem(key);
+            const size = value.length;
+            totalSize += size;
+            if (key.startsWith('zevi-') || key.startsWith('simple-character-')) {
+                console.log(`- ${key}: ${size} characters`);
             }
         });
+        console.log('Total storage used:', totalSize, 'characters');
+        console.log('Storage limit typically: ~5,000,000 characters');
     }
 }
 
@@ -368,7 +515,7 @@ style.textContent = `
     cursor: pointer;
     font-size: 16px;
     font-weight: bold;
-    margin: 10px 0;
+    margin: 5px;
     transition: all 0.3s ease;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     width: 100%;
@@ -379,6 +526,28 @@ style.textContent = `
     background: linear-gradient(135deg, #45a049, #4CAF50);
     transform: translateY(-2px);
     box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+
+.cleanup-btn {
+    background: linear-gradient(135deg, #ff9800, #f57c00);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    margin: 5px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    width: 100%;
+    max-width: 150px;
+}
+
+.cleanup-btn:hover {
+    background: linear-gradient(135deg, #f57c00, #ff9800);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
 
 .simple-save-status {
@@ -394,6 +563,8 @@ style.textContent = `
 
 .simple-save-status.error {
     color: #f44336;
+    font-size: 12px;
+    line-height: 1.2;
 }
 
 .simple-save-status.saving {
