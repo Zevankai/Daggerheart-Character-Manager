@@ -3,21 +3,13 @@ let journalEntries = [];
 let currentFilterCategory = 'all'; // Default filter category
 
 function loadJournalEntries() {
-    if (window.JournalAdapter) {
-        journalEntries = window.JournalAdapter.getEntries();
-    } else {
-        // Fallback to old system
-        journalEntries = JSON.parse(localStorage.getItem('zevi-journal-entries')) || [];
-    }
+    // Load from localStorage
+    journalEntries = JSON.parse(localStorage.getItem('zevi-journal-entries')) || [];
 }
 
 function saveJournalEntries() {
-    if (window.JournalAdapter) {
-        window.JournalAdapter.saveEntries(journalEntries);
-    } else {
-        // Fallback to old system
-        localStorage.setItem('zevi-journal-entries', JSON.stringify(journalEntries));
-    }
+    // Save to localStorage
+    localStorage.setItem('zevi-journal-entries', JSON.stringify(journalEntries));
 }
 
 function renderJournalEntries() {

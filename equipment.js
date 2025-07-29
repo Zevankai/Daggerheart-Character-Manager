@@ -1476,58 +1476,28 @@ function closeModal(button) {
 }
 
 function saveEquipmentData() {
-    if (window.EquipmentAdapter) {
-        // Convert to the new format
-        const equipmentForStore = {
-            backpackType: equipmentData.selectedBag || 'Standard Backpack',
-            backpackEnabled: true,
-            items: equipmentData.items || [],
-            activeWeapons: equipmentData.activeWeapons || [],
-            activeArmor: equipmentData.activeArmor || []
-        };
-        window.EquipmentAdapter.saveEquipment(equipmentForStore);
-    } else {
-        // Fallback to old system
-        localStorage.setItem('zevi-equipment', JSON.stringify(equipmentData));
-    }
+    // Save to localStorage
+    localStorage.setItem('zevi-equipment', JSON.stringify(equipmentData));
 }
 
 function loadEquipmentData() {
     console.log('Loading equipment data...');
     
-    if (window.EquipmentAdapter) {
-        const saved = window.EquipmentAdapter.getEquipment();
-        console.log('Saved data from EquipmentAdapter:', saved);
-        
-        if (saved) {
-            // Convert from new format to old format for compatibility
-            const parsedData = {
-                selectedBag: saved.backpackType || 'Standard Backpack',
-                items: saved.items || [],
-                activeWeapons: saved.activeWeapons || [],
-                activeArmor: saved.activeArmor || []
-            };
-            console.log('Converted data for equipment system:', parsedData);
+    // Load from localStorage
+    const saved = localStorage.getItem('zevi-equipment');
+    console.log('Saved data from localStorage:', saved);
+    
+    if (saved) {
+        try {
+            const parsedData = JSON.parse(saved);
+            console.log('Parsed saved data:', parsedData);
             equipmentData = { ...equipmentData, ...parsedData };
             console.log('Equipment data after merge:', equipmentData);
+        } catch (error) {
+            console.error('Error parsing saved equipment data:', error);
         }
     } else {
-        // Fallback to old system
-        const saved = localStorage.getItem('zevi-equipment');
-        console.log('Saved data from localStorage:', saved);
-        
-        if (saved) {
-            try {
-                const parsedData = JSON.parse(saved);
-                console.log('Parsed saved data:', parsedData);
-                equipmentData = { ...equipmentData, ...parsedData };
-                console.log('Equipment data after merge:', equipmentData);
-            } catch (error) {
-                console.error('Error parsing saved equipment data:', error);
-            }
-        } else {
-            console.log('No saved equipment data found, using defaults');
-        }
+        console.log('No saved equipment data found, using defaults');
     }
     
     // Ensure all required properties exist (for backward compatibility)

@@ -18,41 +18,16 @@ let characterDetails = {
   }
 };
 
-// Load character details using adapter
+// Load character details from localStorage
 function loadCharacterDetails() {
-  if (window.DetailsAdapter) {
-    const loaded = window.DetailsAdapter.getDetails();
-    // Ensure the loaded data has the correct structure
-    characterDetails = {
-      personal: {
-        pronouns: loaded.personal?.pronouns || '',
-        nicknames: loaded.personal?.nicknames || '',
-        personality: loaded.personal?.personality || '',
-        moralCompass: loaded.personal?.moralCompass || ''
-      },
-      physical: {
-        eyeColor: loaded.physical?.eyeColor || '',
-        height: loaded.physical?.height || '',
-        build: loaded.physical?.build || '',
-        hairColor: loaded.physical?.hairColor || '',
-        skinTone: loaded.physical?.skinTone || '',
-        distinguishingFeatures: loaded.physical?.distinguishingFeatures || ''
-      }
-    };
-  } else {
-    // Fallback to old system
-    characterDetails = JSON.parse(localStorage.getItem('zevi-character-details')) || characterDetails;
-  }
+  // Load from localStorage
+  characterDetails = JSON.parse(localStorage.getItem('zevi-character-details')) || characterDetails;
 }
 
 // Saves the current state of character details
 function saveCharacterDetails() {
-  if (window.DetailsAdapter) {
-    window.DetailsAdapter.saveDetails(characterDetails);
-  } else {
-    // Fallback to old system
-    localStorage.setItem('zevi-character-details', JSON.stringify(characterDetails));
-  }
+  // Save to localStorage
+  localStorage.setItem('zevi-character-details', JSON.stringify(characterDetails));
 }
 
 // Initializes the details tab with input fields and loads saved data
