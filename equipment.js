@@ -824,66 +824,72 @@ function switchEquipmentSection(section) {
 // ===== ITEM MANAGEMENT =====
 function showAddItemModal(defaultType = 'weapon') {
     const modal = document.createElement('div');
-    modal.className = 'modal';
+    modal.className = 'modal-overlay';
     modal.innerHTML = `
-        <div class="modal-content">
-            <h3>Add New Item</h3>
-            <form id="add-item-form">
-                <div class="form-group">
-                    <label for="item-type">Item Type:</label>
-                    <select id="item-type" required>
-                        ${itemTypes.map(type => 
-                            `<option value="${type}" ${type === defaultType ? 'selected' : ''}>${type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ')}</option>`
-                        ).join('')}
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="item-name">Name:</label>
-                    <input type="text" id="item-name" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="item-description">Description (optional):</label>
-                    <textarea id="item-description" rows="3"></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="item-features">Features (optional):</label>
-                    <textarea id="item-features" rows="2"></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="item-dice">Dice Roll (optional):</label>
-                    <input type="text" id="item-dice" placeholder="e.g., 1d6, 2d8+3">
-                </div>
-                
-                <div class="form-group">
-                    <label for="item-ability">Associated Ability (optional):</label>
-                    <select id="item-ability">
-                        <option value="">None</option>
-                        ${abilities.map(ability => 
-                            `<option value="${ability}">${ability}</option>`
-                        ).join('')}
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="item-tags">Tags (optional):</label>
-                    <div class="tags-selection">
-                        ${additionalTags.map(tag => `
-                            <label class="tag-checkbox">
-                                <input type="checkbox" value="${tag}"> ${tag}
-                            </label>
-                        `).join('')}
+        <div class="modal character-modal">
+            <div class="modal-header">
+                <h3>Add New Item</h3>
+                <button type="button" class="modal-close-btn" onclick="closeModal(this)" title="Close">×</button>
+            </div>
+            
+            <div class="modal-content">
+                <form id="add-item-form" class="character-form">
+                    <div class="form-group">
+                        <label for="item-type">Item Type:</label>
+                        <select id="item-type" required>
+                            ${itemTypes.map(type => 
+                                `<option value="${type}" ${type === defaultType ? 'selected' : ''}>${type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ')}</option>`
+                            ).join('')}
+                        </select>
                     </div>
-                </div>
-                
-                <div class="modal-buttons">
-                    <button type="submit" class="confirm-btn">Add Item</button>
-                    <button type="button" class="cancel-btn" onclick="closeModal(this)">Cancel</button>
-                </div>
-            </form>
+                    
+                    <div class="form-group">
+                        <label for="item-name">Name:</label>
+                        <input type="text" id="item-name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="item-description">Description (optional):</label>
+                        <textarea id="item-description" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="item-features">Features (optional):</label>
+                        <textarea id="item-features" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="item-dice">Dice Roll (optional):</label>
+                        <input type="text" id="item-dice" placeholder="e.g., 1d6, 2d8+3">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="item-ability">Associated Ability (optional):</label>
+                        <select id="item-ability">
+                            <option value="">None</option>
+                            ${abilities.map(ability => 
+                                `<option value="${ability}">${ability}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="item-tags">Tags (optional):</label>
+                        <div class="tags-selection">
+                            ${additionalTags.map(tag => `
+                                <label class="tag-checkbox">
+                                    <input type="checkbox" value="${tag}"> ${tag}
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="modal-buttons">
+                        <button type="submit" class="button primary-btn">Add Item</button>
+                        <button type="button" class="button" onclick="closeModal(this)">Cancel</button>
+                    </div>
+                </form>
+            </div>
         </div>
     `;
     
@@ -893,7 +899,7 @@ function showAddItemModal(defaultType = 'weapon') {
     document.getElementById('add-item-form').addEventListener('submit', (e) => {
         e.preventDefault();
         addNewItem();
-        closeModal(modal.querySelector('.cancel-btn'));
+        closeModal(modal.querySelector('.modal-close-btn'));
     });
 }
 
@@ -1056,15 +1062,22 @@ function equipItem(type, index) {
 
 function showWeaponSlotModal(weapon) {
     const modal = document.createElement('div');
-    modal.className = 'modal';
+    modal.className = 'modal-overlay';
     modal.innerHTML = `
-        <div class="modal-content">
-            <h3>Equip Weapon: ${weapon.name}</h3>
-            <p>Choose weapon slot:</p>
+        <div class="modal small-modal">
+            <div class="modal-header">
+                <h3>Equip Weapon: ${weapon.name}</h3>
+                <button type="button" class="modal-close-btn" onclick="closeModal(this)" title="Close">×</button>
+            </div>
+            
+            <div class="modal-content">
+                <p>Choose weapon slot:</p>
+            </div>
+            
             <div class="modal-buttons">
-                <button onclick="equipWeaponToSlot('primaryWeapon', ${JSON.stringify(weapon).replace(/"/g, '&quot;')}); closeModal(this)" class="confirm-btn">Primary Weapon</button>
-                <button onclick="equipWeaponToSlot('secondaryWeapon', ${JSON.stringify(weapon).replace(/"/g, '&quot;')}); closeModal(this)" class="confirm-btn">Secondary Weapon</button>
-                <button onclick="closeModal(this)" class="cancel-btn">Cancel</button>
+                <button onclick="equipWeaponToSlot('primaryWeapon', ${JSON.stringify(weapon).replace(/"/g, '&quot;')}); closeModal(this)" class="button primary-btn">Primary Weapon</button>
+                <button onclick="equipWeaponToSlot('secondaryWeapon', ${JSON.stringify(weapon).replace(/"/g, '&quot;')}); closeModal(this)" class="button primary-btn">Secondary Weapon</button>
+                <button onclick="closeModal(this)" class="button">Cancel</button>
             </div>
         </div>
     `;
@@ -1104,46 +1117,52 @@ function editItem(category, index) {
     
     // Show edit modal with pre-filled values
     const modal = document.createElement('div');
-    modal.className = 'modal';
+    modal.className = 'modal-overlay';
     modal.innerHTML = `
-        <div class="modal-content">
-            <h3>Edit Item: ${item.name}</h3>
-            <form id="edit-item-form">
-                <div class="form-group">
-                    <label for="edit-item-name">Name:</label>
-                    <input type="text" id="edit-item-name" value="${item.name}" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="edit-item-description">Description (optional):</label>
-                    <textarea id="edit-item-description" rows="3">${item.description || ''}</textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="edit-item-features">Features (optional):</label>
-                    <textarea id="edit-item-features" rows="2">${item.features || ''}</textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="edit-item-dice">Dice Roll (optional):</label>
-                    <input type="text" id="edit-item-dice" value="${item.diceRoll || ''}" placeholder="e.g., 1d6, 2d8+3">
-                </div>
-                
-                <div class="form-group">
-                    <label for="edit-item-ability">Associated Ability (optional):</label>
-                    <select id="edit-item-ability">
-                        <option value="">None</option>
-                        ${abilities.map(ability => 
-                            `<option value="${ability}" ${item.ability === ability ? 'selected' : ''}>${ability}</option>`
-                        ).join('')}
-                    </select>
-                </div>
-                
-                <div class="modal-buttons">
-                    <button type="submit" class="confirm-btn">Save Changes</button>
-                    <button type="button" class="cancel-btn" onclick="closeModal(this)">Cancel</button>
-                </div>
-            </form>
+        <div class="modal character-modal">
+            <div class="modal-header">
+                <h3>Edit Item: ${item.name}</h3>
+                <button type="button" class="modal-close-btn" onclick="closeModal(this)" title="Close">×</button>
+            </div>
+            
+            <div class="modal-content">
+                <form id="edit-item-form" class="character-form">
+                    <div class="form-group">
+                        <label for="edit-item-name">Name:</label>
+                        <input type="text" id="edit-item-name" value="${item.name}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit-item-description">Description (optional):</label>
+                        <textarea id="edit-item-description" rows="3">${item.description || ''}</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit-item-features">Features (optional):</label>
+                        <textarea id="edit-item-features" rows="2">${item.features || ''}</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit-item-dice">Dice Roll (optional):</label>
+                        <input type="text" id="edit-item-dice" value="${item.diceRoll || ''}" placeholder="e.g., 1d6, 2d8+3">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit-item-ability">Associated Ability (optional):</label>
+                        <select id="edit-item-ability">
+                            <option value="">None</option>
+                            ${abilities.map(ability => 
+                                `<option value="${ability}" ${item.ability === ability ? 'selected' : ''}>${ability}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    
+                    <div class="modal-buttons">
+                        <button type="submit" class="button primary-btn">Save Changes</button>
+                        <button type="button" class="button" onclick="closeModal(this)">Cancel</button>
+                    </div>
+                </form>
+            </div>
         </div>
     `;
     
@@ -1160,15 +1179,15 @@ function editItem(category, index) {
         item.diceRoll = document.getElementById('edit-item-dice').value || null;
         item.ability = document.getElementById('edit-item-ability').value || null;
         
-            saveEquipmentData();
-    updateActiveWeaponsAndArmor();
-    updateEncumbranceDisplay();
-    
-    // Refresh current section
-    const activeSection = document.querySelector('.equipment-nav-btn.active').dataset.section;
-    switchEquipmentSection(activeSection);
+        saveEquipmentData();
+        updateActiveWeaponsAndArmor();
+        updateEncumbranceDisplay();
         
-        closeModal(modal.querySelector('.cancel-btn'));
+        // Refresh current section
+        const activeSection = document.querySelector('.equipment-nav-btn.active').dataset.section;
+        switchEquipmentSection(activeSection);
+        
+        closeModal(modal.querySelector('.modal-close-btn'));
     });
 }
 
@@ -1435,7 +1454,8 @@ function updateActiveArmorDisplay() {
 
 // ===== UTILITY FUNCTIONS =====
 function closeModal(button) {
-    const modal = button.closest('.modal');
+    // Handle both old .modal structure and new .modal-overlay structure
+    const modal = button.closest('.modal-overlay') || button.closest('.modal');
     if (modal) {
         modal.remove();
     }

@@ -176,6 +176,12 @@ class CharactersPageManager {
             return;
         }
 
+        // IMPORTANT: Save current character data before switching
+        if (window.characterManager.currentCharacter && window.autoSaveManager) {
+            console.log('Saving current character data before switching...');
+            window.autoSaveManager.saveNow();
+        }
+
         const character = window.characterManager.getCharacter(characterId);
         console.log('Character found:', character);
         
@@ -233,15 +239,15 @@ class CharactersPageManager {
                     window.renderJournalEntries();
                 }
 
-                // Initialize auto-save for the new character
+                // IMPORTANT: Reinitialize auto-save for the new character
                 if (window.autoSaveManager && typeof window.autoSaveManager.initialize === 'function') {
-                    console.log('Reinitializing auto-save system');
+                    console.log('Reinitializing auto-save system for new character');
                     window.autoSaveManager.isInitialized = false; // Reset flag
                     window.autoSaveManager.initialize();
                 }
                 
                 console.log('All system refreshes completed');
-            }, 200);
+            }, 300); // Increased delay to ensure all systems load properly
             
             console.log('=== LOAD CHARACTER: Character loaded successfully:', character.name);
         } else {

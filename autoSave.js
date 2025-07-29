@@ -238,14 +238,15 @@ class AutoSaveManager {
         // Update the character object with new data
         Object.assign(currentCharacter, characterData);
         
-        // Save to character manager
+        // Save to character manager (this updates the characters array)
         const success = window.characterManager.updateCharacterMetadata(currentCharacter.id, characterData);
         
         if (success) {
-            console.log('Character data saved successfully');
+            console.log('Character data saved successfully to character:', currentCharacter.id);
             
-            // Also save current state to localStorage for immediate use
-            window.characterManager.saveCharacterData(currentCharacter);
+            // IMPORTANT: Save current UI state to character-specific localStorage
+            // This ensures that when we switch characters, each has their own data
+            this.saveCurrentUIStateToCharacterStorage(currentCharacter.id);
             
             // Update characters list display if it's visible
             if (window.charactersPageManager && typeof window.charactersPageManager.refreshCharactersList === 'function') {
@@ -253,6 +254,41 @@ class AutoSaveManager {
             }
         } else {
             console.error('Failed to save character data');
+        }
+    }
+
+    // Save current UI state to character-specific localStorage keys
+    saveCurrentUIStateToCharacterStorage(characterId) {
+        try {
+            console.log('Saving UI state to character-specific storage for:', characterId);
+            
+            // Get current localStorage data that should be character-specific
+            const equipment = localStorage.getItem('zevi-equipment');
+            const journal = localStorage.getItem('zevi-journal');
+            const experiences = localStorage.getItem('zevi-experiences');
+            const hope = localStorage.getItem('zevi-hope');
+            const downtime = localStorage.getItem('zevi-downtime');
+
+            // Save to character-specific keys
+            if (equipment) {
+                localStorage.setItem(`zevi-equipment-${characterId}`, equipment);
+            }
+            if (journal) {
+                localStorage.setItem(`zevi-journal-${characterId}`, journal);
+            }
+            if (experiences) {
+                localStorage.setItem(`zevi-experiences-${characterId}`, experiences);
+            }
+            if (hope) {
+                localStorage.setItem(`zevi-hope-${characterId}`, hope);
+            }
+            if (downtime) {
+                localStorage.setItem(`zevi-downtime-${characterId}`, downtime);
+            }
+
+            console.log('UI state saved to character-specific storage');
+        } catch (error) {
+            console.error('Error saving UI state to character storage:', error);
         }
     }
 
