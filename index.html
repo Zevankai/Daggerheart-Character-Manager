@@ -268,7 +268,40 @@
    </div>
 
    <div id="characters-tab-content" class="tab-panel">
-    <p style="text-align: center;">Content for Characters will go here.</p>
+    <div class="characters-page">
+      <div class="characters-header">
+        <h2>Character Management</h2>
+        <button class="button primary-btn" id="createNewCharacterBtn" onclick="showCreateCharacterModal()">
+          <span>✨</span> Create New Character
+        </button>
+      </div>
+      
+      <div class="characters-filter">
+        <div class="filter-group">
+          <label>Filter by Platform:</label>
+          <select id="platformFilter" onchange="filterCharacters()">
+            <option value="all">All Platforms</option>
+            <option value="Daggerheart">Daggerheart</option>
+            <option value="Dungeons & Dragons">Dungeons & Dragons</option>
+          </select>
+        </div>
+        <div class="search-group">
+          <label>Search:</label>
+          <input type="text" id="characterSearch" placeholder="Search characters..." onkeyup="filterCharacters()">
+        </div>
+      </div>
+      
+      <div class="characters-grid" id="charactersGrid">
+        <!-- Character cards will be populated here -->
+      </div>
+      
+      <div class="empty-state" id="charactersEmptyState" style="display: none;">
+        <div class="empty-icon">👥</div>
+        <h3>No Characters Found</h3>
+        <p>Create your first character to get started on your adventure!</p>
+        <button class="button primary-btn" onclick="showCreateCharacterModal()">Create Character</button>
+      </div>
+    </div>
    </div>
    <div id="settings-tab-content" class="tab-panel">
     <div class="settings-container">
@@ -459,8 +492,142 @@
         </div>
     </div>
 </div>
+
+<!-- Create Character Modal -->
+<div id="createCharacterModal" class="modal-overlay">
+    <div class="modal character-modal">
+        <div class="modal-header">
+            <h3>Create New Character</h3>
+            <button type="button" class="modal-close-btn" onclick="closeCreateCharacterModal()" title="Close">×</button>
+        </div>
+        
+        <div class="character-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="newCharacterName">Character Name *</label>
+                    <input type="text" id="newCharacterName" placeholder="Enter character name" required>
+                </div>
+                <div class="form-group">
+                    <label for="newCharacterPlatform">Platform *</label>
+                    <select id="newCharacterPlatform" required>
+                        <option value="Daggerheart">Daggerheart</option>
+                        <option value="Dungeons & Dragons">Dungeons & Dragons</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="newCharacterSubtitle">Subtitle/Description</label>
+                    <input type="text" id="newCharacterSubtitle" placeholder="e.g., Human Fighter, Elven Wizard">
+                </div>
+                <div class="form-group">
+                    <label for="newCharacterLevel">Level</label>
+                    <input type="number" id="newCharacterLevel" value="1" min="1" max="20">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="newCharacterImage">Character Portrait</label>
+                <div class="image-upload-area">
+                    <input type="file" id="newCharacterImage" accept="image/*" style="display: none;" onchange="previewCharacterImage(event)">
+                    <div class="image-preview" id="characterImagePreview" onclick="document.getElementById('newCharacterImage').click()">
+                        <div class="image-placeholder">
+                            <span>📷</span>
+                            <p>Click to add character portrait</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-buttons">
+            <button class="button primary-btn" onclick="createCharacter()">Create Character</button>
+            <button class="button" onclick="closeCreateCharacterModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Character Modal -->
+<div id="editCharacterModal" class="modal-overlay">
+    <div class="modal character-modal">
+        <div class="modal-header">
+            <h3>Edit Character</h3>
+            <button type="button" class="modal-close-btn" onclick="closeEditCharacterModal()" title="Close">×</button>
+        </div>
+        
+        <div class="character-form">
+            <input type="hidden" id="editCharacterId">
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="editCharacterName">Character Name *</label>
+                    <input type="text" id="editCharacterName" required>
+                </div>
+                <div class="form-group">
+                    <label for="editCharacterPlatform">Platform *</label>
+                    <select id="editCharacterPlatform" required>
+                        <option value="Daggerheart">Daggerheart</option>
+                        <option value="Dungeons & Dragons">Dungeons & Dragons</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="editCharacterSubtitle">Subtitle/Description</label>
+                    <input type="text" id="editCharacterSubtitle">
+                </div>
+                <div class="form-group">
+                    <label for="editCharacterLevel">Level</label>
+                    <input type="number" id="editCharacterLevel" min="1" max="20">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="editCharacterImage">Character Portrait</label>
+                <div class="image-upload-area">
+                    <input type="file" id="editCharacterImage" accept="image/*" style="display: none;" onchange="previewEditCharacterImage(event)">
+                    <div class="image-preview" id="editCharacterImagePreview" onclick="document.getElementById('editCharacterImage').click()">
+                        <div class="image-placeholder">
+                            <span>📷</span>
+                            <p>Click to change character portrait</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-buttons">
+            <button class="button primary-btn" onclick="saveCharacterEdit()">Save Changes</button>
+            <button class="button danger-btn" onclick="confirmDeleteCharacter()">Delete Character</button>
+            <button class="button" onclick="closeEditCharacterModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Character Confirmation Modal -->
+<div id="deleteCharacterConfirmModal" class="modal-overlay">
+    <div class="modal small-modal">
+        <div class="modal-header">
+            <h3>Delete Character</h3>
+        </div>
+        
+        <div class="modal-content">
+            <p>Are you sure you want to delete <strong id="deleteCharacterNameDisplay"></strong>?</p>
+            <p class="warning-text">This action cannot be undone and will remove all character data.</p>
+        </div>
+        
+        <div class="modal-buttons">
+            <button class="button danger-btn" onclick="executeCharacterDelete()">Delete Character</button>
+            <button class="button" onclick="closeDeleteCharacterConfirmModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script src="characterManager.js"></script>
+<script src="characters.js"></script>
 <script src="hpStress.js"></script>
 <script src="hope.js"></script>
 <script src="script.js"></script>

@@ -33,6 +33,8 @@ class CharacterManager {
           name: characterData.name || 'Unnamed Character',
           subtitle: characterData.subtitle || '',
           level: characterData.level || 1,
+          platform: characterData.platform || 'Daggerheart', // Default to Daggerheart
+          imageUrl: characterData.imageUrl || '', // Character portrait URL
           domains: characterData.domains || [],
           attributes: characterData.attributes || {
               might: 10,

@@ -40,6 +40,7 @@
         <h2>Test Actions</h2>
         <button onclick="testCreateCharacter()">Test: Create Character and Load</button>
         <button onclick="testClearAndStart()">Test: Clear All & Start Fresh</button>
+        <button onclick="testCreateSampleCharacters()">Test: Create Sample Characters</button>
     </div>
 
     <script>
@@ -129,6 +130,64 @@
         function testClearAndStart() {
             clearAllStorage();
             goToLanding();
+        }
+        
+        function testCreateSampleCharacters() {
+            const sampleCharacters = [
+                {
+                    id: Date.now().toString(),
+                    name: 'Aria Shadowbane',
+                    subtitle: 'Human Rogue • Shadowheart Domain',
+                    level: 5,
+                    platform: 'Daggerheart',
+                    imageUrl: '',
+                    domains: ['Shadowheart', 'Knowledge'],
+                    attributes: { agility: 12, strength: 8, finesse: 14, instinct: 10, presence: 9, knowledge: 11 },
+                    hp: { current: 25, max: 25 },
+                    stress: { current: 0, max: 10 },
+                    evasion: 12,
+                    createdAt: new Date().toISOString(),
+                    lastModified: new Date().toISOString()
+                },
+                {
+                    id: (Date.now() + 1).toString(),
+                    name: 'Thorin Ironforge',
+                    subtitle: 'Dwarf Fighter',
+                    level: 8,
+                    platform: 'Dungeons & Dragons',
+                    imageUrl: '',
+                    domains: [],
+                    attributes: { might: 16, agility: 10, intellect: 12, charm: 8 },
+                    hp: { current: 68, max: 68 },
+                    stress: { current: 2, max: 12 },
+                    evasion: 10,
+                    createdAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+                    lastModified: new Date().toISOString()
+                },
+                {
+                    id: (Date.now() + 2).toString(),
+                    name: 'Luna Starweaver',
+                    subtitle: 'Elf Wizard • Arcana Domain',
+                    level: 3,
+                    platform: 'Daggerheart',
+                    imageUrl: '',
+                    domains: ['Arcana', 'Splendor'],
+                    attributes: { agility: 10, strength: 6, finesse: 12, instinct: 13, presence: 11, knowledge: 15 },
+                    hp: { current: 18, max: 18 },
+                    stress: { current: 1, max: 8 },
+                    evasion: 11,
+                    createdAt: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
+                    lastModified: new Date().toISOString()
+                }
+            ];
+
+            localStorage.setItem('zevi-characters', JSON.stringify(sampleCharacters));
+            localStorage.setItem('zevi-current-character-id', sampleCharacters[0].id);
+
+            console.log('Sample characters created:', sampleCharacters);
+            refreshStorageInfo();
+
+            alert('Sample characters created with different platforms! Try navigating to the Characters tab.');
         }
         
         // Load storage info on page load
