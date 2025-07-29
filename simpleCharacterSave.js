@@ -175,7 +175,7 @@ class SimpleCharacterSave {
     getAllLocalStorageData() {
         const data = {};
         
-        // Only save essential character data, not everything
+        // Save all essential character data including circle states
         const essentialKeys = [
             'zevi-equipment',
             'zevi-journal-entries', 
@@ -191,7 +191,14 @@ class SimpleCharacterSave {
             'zevi-major-damage-value',
             'zevi-active-armor-count',
             'zevi-total-armor-circles',
-            'zevi-evasion'
+            'zevi-evasion',
+            'zevi-backpack-enabled',
+            'zevi-domain-cards',
+            'zevi-selected-domains',
+            'zevi-domain-abilities',
+            'zevi-active-effects',
+            'zevi-features',
+            'zevi-conditions'
         ];
         
         essentialKeys.forEach(key => {
@@ -327,25 +334,114 @@ class SimpleCharacterSave {
     
     // Refresh systems
     refreshSystems() {
-        const systems = [
-            'initializeHPStress',
-            'initializeHope', 
-            'initializeEquipment',
-            'renderJournalEntries',
-            'initializeDetailsTab',
-            'renderExperiences'
-        ];
+        console.log('=== REFRESHING ALL SYSTEMS ===');
         
-        systems.forEach(system => {
-            if (window[system] && typeof window[system] === 'function') {
-                try {
-                    console.log('Refreshing:', system);
-                    window[system]();
-                } catch (error) {
-                    console.error('Error refreshing', system, error);
+        // First, force refresh circle systems with current localStorage data
+        setTimeout(() => {
+            this.forceRefreshCircles();
+        }, 100);
+        
+        // Then refresh other systems
+        setTimeout(() => {
+            const systems = [
+                'initializeHPStress',
+                'initializeHope', 
+                'initializeEquipment',
+                'renderJournalEntries',
+                'initializeDetailsTab',
+                'renderExperiences'
+            ];
+            
+            systems.forEach(system => {
+                if (window[system] && typeof window[system] === 'function') {
+                    try {
+                        console.log('Refreshing:', system);
+                        window[system]();
+                    } catch (error) {
+                        console.error('Error refreshing', system, error);
+                    }
                 }
+            });
+            
+            console.log('=== SYSTEM REFRESH COMPLETE ===');
+        }, 200);
+    }
+    
+    // Force refresh circle displays based on localStorage
+    forceRefreshCircles() {
+        console.log('Force refreshing circles from localStorage...');
+        
+        // HP Circles
+        const hpData = localStorage.getItem('zevi-hp-circles');
+        if (hpData) {
+            try {
+                const hpCircles = JSON.parse(hpData);
+                const hpElements = document.querySelectorAll('.hp-section .circle');
+                console.log('HP data:', hpCircles, 'Elements:', hpElements.length);
+                
+                hpElements.forEach((element, index) => {
+                    if (hpCircles[index] && hpCircles[index].active) {
+                        element.classList.add('active');
+                    } else {
+                        element.classList.remove('active');
+                    }
+                });
+            } catch (e) {
+                console.error('Error refreshing HP circles:', e);
             }
-        });
+        }
+        
+        // Stress Circles
+        const stressData = localStorage.getItem('zevi-stress-circles');
+        if (stressData) {
+            try {
+                const stressCircles = JSON.parse(stressData);
+                const stressElements = document.querySelectorAll('.stress-section .circle');
+                console.log('Stress data:', stressCircles, 'Elements:', stressElements.length);
+                
+                stressElements.forEach((element, index) => {
+                    if (stressCircles[index] && stressCircles[index].active) {
+                        element.classList.add('active');
+                    } else {
+                        element.classList.remove('active');
+                    }
+                });
+            } catch (e) {
+                console.error('Error refreshing stress circles:', e);
+            }
+        }
+        
+        // Armor Circles
+        const armorData = localStorage.getItem('zevi-armor-circles');
+        if (armorData) {
+            try {
+                const armorCircles = JSON.parse(armorData);
+                const armorElements = document.querySelectorAll('.armor-section .circle');
+                console.log('Armor data:', armorCircles, 'Elements:', armorElements.length);
+                
+                armorElements.forEach((element, index) => {
+                    if (armorCircles[index] && armorCircles[index].active) {
+                        element.classList.add('active');
+                    } else {
+                        element.classList.remove('active');
+                    }
+                });
+            } catch (e) {
+                console.error('Error refreshing armor circles:', e);
+            }
+        }
+        
+        // Hope Value
+        const hopeData = localStorage.getItem('zevi-hope');
+        if (hopeData) {
+            const hopeDisplay = document.getElementById('hopeValue');
+            if (hopeDisplay) {
+                hopeDisplay.textContent = hopeData;
+                console.log('Hope value set to:', hopeData);
+            }
+        }
+        
+        console.log('Circle refresh complete');
     }
     
     // Show status message

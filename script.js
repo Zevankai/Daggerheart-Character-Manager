@@ -1,100 +1,12 @@
 // --- GLOBAL HELPER FUNCTIONS ---
 
-// Manual save character function
-async function manualSaveCharacter() {
-    console.log('=== MANUAL SAVE CHARACTER TRIGGERED ===');
-    
-    const saveBtn = document.getElementById('manualSaveBtn');
-    const saveStatus = document.getElementById('saveStatus');
-    
-    if (!window.characterFileSystem || !window.characterFileSystem.currentCharacterId) {
-        updateSaveStatus('error', 'No character loaded to save!');
-        return;
-    }
-    
-    try {
-        // Update button state
-        saveBtn.className = 'manual-save-btn saving';
-        saveBtn.textContent = '💾 Saving...';
-        saveBtn.disabled = true;
-        
-        updateSaveStatus('saving', 'Saving character data...');
-        
-        // Perform the save
-        console.log('Saving character:', window.characterFileSystem.currentCharacterId);
-        await window.characterFileSystem.saveCurrentCharacterState();
-        
-        // Update character manager if available
-        if (window.characterManager && window.characterManager.currentCharacter) {
-            // Get current data from UI for character manager
-            const nameInput = document.querySelector('.name-box input[type="text"]');
-            if (nameInput) {
-                window.characterManager.currentCharacter.name = nameInput.value;
-            }
-            
-            // Update character directory
-            window.characterManager.updateCharacterMetadata(
-                window.characterManager.currentCharacter.id,
-                {
-                    name: window.characterManager.currentCharacter.name,
-                    lastModified: new Date().toISOString()
-                }
-            );
-        }
-        
-        // Success state
-        saveBtn.className = 'manual-save-btn saved';
-        saveBtn.textContent = '✅ Saved!';
-        updateSaveStatus('success', 'Character saved successfully!');
-        
-        console.log('Manual save completed successfully');
-        
-        // Reset button after delay
-        setTimeout(() => {
-            saveBtn.className = 'manual-save-btn';
-            saveBtn.textContent = '💾 Save Character';
-            saveBtn.disabled = false;
-            updateSaveStatus('', '');
-        }, 2000);
-        
-    } catch (error) {
-        console.error('Manual save failed:', error);
-        
-        // Error state
-        saveBtn.className = 'manual-save-btn';
-        saveBtn.textContent = '❌ Save Failed';
-        saveBtn.disabled = false;
-        updateSaveStatus('error', 'Save failed: ' + error.message);
-        
-        // Reset button after delay
-        setTimeout(() => {
-            saveBtn.textContent = '💾 Save Character';
-            updateSaveStatus('', '');
-        }, 3000);
-    }
-}
-
-// Update save status display
+// Legacy functions for compatibility (now handled by simpleCharacterSave.js)
 function updateSaveStatus(type, message) {
-    const saveStatus = document.getElementById('saveStatus');
-    if (saveStatus) {
-        saveStatus.textContent = message;
-        saveStatus.className = 'save-status' + (type ? ' ' + type : '');
-    }
+    console.log('Legacy save status:', type, message);
 }
 
-// Auto-save indicator (called by the file system)
 function showAutoSaveStatus() {
-    const saveStatus = document.getElementById('saveStatus');
-    if (saveStatus) {
-        saveStatus.textContent = 'Auto-saved';
-        saveStatus.className = 'save-status success';
-        
-        setTimeout(() => {
-            saveStatus.textContent = '';
-            saveStatus.className = 'save-status';
-        }, 2000);
-    }
+    console.log('Legacy auto-save status');
 }
 
 // Debug function to inspect current character data
@@ -158,9 +70,9 @@ function uploadCharacterImage(event) {
             placeholder.style.display = 'none';
         }
         
-        // Save the image using the file system
-        if (window.characterFileSystem && window.characterFileSystem.currentCharacterId) {
-            console.log('Saving character image via File System for character:', window.characterFileSystem.currentCharacterId);
+        // Save the image using the simple character save system
+        if (window.simpleCharacterSave && window.simpleCharacterSave.currentCharacterId) {
+            console.log('Saving character image via Simple Save for character:', window.simpleCharacterSave.currentCharacterId);
             
             // Update the character manager's character object for immediate feedback
             if (window.characterManager && window.characterManager.currentCharacter) {
@@ -178,13 +90,13 @@ function uploadCharacterImage(event) {
                 console.log('Character manager updated with new image');
             }
             
-            // Immediately save the character state to capture the image
-            await window.characterFileSystem.saveCurrentCharacterState();
-            console.log('Character image saved to file system');
+            // Immediately save the character to capture the image
+            window.simpleCharacterSave.saveCurrentCharacter();
+            console.log('Character image saved via simple save system');
             
         } else {
-            console.warn('Character File System not available or no current character');
-            console.log('Current character ID:', window.characterFileSystem?.currentCharacterId);
+            console.warn('Simple Character Save not available or no current character');
+            console.log('Current character ID:', window.simpleCharacterSave?.currentCharacterId);
         }
         
         // Reset the file input so the same file can be uploaded again if needed
@@ -327,12 +239,14 @@ function applySavedColors() {
 }
 
 
-// Add keyboard shortcut for saving
+// Add keyboard shortcut for saving (now handled by simpleCharacterSave.js)
 document.addEventListener('keydown', function(event) {
     // Ctrl+S or Cmd+S to save
     if ((event.ctrlKey || event.metaKey) && event.key === 's') {
         event.preventDefault();
-        manualSaveCharacter();
+        if (window.simpleCharacterSave) {
+            window.simpleCharacterSave.saveCurrentCharacter();
+        }
     }
 });
 
