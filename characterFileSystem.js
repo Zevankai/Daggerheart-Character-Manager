@@ -44,17 +44,64 @@ class CharacterFileSystem {
         });
         
         this.defaultCharacterState = {
-            // Basic character info
+            // 1) Name
             name: 'New Character',
-            subtitle: 'Community Ancestry Class (Subclass)',
-            level: 5,
+            
+            // 2) Image
             imageUrl: '',
             
-            // Domains
+            // 3) Site background
+            siteBackground: {
+                textColor: 'default',
+                accentColor: 'default',
+                theme: 'default',
+                glassColor: 'default',
+                glassOpacity: 'default'
+            },
+            
+            // 4) Level
+            level: 5,
+            
+            // 5) Domains
             domain1: 'Domain 1',
             domain2: 'Domain 2',
             
-            // Attributes
+            // 6) Information (community, ancestry, class, etc)
+            subtitle: 'Community Ancestry Class (Subclass)',
+            characterInfo: {
+                community: '',
+                ancestry: '',
+                class: '',
+                subclass: ''
+            },
+            
+            // 7) Hope tracker
+            hope: {
+                current: 0,
+                max: 6
+            },
+            
+            // 8) Stress tracker
+            stress: {
+                circles: Array(4).fill({ active: false }),
+                current: 0,
+                max: 4
+            },
+            
+            // 9) HP tracker
+            hp: {
+                circles: Array(4).fill({ active: true }),
+                current: 4,
+                max: 4
+            },
+            
+            // 10) Damage thresholds
+            damage: {
+                minor: 1,
+                major: 2
+            },
+            
+            // 11) Ability scores
             attributes: {
                 agility: 0,
                 strength: 0,
@@ -64,24 +111,7 @@ class CharacterFileSystem {
                 knowledge: 0
             },
             
-            // Combat stats
-            evasion: 10,
-            
-            // HP system
-            hp: {
-                circles: Array(4).fill({ active: true }),
-                current: 4,
-                max: 4
-            },
-            
-            // Stress system
-            stress: {
-                circles: Array(4).fill({ active: false }),
-                current: 0,
-                max: 4
-            },
-            
-            // Armor system
+            // 12) Armor tracker
             armor: {
                 circles: Array(4).fill({ active: false }),
                 current: 0,
@@ -90,33 +120,24 @@ class CharacterFileSystem {
                 totalCircles: 4
             },
             
-            // Hope system
-            hope: {
-                current: 0,
-                max: 6
-            },
-            
-            // Damage values
-            damage: {
-                minor: 1,
-                major: 2
-            },
-            
-            // Equipment system
+            // 13) All equipment - including backpack selection, items, gold, and equipped
             equipment: {
                 selectedBag: 'Standard Backpack',
+                backpackType: 'Standard Backpack',
                 backpackEnabled: true,
                 items: [],
                 activeWeapons: [],
-                activeArmor: []
+                activeArmor: [],
+                gold: 0,
+                equipped: {}
             },
             
-            // Journal system
+            // 14) Journal
             journal: {
                 entries: []
             },
             
-            // Details system
+            // 15) Details
             details: {
                 personal: {
                     pronouns: '',
@@ -134,8 +155,25 @@ class CharacterFileSystem {
                 }
             },
             
-            // Experiences
+            // 16) Experiences
             experiences: [],
+            
+            // 17) Domain vault
+            domainVault: {
+                domainCards: [],
+                selectedDomains: [],
+                domainAbilities: {}
+            },
+            
+            // 18) Effects & features
+            effectsFeatures: {
+                activeEffects: [],
+                features: [],
+                conditions: []
+            },
+            
+            // Additional combat stats
+            evasion: 10,
             
             // Downtime
             downtime: {
@@ -152,7 +190,7 @@ class CharacterFileSystem {
             // Metadata
             createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
-            version: '2.0'
+            version: '3.0'
         };
         
         console.log('Default character state captured');
@@ -320,56 +358,156 @@ class CharacterFileSystem {
     
     // Apply a character's complete state to the application
     async applyCharacterState(characterData) {
-        console.log('Applying complete character state to application');
+        console.log('Applying COMPREHENSIVE character state to application');
         
         try {
-            // Basic character info
+            // Clear all localStorage data first to ensure clean state
+            this.clearAllCharacterData();
+            
+            // 1) Name
             this.setUIElement('.name-box input[type="text"]', characterData.name, 'value');
+            
+            // 2) Character image
+            this.setCharacterImage(characterData.imageUrl);
+            
+            // 3) Site background (theme colors) - Only apply if character has custom settings
+            if (characterData.siteBackground) {
+                if (characterData.siteBackground.textColor !== 'default') {
+                    localStorage.setItem('zevi-text-color', characterData.siteBackground.textColor);
+                }
+                if (characterData.siteBackground.accentColor !== 'default') {
+                    localStorage.setItem('zevi-accent-color', characterData.siteBackground.accentColor);
+                }
+                if (characterData.siteBackground.theme !== 'default') {
+                    localStorage.setItem('zevi-theme', characterData.siteBackground.theme);
+                }
+                if (characterData.siteBackground.glassColor !== 'default') {
+                    localStorage.setItem('zevi-glass-color', characterData.siteBackground.glassColor);
+                }
+                if (characterData.siteBackground.glassOpacity !== 'default') {
+                    localStorage.setItem('zevi-glass-opacity', characterData.siteBackground.glassOpacity);
+                }
+            }
+            
+            // 4) Level
             this.setUIElement('#charLevel', characterData.level, 'textContent');
-            this.setUIElement('.name-box .subtitle', characterData.subtitle, 'textContent');
             
-            // Domains
+            // 5) Domains
             const domainBadges = document.querySelectorAll('.name-box .domain-badge');
-            if (domainBadges[0]) domainBadges[0].textContent = characterData.domain1;
-            if (domainBadges[1]) domainBadges[1].textContent = characterData.domain2;
+            if (domainBadges[0]) domainBadges[0].textContent = characterData.domain1 || 'Domain 1';
+            if (domainBadges[1]) domainBadges[1].textContent = characterData.domain2 || 'Domain 2';
             
-            // Attributes
+            // 6) Information (community, ancestry, class, etc)
+            this.setUIElement('.name-box .subtitle', characterData.subtitle, 'textContent');
+            if (characterData.characterInfo) {
+                this.setUIElement('#community', characterData.characterInfo.community, 'value');
+                this.setUIElement('#ancestry', characterData.characterInfo.ancestry, 'value');
+                this.setUIElement('#class', characterData.characterInfo.class, 'value');
+                this.setUIElement('#subclass', characterData.characterInfo.subclass, 'value');
+            }
+            
+            // 7) Hope tracker
+            localStorage.setItem('zevi-hope', characterData.hope.current.toString());
+            localStorage.setItem('zevi-max-hope', characterData.hope.max.toString());
+            
+            // 8) Stress tracker
+            localStorage.setItem('zevi-stress-circles', JSON.stringify(characterData.stress.circles));
+            
+            // 9) HP tracker
+            localStorage.setItem('zevi-hp-circles', JSON.stringify(characterData.hp.circles));
+            
+            // 10) Damage thresholds
+            localStorage.setItem('zevi-minor-damage-value', characterData.damage.minor.toString());
+            localStorage.setItem('zevi-major-damage-value', characterData.damage.major.toString());
+            
+            // 11) Ability scores
             Object.keys(characterData.attributes).forEach(attr => {
                 this.setUIElement(`[data-attribute="${attr}"]`, characterData.attributes[attr], 'value');
             });
             
-            // Evasion
-            this.setUIElement('#evasionValue', characterData.evasion, 'value');
-            
-            // Character image
-            this.setCharacterImage(characterData.imageUrl);
-            
-            // Clear all localStorage data first to ensure clean state
-            this.clearAllCharacterData();
-            
-            // Set character-specific data in localStorage for existing systems
-            localStorage.setItem('zevi-equipment', JSON.stringify(characterData.equipment));
-            localStorage.setItem('zevi-journal-entries', JSON.stringify(characterData.journal.entries));
-            localStorage.setItem('zevi-character-details', JSON.stringify(characterData.details));
-            localStorage.setItem('zevi-experiences', JSON.stringify(characterData.experiences));
-            localStorage.setItem('zevi-hope', characterData.hope.current.toString());
-            localStorage.setItem('zevi-max-hope', characterData.hope.max.toString());
-            localStorage.setItem('zevi-projects', JSON.stringify(characterData.downtime.projects));
-            localStorage.setItem('zevi-hp-circles', JSON.stringify(characterData.hp.circles));
-            localStorage.setItem('zevi-stress-circles', JSON.stringify(characterData.stress.circles));
+            // 12) Armor tracker
             localStorage.setItem('zevi-armor-circles', JSON.stringify(characterData.armor.circles));
-            localStorage.setItem('zevi-minor-damage-value', characterData.damage.minor.toString());
-            localStorage.setItem('zevi-major-damage-value', characterData.damage.major.toString());
             localStorage.setItem('zevi-active-armor-count', characterData.armor.activeCount.toString());
             localStorage.setItem('zevi-total-armor-circles', characterData.armor.totalCircles.toString());
+            
+            // 13) All equipment - including backpack selection, items, gold, and equipped
+            localStorage.setItem('zevi-equipment', JSON.stringify(characterData.equipment));
+            if (characterData.equipment.backpackEnabled !== undefined) {
+                localStorage.setItem('zevi-backpack-enabled', characterData.equipment.backpackEnabled.toString());
+            }
+            
+            // 14) Journal
+            localStorage.setItem('zevi-journal-entries', JSON.stringify(characterData.journal.entries));
+            
+            // 15) Details
+            localStorage.setItem('zevi-character-details', JSON.stringify(characterData.details));
+            
+            // 16) Experiences
+            localStorage.setItem('zevi-experiences', JSON.stringify(characterData.experiences));
+            
+            // 17) Domain vault
+            if (characterData.domainVault) {
+                if (characterData.domainVault.domainCards) {
+                    localStorage.setItem('zevi-domain-cards', JSON.stringify(characterData.domainVault.domainCards));
+                }
+                if (characterData.domainVault.selectedDomains) {
+                    localStorage.setItem('zevi-selected-domains', JSON.stringify(characterData.domainVault.selectedDomains));
+                }
+                if (characterData.domainVault.domainAbilities) {
+                    localStorage.setItem('zevi-domain-abilities', JSON.stringify(characterData.domainVault.domainAbilities));
+                }
+            }
+            
+            // 18) Effects & features
+            if (characterData.effectsFeatures) {
+                if (characterData.effectsFeatures.activeEffects) {
+                    localStorage.setItem('zevi-active-effects', JSON.stringify(characterData.effectsFeatures.activeEffects));
+                }
+                if (characterData.effectsFeatures.features) {
+                    localStorage.setItem('zevi-features', JSON.stringify(characterData.effectsFeatures.features));
+                }
+                if (characterData.effectsFeatures.conditions) {
+                    localStorage.setItem('zevi-conditions', JSON.stringify(characterData.effectsFeatures.conditions));
+                }
+            }
+            
+            // Additional combat stats
+            this.setUIElement('#evasionValue', characterData.evasion, 'value');
             localStorage.setItem('zevi-evasion', characterData.evasion.toString());
             
-            // Trigger system refreshes
+            // Downtime projects
+            localStorage.setItem('zevi-projects', JSON.stringify(characterData.downtime.projects));
+            
+            // UI state restoration
+            if (characterData.ui) {
+                if (characterData.ui.sectionOrder) {
+                    localStorage.setItem('zevi-section-order', characterData.ui.sectionOrder);
+                }
+                
+                // Restore UI colors
+                if (characterData.ui.colors) {
+                    Object.keys(characterData.ui.colors).forEach(colorKey => {
+                        localStorage.setItem(colorKey, characterData.ui.colors[colorKey]);
+                    });
+                }
+            }
+            
+            console.log('Character state restoration complete:', {
+                name: characterData.name,
+                level: characterData.level,
+                evasion: characterData.evasion,
+                equipment: characterData.equipment?.selectedBag,
+                hope: characterData.hope.current,
+                hp: characterData.hp.circles?.length,
+                stress: characterData.stress.circles?.length
+            });
+            
+            // Trigger system refreshes with delay to ensure localStorage is set
             setTimeout(() => {
                 this.refreshAllSystems();
-            }, 100);
+            }, 200);
             
-            console.log('Character state applied successfully');
+            console.log('COMPREHENSIVE character state applied successfully');
         } catch (error) {
             console.error('Error applying character state:', error);
         }
@@ -378,6 +516,7 @@ class CharacterFileSystem {
     // Clear all character-specific data from localStorage
     clearAllCharacterData() {
         const characterDataKeys = [
+            // Core character data
             'zevi-equipment',
             'zevi-journal-entries',
             'zevi-character-details',
@@ -385,6 +524,8 @@ class CharacterFileSystem {
             'zevi-hope',
             'zevi-max-hope',
             'zevi-projects',
+            
+            // Combat stats
             'zevi-hp-circles',
             'zevi-stress-circles',
             'zevi-armor-circles',
@@ -392,12 +533,41 @@ class CharacterFileSystem {
             'zevi-major-damage-value',
             'zevi-active-armor-count',
             'zevi-total-armor-circles',
-            'zevi-evasion'
+            'zevi-evasion',
+            
+            // Equipment related
+            'zevi-backpack-enabled',
+            
+            // Domain vault
+            'zevi-domain-cards',
+            'zevi-selected-domains', 
+            'zevi-domain-abilities',
+            
+            // Effects & features
+            'zevi-active-effects',
+            'zevi-features',
+            'zevi-conditions',
+            
+            // UI state
+            'zevi-section-order',
+            
+            // UI colors (character-specific)
+            'zevi-color-main-glass',
+            'zevi-color-char-image-border',
+            'zevi-color-name-box',
+            'zevi-color-ability-scores',
+            'zevi-color-hp-stress',
+            'zevi-color-active-weapons',
+            'zevi-color-armor-section',
+            'zevi-color-hope-section',
+            'zevi-color-experiences-section'
         ];
         
         characterDataKeys.forEach(key => {
             localStorage.removeItem(key);
         });
+        
+        console.log('Cleared all character-specific data from localStorage');
     }
     
     // Set UI element value safely
@@ -458,73 +628,134 @@ class CharacterFileSystem {
             return;
         }
         
-        console.log('Saving current character state to file');
+        console.log('Comprehensive character state capture starting...');
         
         // Load current character file
         const currentData = this.loadCharacterFile(this.currentCharacterId);
         if (!currentData) return;
         
-        // Collect current state from UI and localStorage
+        // COMPREHENSIVE DATA CAPTURE - All 18 elements
         const updatedData = {
             ...currentData,
             
-            // Basic info from UI
-            name: this.getUIValue('.name-box input[type="text"]'),
-            level: parseInt(this.getUIValue('#charLevel', 'textContent')) || currentData.level,
-            subtitle: this.getUIValue('.name-box .subtitle', 'textContent'),
-            evasion: parseInt(this.getUIValue('#evasionValue')) || currentData.evasion,
+            // 1) Name
+            name: this.getUIValue('.name-box input[type="text"]') || currentData.name,
             
-            // Domains
+            // 2) Character image
+            imageUrl: this.getCurrentImageUrl() || currentData.imageUrl,
+            
+            // 3) Site background (theme colors)
+            siteBackground: {
+                textColor: localStorage.getItem('zevi-text-color') || 'default',
+                accentColor: localStorage.getItem('zevi-accent-color') || 'default',
+                theme: localStorage.getItem('zevi-theme') || 'default',
+                glassColor: localStorage.getItem('zevi-glass-color') || 'default',
+                glassOpacity: localStorage.getItem('zevi-glass-opacity') || 'default'
+            },
+            
+            // 4) Level
+            level: parseInt(this.getUIValue('#charLevel', 'textContent')) || currentData.level,
+            
+            // 5) Domains
             domain1: document.querySelectorAll('.name-box .domain-badge')[0]?.textContent || currentData.domain1,
             domain2: document.querySelectorAll('.name-box .domain-badge')[1]?.textContent || currentData.domain2,
             
-            // Attributes
-            attributes: {},
-            
-            // Character image
-            imageUrl: this.getCurrentImageUrl() || currentData.imageUrl,
-            
-            // Data from localStorage
-            equipment: this.parseJSON(localStorage.getItem('zevi-equipment')) || currentData.equipment,
-            journal: {
-                entries: this.parseJSON(localStorage.getItem('zevi-journal-entries')) || currentData.journal.entries
+            // 6) Information (community, ancestry, class, etc)
+            subtitle: this.getUIValue('.name-box .subtitle', 'textContent') || currentData.subtitle,
+            characterInfo: {
+                community: this.getUIValue('#community') || '',
+                ancestry: this.getUIValue('#ancestry') || '',
+                class: this.getUIValue('#class') || '',
+                subclass: this.getUIValue('#subclass') || ''
             },
-            details: this.parseJSON(localStorage.getItem('zevi-character-details')) || currentData.details,
-            experiences: this.parseJSON(localStorage.getItem('zevi-experiences')) || currentData.experiences,
+            
+            // 7) Hope tracker
             hope: {
                 current: parseInt(localStorage.getItem('zevi-hope')) || currentData.hope.current,
                 max: parseInt(localStorage.getItem('zevi-max-hope')) || currentData.hope.max
             },
-            downtime: {
-                projects: this.parseJSON(localStorage.getItem('zevi-projects')) || currentData.downtime.projects
-            },
-            hp: {
-                circles: this.parseJSON(localStorage.getItem('zevi-hp-circles')) || currentData.hp.circles,
-                current: currentData.hp.current,
-                max: currentData.hp.max
-            },
+            
+            // 8) Stress tracker
             stress: {
                 circles: this.parseJSON(localStorage.getItem('zevi-stress-circles')) || currentData.stress.circles,
-                current: currentData.stress.current,
+                current: this.calculateActiveCircles(this.parseJSON(localStorage.getItem('zevi-stress-circles')) || []),
                 max: currentData.stress.max
             },
+            
+            // 9) HP tracker
+            hp: {
+                circles: this.parseJSON(localStorage.getItem('zevi-hp-circles')) || currentData.hp.circles,
+                current: this.calculateActiveCircles(this.parseJSON(localStorage.getItem('zevi-hp-circles')) || []),
+                max: currentData.hp.max
+            },
+            
+            // 10) Damage thresholds
+            damage: {
+                minor: parseInt(localStorage.getItem('zevi-minor-damage-value')) || currentData.damage.minor,
+                major: parseInt(localStorage.getItem('zevi-major-damage-value')) || currentData.damage.major
+            },
+            
+            // 11) Ability scores
+            attributes: {},
+            
+            // 12) Armor tracker
             armor: {
                 circles: this.parseJSON(localStorage.getItem('zevi-armor-circles')) || currentData.armor.circles,
                 activeCount: parseInt(localStorage.getItem('zevi-active-armor-count')) || currentData.armor.activeCount,
                 totalCircles: parseInt(localStorage.getItem('zevi-total-armor-circles')) || currentData.armor.totalCircles,
-                current: currentData.armor.current,
+                current: this.calculateActiveCircles(this.parseJSON(localStorage.getItem('zevi-armor-circles')) || []),
                 max: currentData.armor.max
             },
-            damage: {
-                minor: parseInt(localStorage.getItem('zevi-minor-damage-value')) || currentData.damage.minor,
-                major: parseInt(localStorage.getItem('zevi-major-damage-value')) || currentData.damage.major
+            
+            // 13) All equipment - including backpack selection, items, gold, and equipped
+            equipment: this.captureCompleteEquipmentState() || currentData.equipment,
+            
+            // 14) Journal
+            journal: {
+                entries: this.parseJSON(localStorage.getItem('zevi-journal-entries')) || currentData.journal.entries
+            },
+            
+            // 15) Details
+            details: this.parseJSON(localStorage.getItem('zevi-character-details')) || currentData.details,
+            
+            // 16) Experiences
+            experiences: this.parseJSON(localStorage.getItem('zevi-experiences')) || currentData.experiences,
+            
+            // 17) Domain vault
+            domainVault: this.captureDomainVaultState() || currentData.domainVault || {},
+            
+            // 18) Effects & features
+            effectsFeatures: this.captureEffectsFeaturesState() || currentData.effectsFeatures || {},
+            
+            // Additional combat stats
+            evasion: parseInt(this.getUIValue('#evasionValue')) || parseInt(localStorage.getItem('zevi-evasion')) || currentData.evasion,
+            
+            // Downtime projects
+            downtime: {
+                projects: this.parseJSON(localStorage.getItem('zevi-projects')) || currentData.downtime.projects
+            },
+            
+            // UI state
+            ui: {
+                sectionOrder: localStorage.getItem('zevi-section-order'),
+                activeTab: this.getActiveTab(),
+                colors: this.captureUIColors()
             }
         };
         
-        // Collect attributes
+        // Collect all attributes
         ['agility', 'strength', 'finesse', 'instinct', 'presence', 'knowledge'].forEach(attr => {
             const value = this.getUIValue(`[data-attribute="${attr}"]`);
             updatedData.attributes[attr] = parseInt(value) || 0;
+        });
+        
+        console.log('Character state captured:', {
+            name: updatedData.name,
+            level: updatedData.level,
+            evasion: updatedData.evasion,
+            equipment: !!updatedData.equipment,
+            hope: updatedData.hope,
+            attributes: updatedData.attributes
         });
         
         // Save the updated character file
@@ -537,6 +768,8 @@ class CharacterFileSystem {
             imageUrl: updatedData.imageUrl,
             lastModified: updatedData.lastModified
         });
+        
+        console.log('Comprehensive character state saved successfully');
     }
     
     // Helper to get UI values safely
@@ -558,6 +791,105 @@ class CharacterFileSystem {
         } catch {
             return null;
         }
+    }
+    
+    // Calculate active circles from circle data
+    calculateActiveCircles(circles) {
+        if (!Array.isArray(circles)) return 0;
+        return circles.filter(circle => circle && circle.active).length;
+    }
+    
+    // Capture complete equipment state including backpack selection
+    captureCompleteEquipmentState() {
+        try {
+            const equipmentData = this.parseJSON(localStorage.getItem('zevi-equipment')) || {};
+            
+            // Get backpack selection from equipment system
+            const backpackSelect = document.querySelector('#backpack-select') || document.querySelector('[data-backpack-type]');
+            let selectedBag = 'Standard Backpack';
+            
+            if (backpackSelect) {
+                selectedBag = backpackSelect.value || backpackSelect.dataset.backpackType || 'Standard Backpack';
+            }
+            
+            // Also check if it's stored in the equipment data
+            if (equipmentData.selectedBag) {
+                selectedBag = equipmentData.selectedBag;
+            }
+            
+            return {
+                selectedBag: selectedBag,
+                backpackType: selectedBag, // For compatibility
+                backpackEnabled: localStorage.getItem('zevi-backpack-enabled') !== 'false',
+                items: equipmentData.items || [],
+                activeWeapons: equipmentData.activeWeapons || [],
+                activeArmor: equipmentData.activeArmor || [],
+                gold: equipmentData.gold || 0,
+                equipped: equipmentData.equipped || {}
+            };
+        } catch (error) {
+            console.error('Error capturing equipment state:', error);
+            return null;
+        }
+    }
+    
+    // Capture domain vault state
+    captureDomainVaultState() {
+        try {
+            return {
+                domainCards: this.parseJSON(localStorage.getItem('zevi-domain-cards')) || [],
+                selectedDomains: this.parseJSON(localStorage.getItem('zevi-selected-domains')) || [],
+                domainAbilities: this.parseJSON(localStorage.getItem('zevi-domain-abilities')) || {}
+            };
+        } catch (error) {
+            console.error('Error capturing domain vault state:', error);
+            return {};
+        }
+    }
+    
+    // Capture effects & features state
+    captureEffectsFeaturesState() {
+        try {
+            return {
+                activeEffects: this.parseJSON(localStorage.getItem('zevi-active-effects')) || [],
+                features: this.parseJSON(localStorage.getItem('zevi-features')) || [],
+                conditions: this.parseJSON(localStorage.getItem('zevi-conditions')) || []
+            };
+        } catch (error) {
+            console.error('Error capturing effects & features state:', error);
+            return {};
+        }
+    }
+    
+    // Get currently active tab
+    getActiveTab() {
+        const activeTab = document.querySelector('.tabs button.active');
+        return activeTab ? activeTab.dataset.target : 'downtime-tab-content';
+    }
+    
+    // Capture UI color customizations
+    captureUIColors() {
+        const colors = {};
+        const colorKeys = [
+            'zevi-color-main-glass',
+            'zevi-color-char-image-border', 
+            'zevi-color-name-box',
+            'zevi-color-ability-scores',
+            'zevi-color-hp-stress',
+            'zevi-color-active-weapons',
+            'zevi-color-armor-section',
+            'zevi-color-hope-section',
+            'zevi-color-experiences-section'
+        ];
+        
+        colorKeys.forEach(key => {
+            const value = localStorage.getItem(key);
+            if (value) {
+                colors[key] = value;
+            }
+        });
+        
+        return colors;
     }
     
     // Update character info in directory

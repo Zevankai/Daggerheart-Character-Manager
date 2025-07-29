@@ -1,37 +1,67 @@
 // --- GLOBAL HELPER FUNCTIONS ---
 function uploadCharacterImage(event) {
+    if (!event.target.files || !event.target.files[0]) {
+        console.warn('No file selected for character image upload');
+        return;
+    }
+    
+    console.log('Character image upload started');
     const reader = new FileReader();
+    
     reader.onload = async function(){
-      const img = document.getElementById("charImage");
-      img.src = reader.result;
-      document.getElementById("charPlaceholder").style.display = 'none';
-      
-      // Save the image using the file system
-      if (window.characterFileSystem && window.characterFileSystem.currentCharacterId) {
-          console.log('Saving character image via File System');
-          
-          // The file system will automatically save the image when it saves the character state
-          // We just need to make sure the image is in the DOM so it gets captured
-          
-          // Also update the character manager's character object for immediate feedback
-          if (window.characterManager && window.characterManager.currentCharacter) {
-              window.characterManager.currentCharacter.imageUrl = reader.result;
-              
-              // Update character metadata in directory
-              window.characterManager.updateCharacterMetadata(
-                  window.characterManager.currentCharacter.id, 
-                  { 
-                      imageUrl: reader.result,
-                      lastModified: new Date().toISOString()
-                  }
-              );
-          }
-          
-          console.log('Character image will be saved with next character state save');
-      } else {
-          console.warn('Character File System not available or no current character');
-      }
+        console.log('Image file read successfully');
+        
+        const img = document.getElementById("charImage");
+        const placeholder = document.getElementById("charPlaceholder");
+        
+        if (img) {
+            img.src = reader.result;
+            img.style.display = 'block';
+            console.log('Character image displayed in UI');
+        }
+        
+        if (placeholder) {
+            placeholder.style.display = 'none';
+        }
+        
+        // Save the image using the file system
+        if (window.characterFileSystem && window.characterFileSystem.currentCharacterId) {
+            console.log('Saving character image via File System for character:', window.characterFileSystem.currentCharacterId);
+            
+            // Update the character manager's character object for immediate feedback
+            if (window.characterManager && window.characterManager.currentCharacter) {
+                window.characterManager.currentCharacter.imageUrl = reader.result;
+                
+                // Update character metadata in directory
+                window.characterManager.updateCharacterMetadata(
+                    window.characterManager.currentCharacter.id, 
+                    { 
+                        imageUrl: reader.result,
+                        lastModified: new Date().toISOString()
+                    }
+                );
+                
+                console.log('Character manager updated with new image');
+            }
+            
+            // Immediately save the character state to capture the image
+            await window.characterFileSystem.saveCurrentCharacterState();
+            console.log('Character image saved to file system');
+            
+        } else {
+            console.warn('Character File System not available or no current character');
+            console.log('Current character ID:', window.characterFileSystem?.currentCharacterId);
+        }
+        
+        // Reset the file input so the same file can be uploaded again if needed
+        event.target.value = '';
     };
+    
+    reader.onerror = function() {
+        console.error('Error reading image file');
+        alert('Error reading image file. Please try again.');
+    };
+    
     reader.readAsDataURL(event.target.files[0]);
 }
 
