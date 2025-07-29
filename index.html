@@ -4,7 +4,7 @@
  <meta charset="UTF-8" />
  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
  <title>Zevi Character Sheet</title>
- <link rel="stylesheet" href="style.css">
+     <link rel="stylesheet" href="assets/css/main.css">
 </head>
 <body>
  <div class="glass" data-color-target="main-glass">
@@ -642,18 +642,24 @@
         <script src="core/AutoSave.js"></script>
         <script src="core/AppController.js"></script>
         
-        <!-- Legacy modules for compatibility -->
-        <script src="characterManager.js"></script>
-        <script src="characters.js"></script>
-<script src="hpStress.js"></script>
-<script src="hope.js"></script>
-<script src="script.js"></script>
-<script src="downtime.js"></script>
-<script src="journal.js"></script>
-<script src="experiences.js"></script>
-<script src="details.js"></script>
-<script src="settings.js"></script>
-<script src="equipment.js"></script>
+        <!-- Character Management -->
+        <script src="modules/character/characterManager.js"></script>
+        <script src="modules/character/characters.js"></script>
+        
+        <!-- Character Sheet Modules -->
+        <script src="modules/character-sheet/hpStress.js"></script>
+        <script src="modules/character-sheet/hope.js"></script>
+        <script src="modules/character-sheet/downtime.js"></script>
+        <script src="modules/character-sheet/journal.js"></script>
+        <script src="modules/character-sheet/experiences.js"></script>
+        <script src="modules/character-sheet/details.js"></script>
+        <script src="modules/character-sheet/settings.js"></script>
+        
+        <!-- Equipment Modules -->
+        <script src="modules/equipment/equipment.js"></script>
+        
+        <!-- Utilities -->
+        <script src="assets/js/utils/script.js"></script>
  <script>
   // Initialize character management
   function goToCharacterSelection() {
