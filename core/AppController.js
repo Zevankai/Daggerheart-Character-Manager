@@ -392,6 +392,7 @@ class AppController {
         // Update old character manager if it exists
         if (window.characterManager) {
             window.characterManager.characters = characters;
+            console.log('Updated character manager with', characters.length, 'characters');
         }
     }
 
