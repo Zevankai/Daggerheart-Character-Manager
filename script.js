@@ -6,23 +6,33 @@ function uploadCharacterImage(event) {
       img.src = reader.result;
       document.getElementById("charPlaceholder").style.display = 'none';
       
-      // IMPORTANT: Save the image to the current character
-      if (window.characterManager && window.characterManager.currentCharacter) {
-          console.log('Saving character image to current character');
-          window.characterManager.currentCharacter.imageUrl = reader.result;
+      // IMPORTANT: Save the image to the current character using CharacterDataStore
+      if (window.characterDataStore) {
+          console.log('Saving character image via CharacterDataStore');
           
-          // Update the character metadata
-          window.characterManager.updateCharacterMetadata(
-              window.characterManager.currentCharacter.id, 
-              { 
-                  imageUrl: reader.result,
-                  lastModified: new Date().toISOString()
+          const success = window.characterDataStore.updateCurrentCharacterData({
+              imageUrl: reader.result
+          });
+          
+          if (success) {
+              console.log('Character image saved successfully');
+              
+              // Also update the character manager's character object
+              if (window.characterManager && window.characterManager.currentCharacter) {
+                  window.characterManager.currentCharacter.imageUrl = reader.result;
+                  window.characterManager.updateCharacterMetadata(
+                      window.characterManager.currentCharacter.id, 
+                      { 
+                          imageUrl: reader.result,
+                          lastModified: new Date().toISOString()
+                      }
+                  );
               }
-          );
-          
-          console.log('Character image saved successfully');
+          } else {
+              console.error('Failed to save character image');
+          }
       } else {
-          console.warn('No current character to save image to');
+          console.warn('CharacterDataStore not available');
       }
     };
     reader.readAsDataURL(event.target.files[0]);
@@ -394,22 +404,34 @@ document.addEventListener('DOMContentLoaded', () => {
     // Evasion value functionality
     const evasionValue = document.getElementById('evasionValue');
     if (evasionValue) {
-        // Load saved evasion value
-        const savedEvasion = localStorage.getItem('zevi-evasion');
-        if (savedEvasion !== null) {
-            evasionValue.value = savedEvasion;
-        }
+        // Load saved evasion value using CharacterDataStore
+        setTimeout(() => {
+            if (window.characterDataStore) {
+                const data = window.characterDataStore.getCurrentCharacterData();
+                if (data && data.evasion !== undefined) {
+                    evasionValue.value = data.evasion;
+                }
+            }
+        }, 300); // Wait for character data to load
 
         // Save evasion value when it changes
         evasionValue.addEventListener('input', () => {
-            localStorage.setItem('zevi-evasion', evasionValue.value);
+            if (window.characterDataStore) {
+                window.characterDataStore.updateCurrentCharacterData({
+                    evasion: parseInt(evasionValue.value) || 10
+                });
+            }
         });
 
         // Handle blur to ensure valid value
         evasionValue.addEventListener('blur', () => {
             if (evasionValue.value === '' || isNaN(evasionValue.value)) {
                 evasionValue.value = 10; // Default value
-                localStorage.setItem('zevi-evasion', '10');
+                if (window.characterDataStore) {
+                    window.characterDataStore.updateCurrentCharacterData({
+                        evasion: 10
+                    });
+                }
             }
         });
 

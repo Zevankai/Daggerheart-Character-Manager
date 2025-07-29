@@ -1,12 +1,29 @@
 // --- JOURNAL LOGIC ---
-let journalEntries = JSON.parse(localStorage.getItem('zevi-journal-entries')) || [];
+let journalEntries = [];
 let currentFilterCategory = 'all'; // Default filter category
 
+function loadJournalEntries() {
+    if (window.JournalAdapter) {
+        journalEntries = window.JournalAdapter.getEntries();
+    } else {
+        // Fallback to old system
+        journalEntries = JSON.parse(localStorage.getItem('zevi-journal-entries')) || [];
+    }
+}
+
 function saveJournalEntries() {
-    localStorage.setItem('zevi-journal-entries', JSON.stringify(journalEntries));
+    if (window.JournalAdapter) {
+        window.JournalAdapter.saveEntries(journalEntries);
+    } else {
+        // Fallback to old system
+        localStorage.setItem('zevi-journal-entries', JSON.stringify(journalEntries));
+    }
 }
 
 function renderJournalEntries() {
+    // Load entries first
+    loadJournalEntries();
+    
     const journalListDiv = document.getElementById('journal-entries-list');
     const journalDetailDiv = document.getElementById('journal-entry-detail');
     const addEntryButton = document.querySelector('#journal-tab-content > .button');

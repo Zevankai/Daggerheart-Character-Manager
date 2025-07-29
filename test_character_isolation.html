@@ -21,7 +21,7 @@
         <h2>Test Controls</h2>
         <button onclick="createTestCharacters()">Create Test Characters</button>
         <button onclick="testCharacterSwitching()">Test Character Switching</button>
-        <button onclick="testProxySystem()">Test Proxy System</button>
+        <button onclick="testDataStoreSystem()">Test Data Store System</button>
         <button onclick="displayStorageState()">Display Storage State</button>
         <button onclick="clearAllData()">Clear All Data</button>
     </div>
@@ -36,7 +36,8 @@
         <div id="storageDisplay" class="storage-display"></div>
     </div>
 
-    <script src="characterStorageProxy.js"></script>
+    <script src="characterDataStore.js"></script>
+    <script src="characterDataAdapters.js"></script>
     <script src="characterManager.js"></script>
     <script>
         let testResults = [];
@@ -176,18 +177,18 @@
             storageDiv.textContent = output;
         }
 
-        function testProxySystem() {
-            addTestResult('Testing proxy system...');
+        function testDataStoreSystem() {
+            addTestResult('Testing Character Data Store system...');
             
             try {
-                // Check if proxy is active
-                if (!window.characterStorageProxy) {
-                    addTestResult('Proxy system not available!', false);
+                // Check if data store is available
+                if (!window.characterDataStore) {
+                    addTestResult('Character Data Store not available!', false);
                     return;
                 }
                 
-                const debugInfo = window.characterStorageProxy.getDebugInfo();
-                addTestResult(`Proxy active: ${debugInfo.isActive}, Current character: ${debugInfo.currentCharacterId || 'None'}`);
+                const debugInfo = window.characterDataStore.getDebugInfo();
+                addTestResult(`Data Store initialized: ${debugInfo.isInitialized}, Current character: ${debugInfo.currentCharacterId || 'None'}`);
                 
                 // Create test characters if none exist
                 if (window.characterManager.characters.length < 2) {
@@ -198,50 +199,65 @@
                 const char1 = window.characterManager.characters[0];
                 const char2 = window.characterManager.characters[1];
                 
-                // Test proxy redirection
-                window.characterStorageProxy.loadCharacterContext(char1.id);
-                localStorage.setItem('zevi-hope', '10');
-                localStorage.setItem('zevi-equipment', JSON.stringify([{name: 'Proxy Test Sword'}]));
+                // Test data isolation
+                addTestResult(`Testing data isolation between ${char1.name} and ${char2.name}...`);
                 
-                window.characterStorageProxy.loadCharacterContext(char2.id);
-                localStorage.setItem('zevi-hope', '20');
-                localStorage.setItem('zevi-equipment', JSON.stringify([{name: 'Proxy Test Staff'}]));
+                // Switch to character 1 and set data
+                window.characterDataStore.switchToCharacter(char1.id);
+                window.characterDataStore.updateCurrentCharacterData({
+                    evasion: 15,
+                    hope: { current: 3, max: 6 },
+                    journal: { entries: [{ title: 'Char1 Adventure', content: 'Found treasure' }] },
+                    details: { background: 'Char1 background', personality: 'Brave' }
+                });
                 
-                // Switch back and verify isolation
-                window.characterStorageProxy.loadCharacterContext(char1.id);
-                const char1Hope = localStorage.getItem('zevi-hope');
-                const char1Equipment = localStorage.getItem('zevi-equipment');
+                // Switch to character 2 and set different data
+                window.characterDataStore.switchToCharacter(char2.id);
+                window.characterDataStore.updateCurrentCharacterData({
+                    evasion: 12,
+                    hope: { current: 5, max: 6 },
+                    journal: { entries: [{ title: 'Char2 Adventure', content: 'Learned magic' }] },
+                    details: { background: 'Char2 background', personality: 'Wise' }
+                });
                 
-                window.characterStorageProxy.loadCharacterContext(char2.id);
-                const char2Hope = localStorage.getItem('zevi-hope');
-                const char2Equipment = localStorage.getItem('zevi-equipment');
+                // Switch back to character 1 and verify data
+                const char1Data = window.characterDataStore.switchToCharacter(char1.id);
+                const char2Data = window.characterDataStore.switchToCharacter(char2.id);
                 
-                if (char1Hope === '10' && char2Hope === '20') {
-                    addTestResult('SUCCESS: Proxy system correctly isolates hope values!', true);
+                // Verify isolation
+                if (char1Data.evasion === 15 && char2Data.evasion === 12) {
+                    addTestResult('SUCCESS: Evasion values properly isolated!', true);
                 } else {
-                    addTestResult(`FAILURE: Hope values not isolated. Char1: ${char1Hope}, Char2: ${char2Hope}`, false);
+                    addTestResult(`FAILURE: Evasion not isolated. Char1: ${char1Data.evasion}, Char2: ${char2Data.evasion}`, false);
                 }
                 
-                if (char1Equipment.includes('Sword') && char2Equipment.includes('Staff')) {
-                    addTestResult('SUCCESS: Proxy system correctly isolates equipment!', true);
+                if (char1Data.hope.current === 3 && char2Data.hope.current === 5) {
+                    addTestResult('SUCCESS: Hope values properly isolated!', true);
                 } else {
-                    addTestResult('FAILURE: Equipment not properly isolated', false);
+                    addTestResult(`FAILURE: Hope not isolated. Char1: ${char1Data.hope.current}, Char2: ${char2Data.hope.current}`, false);
+                }
+                
+                if (char1Data.journal.entries[0].title.includes('Char1') && char2Data.journal.entries[0].title.includes('Char2')) {
+                    addTestResult('SUCCESS: Journal entries properly isolated!', true);
+                } else {
+                    addTestResult('FAILURE: Journal entries not properly isolated', false);
+                }
+                
+                if (char1Data.details.personality === 'Brave' && char2Data.details.personality === 'Wise') {
+                    addTestResult('SUCCESS: Character details properly isolated!', true);
+                } else {
+                    addTestResult('FAILURE: Character details not properly isolated', false);
                 }
                 
                 displayStorageState();
                 
             } catch (error) {
-                addTestResult(`Error testing proxy system: ${error.message}`, false);
+                addTestResult(`Error testing data store system: ${error.message}`, false);
             }
         }
 
         function clearAllData() {
             addTestResult('Clearing all test data...');
-            
-            // Temporarily deactivate proxy to clear everything
-            if (window.characterStorageProxy) {
-                window.characterStorageProxy.deactivate();
-            }
             
             // Clear all ZEVI-related localStorage
             const keys = Object.keys(localStorage);
@@ -256,9 +272,10 @@
             window.characterManager.currentCharacter = null;
             window.characterManager.saveCharacters();
             
-            // Reactivate proxy
-            if (window.characterStorageProxy) {
-                window.characterStorageProxy.activate();
+            // Reset character data store
+            if (window.characterDataStore) {
+                window.characterDataStore.currentCharacterId = null;
+                window.characterDataStore.characterDataCache.clear();
             }
             
             addTestResult('All test data cleared');

@@ -28,34 +28,29 @@ class CharacterManager {
 
   // Create a new character with basic structure
   createCharacter(characterData = {}) {
+      const characterId = Date.now().toString();
+      
       const newCharacter = {
-          id: Date.now().toString(),
+          id: characterId,
           name: characterData.name || 'Unnamed Character',
           subtitle: characterData.subtitle || '',
           level: characterData.level || 1,
           platform: characterData.platform || 'Daggerheart', // Default to Daggerheart
           imageUrl: characterData.imageUrl || '', // Character portrait URL
-          domains: characterData.domains || [],
-          attributes: characterData.attributes || {
-              might: 10,
-              agility: 10,
-              intellect: 10,
-              charm: 10
-          },
-          hp: characterData.hp || { current: 10, max: 10 },
-          stress: characterData.stress || { current: 0, max: 10 },
-          evasion: characterData.evasion || 10,
-          equipment: characterData.equipment || null,
-          journal: characterData.journal || null,
-          experiences: characterData.experiences || null,
-          hope: characterData.hope || null,
-          downtime: characterData.downtime || null,
           createdAt: new Date().toISOString(),
           lastModified: new Date().toISOString()
       };
 
+      // Add to characters list
       this.characters.push(newCharacter);
       this.saveCharacters();
+      
+      // Create comprehensive character data using the data store
+      if (window.characterDataStore) {
+          console.log('Creating comprehensive character data via CharacterDataStore');
+          window.characterDataStore.createCharacterData(characterId, characterData);
+      }
+      
       return newCharacter;
   }
 
@@ -63,9 +58,9 @@ class CharacterManager {
   deleteCharacter(characterId) {
       const index = this.characters.findIndex(char => char.id === characterId);
       if (index !== -1) {
-          // Use proxy system to clear character data
-          if (window.characterStorageProxy) {
-              window.characterStorageProxy.clearCharacterData(characterId);
+          // Use CharacterDataStore to clear character data
+          if (window.characterDataStore) {
+              window.characterDataStore.deleteCharacterData(characterId);
           } else {
               // Fallback to manual clearing
               this.clearCharacterStorage(this.characters[index]);
@@ -100,37 +95,31 @@ class CharacterManager {
       try {
           console.log('=== LOADING CHARACTER DATA ===', character.name, 'ID:', character.id);
           
-          // First, save any current character data to their specific storage
-          if (this.currentCharacter && this.currentCharacter.id !== character.id) {
-              console.log('Different character loading - saving current character data first');
-              console.log('Current character:', this.currentCharacter.name, 'ID:', this.currentCharacter.id);
-              console.log('New character:', character.name, 'ID:', character.id);
+          // Use the new CharacterDataStore system
+          if (window.characterDataStore) {
+              console.log('Using CharacterDataStore for character switching');
               
-              // The proxy system will handle saving automatically
-              console.log('Proxy system will handle character data isolation automatically');
-          }
-          
-          // Use the proxy system to switch character context
-          if (window.characterStorageProxy) {
-              window.characterStorageProxy.loadCharacterContext(character.id);
+              // Switch to the character using the data store
+              const characterData = window.characterDataStore.switchToCharacter(character.id);
+              
+              // Update the character object with the loaded data
+              Object.assign(character, characterData);
+              
+              // Set current character
+              this.currentCharacter = character;
+              
+              console.log('Character data loaded successfully via CharacterDataStore');
+              return true;
           } else {
-              // Fallback to manual system
+              console.error('CharacterDataStore not available - falling back to old system');
+              
+              // Fallback to old system
               localStorage.setItem('zevi-current-character-id', character.id);
+              this.currentCharacter = character;
+              this.populateUIFields(character);
+              
+              return true;
           }
-
-          // Set current character
-          this.currentCharacter = character;
-          
-          // Populate UI fields with character data
-          this.populateUIFields(character);
-
-          // IMPORTANT: Restore various system states
-          setTimeout(() => {
-              this.restoreAllCharacterSystems(character.id);
-          }, 100); // Small delay to ensure UI is ready
-
-          console.log('Character data loaded successfully');
-          return true;
       } catch (error) {
           console.error('Error loading character data:', error);
           return false;
