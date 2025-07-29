@@ -69,10 +69,13 @@ class CharactersPageManager {
             return;
         }
 
-        // Get characters from new system first, fallback to old system
+        // Get characters from comprehensive save system first, then fallback
         let characters = [];
         
-        if (window.app && window.app.initialized) {
+        if (window.comprehensiveCharacterSave) {
+            console.log('Loading characters from comprehensive save system');
+            characters = window.comprehensiveCharacterSave.getAllCharacters();
+        } else if (window.app && window.app.initialized) {
             console.log('Loading characters from new app system');
             characters = this.getCharactersFromNewSystem();
         } else {
@@ -116,7 +119,15 @@ class CharactersPageManager {
     // Create a character card element
     createCharacterCard(character) {
         const card = document.createElement('div');
-        card.className = 'character-card';
+        
+        // Check if this is the currently active character
+        const currentCharacterId = window.comprehensiveCharacterSave ? 
+            window.comprehensiveCharacterSave.getCurrentCharacter() : 
+            localStorage.getItem('zevi-current-character-id');
+        
+        const isActive = character.id === currentCharacterId;
+        
+        card.className = `character-card ${isActive ? 'character-card-active' : ''}`;
         card.dataset.characterId = character.id;
         card.dataset.platform = character.platform || 'Daggerheart';
         card.dataset.name = character.name.toLowerCase();
@@ -124,7 +135,21 @@ class CharactersPageManager {
         const imageUrl = character.imageUrl || '';
         const platformIcon = character.platform === 'Dungeons & Dragons' ? '🐉' : '⚔️';
         
+        // Active character indicator
+        const activeIndicator = isActive ? `
+            <div class="active-character-indicator">
+                <span class="active-badge">🟢 CURRENTLY ACTIVE</span>
+            </div>
+        ` : '';
+        
+        // Button states for active character
+        const loadButtonText = isActive ? 'Currently Active' : 'Load';
+        const loadButtonClass = isActive ? 'character-action-btn active-btn' : 'character-action-btn load-btn';
+        const loadButtonDisabled = isActive ? 'disabled' : '';
+        const loadButtonIcon = isActive ? '✅' : '▶️';
+        
         card.innerHTML = `
+            ${activeIndicator}
             <div class="character-card-header">
                 <div class="character-image">
                     ${imageUrl ? 
@@ -143,13 +168,14 @@ class CharactersPageManager {
                 ${character.subtitle ? `<p class="character-subtitle">${character.subtitle}</p>` : ''}
                 <div class="character-meta">
                     <span class="character-level">Level ${character.level || 1}</span>
-                    <span class="character-date">Created ${this.formatDate(character.createdAt)}</span>
+                    <span class="character-date">Modified ${this.formatDate(character.lastModified || character.createdAt)}</span>
+                    ${character.dataSize ? `<span class="character-size">${(character.dataSize / 1024).toFixed(1)}KB</span>` : ''}
                 </div>
             </div>
             
             <div class="character-actions">
-                <button class="character-action-btn load-btn" onclick="charactersPageManager.loadCharacter('${character.id}')" title="Load Character">
-                    <span>▶️</span> Load
+                <button class="${loadButtonClass}" onclick="charactersPageManager.loadCharacter('${character.id}')" title="${loadButtonText}" ${loadButtonDisabled}>
+                    <span>${loadButtonIcon}</span> ${loadButtonText}
                 </button>
                 <button class="character-action-btn edit-btn" onclick="charactersPageManager.editCharacter('${character.id}')" title="Edit Character">
                     <span>✏️</span> Edit
@@ -213,27 +239,67 @@ class CharactersPageManager {
     async loadCharacter(characterId) {
         console.log('=== LOAD CHARACTER: Starting load for ID:', characterId);
         
-        if (!window.characterManager) {
-            console.error('Character manager not available');
+        // Check if this character is already active
+        const currentCharacterId = window.comprehensiveCharacterSave ? 
+            window.comprehensiveCharacterSave.getCurrentCharacter() : 
+            localStorage.getItem('zevi-current-character-id');
+            
+        if (characterId === currentCharacterId) {
+            console.log('Character is already active, no need to load');
             return;
         }
-
-        const character = window.characterManager.getCharacter(characterId);
-        console.log('Character found:', character);
         
-        if (character) {
-            console.log('Loading character via new app system...');
+        let success = false;
+        let characterName = 'Unknown Character';
+        
+        // Try comprehensive save system first
+        if (window.comprehensiveCharacterSave) {
+            console.log('Loading character via comprehensive save system...');
+            success = await window.comprehensiveCharacterSave.loadCharacter(characterId);
             
-            // Use the new app controller
-            if (window.app && window.app.initialized) {
-                await window.app.switchToCharacter(characterId);
-            } else {
-                // Fallback to old system if new app not ready
-                if (window.characterManager.loadCharacterData) {
-                    await window.characterManager.loadCharacterData(character);
-                }
+            if (success) {
+                // Get character name for notification
+                const characters = window.comprehensiveCharacterSave.getAllCharacters();
+                const character = characters.find(c => c.id === characterId);
+                characterName = character ? character.name : 'Character';
             }
+        }
+        
+        // Fallback to other systems if comprehensive save failed
+        if (!success) {
+            console.log('Falling back to old systems...');
             
+            if (!window.characterManager) {
+                console.error('No character systems available');
+                alert('Character loading system not available!');
+                return;
+            }
+
+            const character = window.characterManager.getCharacter(characterId);
+            console.log('Character found in old system:', character);
+            
+            if (character) {
+                characterName = character.name;
+                
+                // Use the new app controller
+                if (window.app && window.app.initialized) {
+                    await window.app.switchToCharacter(characterId);
+                    success = true;
+                } else {
+                    // Fallback to old system if new app not ready
+                    if (window.characterManager.loadCharacterData) {
+                        await window.characterManager.loadCharacterData(character);
+                        success = true;
+                    }
+                }
+            } else {
+                console.error('Character not found for ID:', characterId);
+                alert('Character not found!');
+                return;
+            }
+        }
+        
+        if (success) {
             // Switch to main character view (first tab)
             console.log('Switching to main character view...');
             const firstTab = document.querySelector('.tabs button[data-target="domain-vault-tab-content"]');
@@ -247,32 +313,40 @@ class CharactersPageManager {
                 console.log('Switched to domain vault tab');
             }
             
-            console.log('=== LOAD CHARACTER: Character loaded successfully:', character.name);
+            // Refresh the characters list to update active status
+            this.refreshCharactersList();
+            
+            console.log('=== LOAD CHARACTER: Character loaded successfully:', characterName);
             
             // Show success message briefly
             const notification = document.createElement('div');
-            notification.textContent = `Loaded character: ${character.name}`;
+            notification.textContent = `✅ Loaded character: ${characterName}`;
             notification.style.cssText = `
                 position: fixed;
                 top: 20px;
                 right: 20px;
                 background: #4CAF50;
                 color: white;
-                padding: 10px 20px;
-                border-radius: 4px;
+                padding: 12px 24px;
+                border-radius: 8px;
                 z-index: 10000;
                 font-size: 14px;
+                font-weight: 500;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                animation: slideIn 0.3s ease-out;
             `;
             document.body.appendChild(notification);
             
             setTimeout(() => {
                 if (document.body.contains(notification)) {
-                    document.body.removeChild(notification);
+                    notification.style.animation = 'slideOut 0.3s ease-in';
+                    setTimeout(() => {
+                        if (document.body.contains(notification)) {
+                            document.body.removeChild(notification);
+                        }
+                    }, 300);
                 }
             }, 3000);
-        } else {
-            console.error('Character not found for ID:', characterId);
-            alert('Character not found!');
         }
     }
 
@@ -348,9 +422,44 @@ class CharactersPageManager {
     async saveNewCharacter(name, platform, level, imageUrl) {
         console.log('=== SAVE NEW CHARACTER: Saving character ===');
         
-        // Use the new app controller if available
+        // Try comprehensive integration system first
+        if (window.comprehensiveIntegration && window.comprehensiveIntegration.isInitialized) {
+            console.log('Using comprehensive integration system to create character');
+            
+            try {
+                const newCharacterId = await window.comprehensiveIntegration.createNewCharacter({
+                    name,
+                    level: level.toString(),
+                    imageUrl
+                });
+                
+                if (newCharacterId) {
+                    console.log('Character created successfully with comprehensive system:', name, 'ID:', newCharacterId);
+                    
+                    // Close modal and refresh list
+                    this.closeCreateCharacterModal();
+                    this.refreshCharactersList();
+                    
+                    // Auto-load the new character if we're on the main page
+                    if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
+                        console.log('Auto-loading new character...');
+                        await window.comprehensiveIntegration.switchToCharacter(newCharacterId);
+                    }
+                    
+                    console.log('=== CREATE CHARACTER: Process complete ===');
+                    return;
+                } else {
+                    console.error('Comprehensive system failed to create character');
+                }
+                
+            } catch (error) {
+                console.error('Failed to create character with comprehensive system:', error);
+            }
+        }
+        
+        // Fallback to new app controller if available
         if (window.app && window.app.initialized) {
-            console.log('Using new app controller to create character');
+            console.log('Falling back to new app controller');
             
             try {
                 const newCharacterId = await window.app.createNewCharacter();

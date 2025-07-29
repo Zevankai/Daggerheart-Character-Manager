@@ -187,16 +187,35 @@ async function createNewCharacter() {
     console.log('=== CREATE NEW CHARACTER: Starting ===');
     
     try {
+        // Try comprehensive integration system first
+        if (window.comprehensiveIntegration && window.comprehensiveIntegration.isInitialized) {
+            console.log('Using comprehensive integration system');
+            const newCharacterId = await window.comprehensiveIntegration.createNewCharacter({
+                name: 'New Character',
+                level: '1'
+            });
+            
+            if (newCharacterId) {
+                console.log('New character created:', newCharacterId);
+                // Redirect to main page
+                window.location.href = 'index.html';
+                return;
+            } else {
+                console.error('Comprehensive system failed to create character');
+            }
+        }
+        
+        // Fallback to old app system
         if (window.app && window.app.initialized) {
-            // Use new app system
+            console.log('Falling back to old app system');
             const newCharacterId = await window.app.createNewCharacter();
             console.log('New character created:', newCharacterId);
             
             // Redirect to main page
             window.location.href = 'index.html';
         } else {
-            console.error('App system not initialized');
-            alert('System not ready. Please refresh the page and try again.');
+            console.error('No character creation system available');
+            alert('Character creation system not ready. Please refresh the page and try again.');
         }
     } catch (error) {
         console.error('Error creating character:', error);
