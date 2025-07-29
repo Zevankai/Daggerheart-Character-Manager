@@ -150,6 +150,13 @@ class AutoSaveManager {
     handleFieldChange(fieldPath) {
         console.log(`Field changed: ${fieldPath}`);
         
+        // Log current character info for debugging
+        if (window.characterManager && window.characterManager.currentCharacter) {
+            console.log('Current character when field changed:', window.characterManager.currentCharacter.name, 'ID:', window.characterManager.currentCharacter.id);
+        } else {
+            console.warn('No current character when field changed!');
+        }
+        
         // Clear existing timeout
         if (this.saveTimeout) {
             clearTimeout(this.saveTimeout);

@@ -92,7 +92,17 @@ class CharacterManager {
   // Load character data from localStorage
   loadCharacterData(character) {
       try {
-          console.log('=== LOADING CHARACTER DATA ===', character.name);
+          console.log('=== LOADING CHARACTER DATA ===', character.name, 'ID:', character.id);
+          
+          // First, save any current character data to their specific storage
+          if (this.currentCharacter && this.currentCharacter.id !== character.id) {
+              console.log('Different character loading - saving current character data first');
+              console.log('Current character:', this.currentCharacter.name, 'ID:', this.currentCharacter.id);
+              console.log('New character:', character.name, 'ID:', character.id);
+              
+              // Save current state to the previous character's storage
+              this.saveCharacterData(this.currentCharacter);
+          }
           
           // Load all character-specific data
           const equipment = localStorage.getItem(`zevi-equipment-${character.id}`);
@@ -101,35 +111,52 @@ class CharacterManager {
           const hope = localStorage.getItem(`zevi-hope-${character.id}`);
           const downtime = localStorage.getItem(`zevi-downtime-${character.id}`);
 
+          console.log('Loading character-specific data for:', character.id);
+          console.log('Equipment data found:', !!equipment);
+          console.log('Journal data found:', !!journal);
+          console.log('Experiences data found:', !!experiences);
+          console.log('Hope data found:', !!hope);
+          console.log('Downtime data found:', !!downtime);
+
           // Set character-specific data as current
           if (equipment) {
               localStorage.setItem('zevi-equipment', equipment);
+              console.log('Loaded equipment data for character');
           } else {
               localStorage.removeItem('zevi-equipment');
+              console.log('No equipment data for character - cleared global equipment');
           }
           
           if (journal) {
               localStorage.setItem('zevi-journal', journal);
+              console.log('Loaded journal data for character');
           } else {
               localStorage.removeItem('zevi-journal');
+              console.log('No journal data for character - cleared global journal');
           }
           
           if (experiences) {
               localStorage.setItem('zevi-experiences', experiences);
+              console.log('Loaded experiences data for character');
           } else {
               localStorage.removeItem('zevi-experiences');
+              console.log('No experiences data for character - cleared global experiences');
           }
           
           if (hope) {
               localStorage.setItem('zevi-hope', hope);
+              console.log('Loaded hope data for character');
           } else {
               localStorage.removeItem('zevi-hope');
+              console.log('No hope data for character - cleared global hope');
           }
           
           if (downtime) {
               localStorage.setItem('zevi-downtime', downtime);
+              console.log('Loaded downtime data for character');
           } else {
               localStorage.removeItem('zevi-downtime');
+              console.log('No downtime data for character - cleared global downtime');
           }
 
           // Set current character

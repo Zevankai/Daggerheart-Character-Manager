@@ -823,6 +823,8 @@ function switchEquipmentSection(section) {
 
 // ===== ITEM MANAGEMENT =====
 function showAddItemModal(defaultType = 'weapon') {
+    console.log('=== EQUIPMENT MODAL: Creating add item modal ===');
+    
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
     modal.innerHTML = `
@@ -895,6 +897,18 @@ function showAddItemModal(defaultType = 'weapon') {
     
     document.body.appendChild(modal);
     modal.style.display = 'flex';
+    
+    console.log('Equipment modal created with classes:', modal.className);
+    console.log('Modal inner structure:', modal.querySelector('.modal').className);
+    
+    // Check if CSS is properly loaded
+    const modalElement = modal.querySelector('.modal.character-modal');
+    if (modalElement) {
+        const computedStyle = window.getComputedStyle(modalElement);
+        console.log('Modal computed overflow-y:', computedStyle.overflowY);
+        console.log('Modal computed max-height:', computedStyle.maxHeight);
+        console.log('Modal computed display:', computedStyle.display);
+    }
     
     document.getElementById('add-item-form').addEventListener('submit', (e) => {
         e.preventDefault();
