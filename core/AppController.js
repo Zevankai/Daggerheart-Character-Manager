@@ -20,6 +20,9 @@ class AppController {
         console.log('=== INITIALIZING APPLICATION ===');
 
         try {
+            // Clean up all old character storage first
+            this.cleanupOldCharacterStorage();
+
             // Initialize core modules
             this.characterData = new CharacterData();
             this.uiManager = new UIManager();
@@ -51,6 +54,55 @@ class AppController {
         } catch (error) {
             console.error('Failed to initialize application:', error);
         }
+    }
+
+    // Clean up all old character storage systems
+    cleanupOldCharacterStorage() {
+        console.log('=== CLEANING UP OLD CHARACTER STORAGE ===');
+        
+        const keysToRemove = [];
+        
+        // Find all old character storage keys
+        Object.keys(localStorage).forEach(key => {
+            // Old character-specific storage (per-character keys)
+            if (key.includes('-char_') || 
+                key.includes('-character-') ||
+                key.startsWith('zevi-equipment-') ||
+                key.startsWith('zevi-journal-') ||
+                key.startsWith('zevi-experiences-') ||
+                key.startsWith('zevi-hope-') ||
+                key.startsWith('zevi-max-hope-') ||
+                key.startsWith('zevi-downtime-') ||
+                key.startsWith('zevi-projects-') ||
+                key.startsWith('zevi-character-details-') ||
+                key.startsWith('zevi-hp-') ||
+                key.startsWith('zevi-stress-') ||
+                key.startsWith('zevi-armor-') ||
+                key.startsWith('zevi-minor-damage-') ||
+                key.startsWith('zevi-major-damage-') ||
+                key.startsWith('zevi-active-armor-') ||
+                key.startsWith('zevi-total-armor-') ||
+                key.startsWith('zevi-evasion-') ||
+                key.startsWith('zevi-hp-stress-state-') ||
+                key.startsWith('zevi-active-weapons-armor-')) {
+                keysToRemove.push(key);
+            }
+            
+            // Old character directory systems
+            if (key === 'zevi-characters' || 
+                key === 'zevi-character-directory') {
+                keysToRemove.push(key);
+            }
+        });
+        
+        // Remove all old keys
+        keysToRemove.forEach(key => {
+            console.log('Removing old storage key:', key);
+            localStorage.removeItem(key);
+        });
+        
+        console.log(`Cleaned up ${keysToRemove.length} old character storage keys`);
+        console.log('=== OLD CHARACTER STORAGE CLEANUP COMPLETE ===');
     }
 
     // Set up global event listeners

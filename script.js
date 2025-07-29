@@ -9,37 +9,23 @@ function showAutoSaveStatus() {
     console.log('Legacy auto-save status');
 }
 
-// Debug function to inspect current character data
+// Debug function for new core system
 function debugCharacterData() {
-    if (!window.characterFileSystem || !window.characterFileSystem.currentCharacterId) {
-        console.log('No character loaded');
-        return;
+    if (window.app && window.app.initialized) {
+        const currentId = window.app.characterData.getCurrentCharacterId();
+        console.log('=== DEBUG CHARACTER DATA (NEW SYSTEM) ===');
+        console.log('Current Character ID:', currentId);
+        
+        if (currentId) {
+            const characterData = window.app.characterData.loadCharacterData(currentId);
+            console.log('Character Data:', characterData);
+        }
+        
+        return window.app.getStatus();
+    } else {
+        console.log('New app system not initialized');
+        return null;
     }
-    
-    const characterId = window.characterFileSystem.currentCharacterId;
-    console.log('=== DEBUG CHARACTER DATA ===');
-    console.log('Current Character ID:', characterId);
-    
-    // Get the character file data
-    const characterData = window.characterFileSystem.loadCharacterFile(characterId);
-    console.log('Character File Data:', characterData);
-    
-    // Get current localStorage data
-    console.log('Current localStorage data:');
-    console.log('- Evasion:', localStorage.getItem('zevi-evasion'));
-    console.log('- Hope:', localStorage.getItem('zevi-hope'));
-    console.log('- Equipment:', localStorage.getItem('zevi-equipment'));
-    console.log('- Journal:', localStorage.getItem('zevi-journal-entries'));
-    console.log('- Details:', localStorage.getItem('zevi-character-details'));
-    
-    // Get current UI values
-    console.log('Current UI values:');
-    const nameInput = document.querySelector('.name-box input[type="text"]');
-    console.log('- Name:', nameInput?.value);
-    const evasionInput = document.getElementById('evasionValue');
-    console.log('- Evasion UI:', evasionInput?.value);
-    
-    return characterData;
 }
 
 // Make debug function globally available
