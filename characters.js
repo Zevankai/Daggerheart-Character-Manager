@@ -176,58 +176,62 @@ class CharactersPageManager {
             return;
         }
 
-        // File system automatically saves current character when switching
         const character = window.characterManager.getCharacter(characterId);
         console.log('Character found:', character);
         
         if (character) {
-            console.log('Loading character data via file system...');
+            console.log('Loading character via simple save system...');
             
-            // Use the file system to load character
-            const loadSuccess = await window.characterManager.loadCharacterData(character);
-            console.log('Character data load result:', loadSuccess);
-            
-            if (loadSuccess) {
-                // Switch to main character view (first tab)
-                console.log('Switching to main character view...');
-                const firstTab = document.querySelector('.tabs button[data-target="domain-vault-tab-content"]');
-                if (firstTab) {
-                    // Trigger tab switch
-                    document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
-                    document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
-                    
-                    firstTab.classList.add('active');
-                    document.getElementById('domain-vault-tab-content').classList.add('active');
-                    console.log('Switched to domain vault tab');
-                }
-                
-                console.log('=== LOAD CHARACTER: Character loaded successfully:', character.name);
-                
-                // Show success message briefly
-                const notification = document.createElement('div');
-                notification.textContent = `Loaded character: ${character.name}`;
-                notification.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    background: #4CAF50;
-                    color: white;
-                    padding: 10px 20px;
-                    border-radius: 4px;
-                    z-index: 10000;
-                    font-size: 14px;
-                `;
-                document.body.appendChild(notification);
-                
-                setTimeout(() => {
-                    if (document.body.contains(notification)) {
-                        document.body.removeChild(notification);
-                    }
-                }, 3000);
-            } else {
-                console.error('Failed to load character data');
-                alert('Failed to load character data. Please try again.');
+            // Use simple character save system
+            if (window.simpleCharacterSave) {
+                window.simpleCharacterSave.switchToCharacter(characterId);
             }
+            
+            // Also use the file system as backup
+            if (window.characterManager.loadCharacterData) {
+                try {
+                    await window.characterManager.loadCharacterData(character);
+                } catch (error) {
+                    console.log('File system load failed, using simple system only');
+                }
+            }
+            
+            // Switch to main character view (first tab)
+            console.log('Switching to main character view...');
+            const firstTab = document.querySelector('.tabs button[data-target="domain-vault-tab-content"]');
+            if (firstTab) {
+                // Trigger tab switch
+                document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+                
+                firstTab.classList.add('active');
+                document.getElementById('domain-vault-tab-content').classList.add('active');
+                console.log('Switched to domain vault tab');
+            }
+            
+            console.log('=== LOAD CHARACTER: Character loaded successfully:', character.name);
+            
+            // Show success message briefly
+            const notification = document.createElement('div');
+            notification.textContent = `Loaded character: ${character.name}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #4CAF50;
+                color: white;
+                padding: 10px 20px;
+                border-radius: 4px;
+                z-index: 10000;
+                font-size: 14px;
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
+            }, 3000);
         } else {
             console.error('Character not found for ID:', characterId);
             alert('Character not found!');
