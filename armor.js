@@ -1,9 +1,8 @@
-import { createSection } from './utils.js'; // Assuming you have a utility to create sections
-
 export function initializeArmorSection(parentContainerId) {
-    const armorSection = createSection('armor-section', 'Armor');
-
+    const armorSection = document.createElement('div');
+    armorSection.className = 'armor-section';
     armorSection.innerHTML = `
+        <h3>Armor</h3>
         <div class="section-content">
             <div class="trackers-wrapper">
                 <button class="tracker-btn" data-type="armor" data-action="decrement">-</button>
