@@ -177,9 +177,12 @@ class CharactersPageManager {
         }
 
         // IMPORTANT: Save current character data before switching
-        if (window.characterManager.currentCharacter && window.autoSaveManager) {
+        if (window.characterManager.currentCharacter) {
             console.log('Saving current character data before switching...');
-            window.autoSaveManager.saveNow();
+            console.log('Current character:', window.characterManager.currentCharacter.name, 'ID:', window.characterManager.currentCharacter.id);
+            
+            // Use CharacterManager's comprehensive save method
+            window.characterManager.saveCharacterData(window.characterManager.currentCharacter);
         }
 
         const character = window.characterManager.getCharacter(characterId);
@@ -188,68 +191,52 @@ class CharactersPageManager {
         if (character) {
             console.log('Loading character data...');
             
-            // Use the existing character manager functionality
+            // Use the enhanced character manager functionality
             const loadSuccess = window.characterManager.loadCharacterData(character);
             console.log('Character data load result:', loadSuccess);
             
-            // Switch to main character view (first tab)
-            console.log('Switching to main character view...');
-            const firstTab = document.querySelector('.tabs button[data-target="domain-vault-tab-content"]');
-            if (firstTab) {
-                // Trigger tab switch
-                document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
-                document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+            if (loadSuccess) {
+                // Switch to main character view (first tab)
+                console.log('Switching to main character view...');
+                const firstTab = document.querySelector('.tabs button[data-target="domain-vault-tab-content"]');
+                if (firstTab) {
+                    // Trigger tab switch
+                    document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
+                    document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+                    
+                    firstTab.classList.add('active');
+                    document.getElementById('domain-vault-tab-content').classList.add('active');
+                    console.log('Switched to domain vault tab');
+                }
                 
-                firstTab.classList.add('active');
-                document.getElementById('domain-vault-tab-content').classList.add('active');
-                console.log('Switched to domain vault tab');
+                // All system refreshes are now handled by CharacterManager.restoreAllCharacterSystems
+                console.log('Character systems will be restored by CharacterManager');
+                
+                console.log('=== LOAD CHARACTER: Character loaded successfully:', character.name);
+                
+                // Show success message briefly
+                const notification = document.createElement('div');
+                notification.textContent = `Loaded character: ${character.name}`;
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #4CAF50;
+                    color: white;
+                    padding: 10px 20px;
+                    border-radius: 4px;
+                    z-index: 10000;
+                    font-size: 14px;
+                `;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 3000);
+            } else {
+                console.error('Failed to load character data');
+                alert('Failed to load character data. Please try again.');
             }
-            
-            // Trigger refresh of all character-dependent systems with delay to ensure UI is updated
-            console.log('Triggering system refreshes...');
-            
-            setTimeout(() => {
-                // Refresh HP/Stress if available
-                if (window.initializeHPStress && typeof window.initializeHPStress === 'function') {
-                    console.log('Refreshing HP/Stress system');
-                    window.initializeHPStress();
-                }
-                
-                // Refresh Hope if available
-                if (window.initializeHope && typeof window.initializeHope === 'function') {
-                    console.log('Refreshing Hope system');
-                    window.initializeHope();
-                }
-                
-                // Refresh Equipment if available
-                if (window.initializeEquipment && typeof window.initializeEquipment === 'function') {
-                    console.log('Refreshing Equipment system');
-                    window.initializeEquipment();
-                }
-                
-                // Refresh Experiences if available
-                if (window.renderExperiences && typeof window.renderExperiences === 'function') {
-                    console.log('Refreshing Experiences system');
-                    window.renderExperiences();
-                }
-                
-                // Refresh Journal if available
-                if (window.renderJournalEntries && typeof window.renderJournalEntries === 'function') {
-                    console.log('Refreshing Journal system');
-                    window.renderJournalEntries();
-                }
-
-                // IMPORTANT: Reinitialize auto-save for the new character
-                if (window.autoSaveManager && typeof window.autoSaveManager.initialize === 'function') {
-                    console.log('Reinitializing auto-save system for new character');
-                    window.autoSaveManager.isInitialized = false; // Reset flag
-                    window.autoSaveManager.initialize();
-                }
-                
-                console.log('All system refreshes completed');
-            }, 300); // Increased delay to ensure all systems load properly
-            
-            console.log('=== LOAD CHARACTER: Character loaded successfully:', character.name);
         } else {
             console.error('Character not found for ID:', characterId);
             alert('Character not found!');

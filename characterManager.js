@@ -102,68 +102,13 @@ class CharacterManager {
               
               // Save current state to the previous character's storage
               this.saveCharacterData(this.currentCharacter);
+              
+              // IMPORTANT: Clear all global character data before loading new character
+              this.clearGlobalCharacterData();
           }
           
-          // Load all character-specific data
-          const equipment = localStorage.getItem(`zevi-equipment-${character.id}`);
-          const journal = localStorage.getItem(`zevi-journal-${character.id}`);
-          const experiences = localStorage.getItem(`zevi-experiences-${character.id}`);
-          const hope = localStorage.getItem(`zevi-hope-${character.id}`);
-          const downtime = localStorage.getItem(`zevi-downtime-${character.id}`);
-
-          // IMPORTANT: Also load HP/Stress states and active weapons/armor
-          const hpStressState = localStorage.getItem(`zevi-hp-stress-state-${character.id}`);
-          const activeWeaponsArmorState = localStorage.getItem(`zevi-active-weapons-armor-${character.id}`);
-
-          console.log('Loading character-specific data for:', character.id);
-          console.log('Equipment data found:', !!equipment);
-          console.log('Journal data found:', !!journal);
-          console.log('Experiences data found:', !!experiences);
-          console.log('Hope data found:', !!hope);
-          console.log('Downtime data found:', !!downtime);
-          console.log('HP/Stress state found:', !!hpStressState);
-          console.log('Active Weapons/Armor state found:', !!activeWeaponsArmorState);
-
-          // Set character-specific data as current
-          if (equipment) {
-              localStorage.setItem('zevi-equipment', equipment);
-              console.log('Loaded equipment data for character');
-          } else {
-              localStorage.removeItem('zevi-equipment');
-              console.log('No equipment data for character - cleared global equipment');
-          }
-          
-          if (journal) {
-              localStorage.setItem('zevi-journal', journal);
-              console.log('Loaded journal data for character');
-          } else {
-              localStorage.removeItem('zevi-journal');
-              console.log('No journal data for character - cleared global journal');
-          }
-          
-          if (experiences) {
-              localStorage.setItem('zevi-experiences', experiences);
-              console.log('Loaded experiences data for character');
-          } else {
-              localStorage.removeItem('zevi-experiences');
-              console.log('No experiences data for character - cleared global experiences');
-          }
-          
-          if (hope) {
-              localStorage.setItem('zevi-hope', hope);
-              console.log('Loaded hope data for character');
-          } else {
-              localStorage.removeItem('zevi-hope');
-              console.log('No hope data for character - cleared global hope');
-          }
-          
-          if (downtime) {
-              localStorage.setItem('zevi-downtime', downtime);
-              console.log('Loaded downtime data for character');
-          } else {
-              localStorage.removeItem('zevi-downtime');
-              console.log('No downtime data for character - cleared global downtime');
-          }
+          // Load all character-specific data and set as current global data
+          this.loadCharacterSpecificData(character.id);
 
           // Set current character
           localStorage.setItem('zevi-current-character-id', character.id);
@@ -172,10 +117,9 @@ class CharacterManager {
           // Populate UI fields with character data
           this.populateUIFields(character);
 
-          // IMPORTANT: Restore HP/Stress and Active Weapons/Armor states
+          // IMPORTANT: Restore various system states
           setTimeout(() => {
-              this.restoreHPStressState(hpStressState);
-              this.restoreActiveWeaponsArmorState(activeWeaponsArmorState);
+              this.restoreAllCharacterSystems(character.id);
           }, 100); // Small delay to ensure UI is ready
 
           console.log('Character data loaded successfully');
@@ -184,6 +128,134 @@ class CharacterManager {
           console.error('Error loading character data:', error);
           return false;
       }
+  }
+
+  // Clear all global character data to prevent cross-character contamination
+  clearGlobalCharacterData() {
+      console.log('Clearing global character data...');
+      
+      // Character-specific data that should be isolated
+      const characterDataKeys = [
+          'zevi-equipment',
+          'zevi-journal',
+          'zevi-journal-entries', // Used by journal.js
+          'zevi-experiences',
+          'zevi-hope',
+          'zevi-max-hope',
+          'zevi-downtime',
+          'zevi-projects', // Used by downtime.js
+          'zevi-character-details', // Used by details.js
+          'zevi-hp-circles',
+          'zevi-stress-circles',
+          'zevi-armor-circles',
+          'zevi-minor-damage-value',
+          'zevi-major-damage-value',
+          'zevi-active-armor-count',
+          'zevi-total-armor-circles',
+          'zevi-evasion'
+      ];
+      
+      characterDataKeys.forEach(key => {
+          localStorage.removeItem(key);
+      });
+      
+      console.log('Global character data cleared');
+  }
+
+  // Load character-specific data and set as current global data
+  loadCharacterSpecificData(characterId) {
+      console.log('Loading character-specific data for:', characterId);
+      
+      // Define all character-specific data mappings
+      const dataMapping = [
+          // Core character data
+          { global: 'zevi-equipment', specific: `zevi-equipment-${characterId}` },
+          { global: 'zevi-journal', specific: `zevi-journal-${characterId}` },
+          { global: 'zevi-journal-entries', specific: `zevi-journal-entries-${characterId}` },
+          { global: 'zevi-experiences', specific: `zevi-experiences-${characterId}` },
+          { global: 'zevi-hope', specific: `zevi-hope-${characterId}` },
+          { global: 'zevi-max-hope', specific: `zevi-max-hope-${characterId}` },
+          { global: 'zevi-downtime', specific: `zevi-downtime-${characterId}` },
+          { global: 'zevi-projects', specific: `zevi-projects-${characterId}` },
+          { global: 'zevi-character-details', specific: `zevi-character-details-${characterId}` },
+          
+          // HP/Stress/Armor system data
+          { global: 'zevi-hp-circles', specific: `zevi-hp-circles-${characterId}` },
+          { global: 'zevi-stress-circles', specific: `zevi-stress-circles-${characterId}` },
+          { global: 'zevi-armor-circles', specific: `zevi-armor-circles-${characterId}` },
+          { global: 'zevi-minor-damage-value', specific: `zevi-minor-damage-value-${characterId}` },
+          { global: 'zevi-major-damage-value', specific: `zevi-major-damage-value-${characterId}` },
+          { global: 'zevi-active-armor-count', specific: `zevi-active-armor-count-${characterId}` },
+          { global: 'zevi-total-armor-circles', specific: `zevi-total-armor-circles-${characterId}` },
+          { global: 'zevi-evasion', specific: `zevi-evasion-${characterId}` }
+      ];
+      
+      // Load each piece of character-specific data
+      dataMapping.forEach(({ global, specific }) => {
+          const data = localStorage.getItem(specific);
+          if (data) {
+              localStorage.setItem(global, data);
+              console.log(`Loaded ${global} from ${specific}`);
+          } else {
+              localStorage.removeItem(global);
+              console.log(`No data for ${global} - cleared global key`);
+          }
+      });
+      
+      // Load HP/Stress state
+      const hpStressState = localStorage.getItem(`zevi-hp-stress-state-${characterId}`);
+      if (hpStressState) {
+          // This will be handled by restoreAllCharacterSystems
+          console.log('HP/Stress state found for character');
+      }
+      
+      // Load Active Weapons/Armor state
+      const activeWeaponsArmorState = localStorage.getItem(`zevi-active-weapons-armor-${characterId}`);
+      if (activeWeaponsArmorState) {
+          // This will be handled by restoreAllCharacterSystems
+          console.log('Active Weapons/Armor state found for character');
+      }
+  }
+
+  // Restore all character systems after loading data
+  restoreAllCharacterSystems(characterId) {
+      console.log('Restoring all character systems...');
+      
+      // Restore HP/Stress state
+      const hpStressState = localStorage.getItem(`zevi-hp-stress-state-${characterId}`);
+      if (hpStressState) {
+          this.restoreHPStressState(hpStressState);
+      }
+      
+      // Restore Active Weapons/Armor state
+      const activeWeaponsArmorState = localStorage.getItem(`zevi-active-weapons-armor-${characterId}`);
+      if (activeWeaponsArmorState) {
+          this.restoreActiveWeaponsArmorState(activeWeaponsArmorState);
+      }
+      
+      // Trigger system reinitializations if available
+      setTimeout(() => {
+          // Reinitialize HP/Stress system
+          if (window.initializeHPStress && typeof window.initializeHPStress === 'function') {
+              console.log('Reinitializing HP/Stress system');
+              window.initializeHPStress();
+          }
+          
+          // Reinitialize Hope system
+          if (window.initializeHope && typeof window.initializeHope === 'function') {
+              console.log('Reinitializing Hope system');
+              window.initializeHope();
+          }
+          
+          // Reinitialize Equipment system
+          if (window.initializeEquipment && typeof window.initializeEquipment === 'function') {
+              console.log('Reinitializing Equipment system');
+              window.initializeEquipment();
+          }
+          
+          // Reinitialize other systems as needed
+          console.log('All character systems restored');
+      }, 200);
   }
 
   // Populate UI fields with character data
@@ -338,28 +410,53 @@ class CharacterManager {
   saveCharacterData(character) {
       try {
           const characterId = character.id;
+          console.log('Saving character data for:', characterId);
 
-          // Save all current localStorage data to character-specific keys
-          const equipment = localStorage.getItem('zevi-equipment');
-          const journal = localStorage.getItem('zevi-journal');
-          const experiences = localStorage.getItem('zevi-experiences');
-          const hope = localStorage.getItem('zevi-hope');
-          const downtime = localStorage.getItem('zevi-downtime');
+          // Define all data that should be saved to character-specific storage
+          const dataMapping = [
+              // Core character data
+              { global: 'zevi-equipment', specific: `zevi-equipment-${characterId}` },
+              { global: 'zevi-journal', specific: `zevi-journal-${characterId}` },
+              { global: 'zevi-journal-entries', specific: `zevi-journal-entries-${characterId}` },
+              { global: 'zevi-experiences', specific: `zevi-experiences-${characterId}` },
+              { global: 'zevi-hope', specific: `zevi-hope-${characterId}` },
+              { global: 'zevi-max-hope', specific: `zevi-max-hope-${characterId}` },
+              { global: 'zevi-downtime', specific: `zevi-downtime-${characterId}` },
+              { global: 'zevi-projects', specific: `zevi-projects-${characterId}` },
+              { global: 'zevi-character-details', specific: `zevi-character-details-${characterId}` },
+              
+              // HP/Stress/Armor system data
+              { global: 'zevi-hp-circles', specific: `zevi-hp-circles-${characterId}` },
+              { global: 'zevi-stress-circles', specific: `zevi-stress-circles-${characterId}` },
+              { global: 'zevi-armor-circles', specific: `zevi-armor-circles-${characterId}` },
+              { global: 'zevi-minor-damage-value', specific: `zevi-minor-damage-value-${characterId}` },
+              { global: 'zevi-major-damage-value', specific: `zevi-major-damage-value-${characterId}` },
+              { global: 'zevi-active-armor-count', specific: `zevi-active-armor-count-${characterId}` },
+              { global: 'zevi-total-armor-circles', specific: `zevi-total-armor-circles-${characterId}` },
+              { global: 'zevi-evasion', specific: `zevi-evasion-${characterId}` }
+          ];
 
-          if (equipment) {
-              localStorage.setItem(`zevi-equipment-${characterId}`, equipment);
+          // Save each piece of data
+          dataMapping.forEach(({ global, specific }) => {
+              const data = localStorage.getItem(global);
+              if (data) {
+                  localStorage.setItem(specific, data);
+                  console.log(`Saved ${global} to ${specific}`);
+              }
+          });
+
+          // IMPORTANT: Also capture and save current UI states
+          const hpStressState = this.captureHPStressState();
+          const activeWeaponsArmorState = this.captureActiveWeaponsArmorState();
+
+          if (hpStressState) {
+              localStorage.setItem(`zevi-hp-stress-state-${characterId}`, JSON.stringify(hpStressState));
+              console.log('Saved HP/Stress state for character');
           }
-          if (journal) {
-              localStorage.setItem(`zevi-journal-${characterId}`, journal);
-          }
-          if (experiences) {
-              localStorage.setItem(`zevi-experiences-${characterId}`, experiences);
-          }
-          if (hope) {
-              localStorage.setItem(`zevi-hope-${characterId}`, hope);
-          }
-          if (downtime) {
-              localStorage.setItem(`zevi-downtime-${characterId}`, downtime);
+
+          if (activeWeaponsArmorState) {
+              localStorage.setItem(`zevi-active-weapons-armor-${characterId}`, JSON.stringify(activeWeaponsArmorState));
+              console.log('Saved Active Weapons/Armor state for character');
           }
 
           // Update character metadata
@@ -367,6 +464,7 @@ class CharacterManager {
               lastModified: new Date().toISOString()
           });
 
+          console.log('Character data saved successfully');
           return true;
       } catch (error) {
           console.error('Error saving character data:', error);
@@ -374,15 +472,131 @@ class CharacterManager {
       }
   }
 
+  // Capture current HP/Stress state from the UI
+  captureHPStressState() {
+      try {
+          const hpTracker = document.getElementById('hp-tracker');
+          const stressTracker = document.getElementById('stress-tracker');
+          
+          let hpState = { current: 0, max: 0 };
+          let stressState = { current: 0, max: 0 };
+
+          if (hpTracker) {
+              const hpFilled = hpTracker.querySelectorAll('.hp-pip.filled').length;
+              const hpTotal = hpTracker.querySelectorAll('.hp-pip').length;
+              hpState = { current: hpFilled, max: hpTotal };
+          }
+
+          if (stressTracker) {
+              const stressFilled = stressTracker.querySelectorAll('.stress-pip.filled').length;
+              const stressTotal = stressTracker.querySelectorAll('.stress-pip').length;
+              stressState = { current: stressFilled, max: stressTotal };
+          }
+
+          // Also capture damage values if they exist
+          const minorDamage = document.getElementById('minor-damage-value')?.value || 0;
+          const majorDamage = document.getElementById('major-damage-value')?.value || 0;
+
+          return {
+              hp: hpState,
+              stress: stressState,
+              damage: {
+                  minor: parseInt(minorDamage) || 0,
+                  major: parseInt(majorDamage) || 0
+              },
+              timestamp: Date.now()
+          };
+      } catch (error) {
+          console.error('Error capturing HP/Stress state:', error);
+          return null;
+      }
+  }
+
+  // Capture current Active Weapons/Armor state from the UI
+  captureActiveWeaponsArmorState() {
+      try {
+          // Look for active weapons section
+          const activeWeaponsSection = document.getElementById('active-weapons-section') || 
+                                     document.querySelector('.active-weapons') ||
+                                     document.querySelector('[data-section="active-weapons"]');
+          
+          // Look for armor section
+          const armorSection = document.getElementById('armor-section') ||
+                             document.querySelector('.armor-section') ||
+                             document.querySelector('[data-section="armor"]');
+
+          let weaponsData = null;
+          let armorData = null;
+
+          // Capture weapons data
+          if (activeWeaponsSection) {
+              const weaponElements = activeWeaponsSection.querySelectorAll('.weapon-item, .active-weapon');
+              weaponsData = Array.from(weaponElements).map(el => {
+                  return {
+                      name: el.querySelector('.weapon-name, .item-name')?.textContent || '',
+                      type: el.querySelector('.weapon-type')?.textContent || '',
+                      dice: el.querySelector('.weapon-dice, .dice-roll')?.textContent || '',
+                      ability: el.querySelector('.weapon-ability, .ability')?.textContent || ''
+                  };
+              });
+          }
+
+          // Capture armor data
+          if (armorSection) {
+              const armorElements = armorSection.querySelectorAll('.armor-item, .active-armor');
+              armorData = Array.from(armorElements).map(el => {
+                  return {
+                      name: el.querySelector('.armor-name, .item-name')?.textContent || '',
+                      type: el.querySelector('.armor-type')?.textContent || '',
+                      protection: el.querySelector('.armor-protection, .protection')?.textContent || ''
+                  };
+              });
+          }
+
+          return {
+              weapons: weaponsData,
+              armor: armorData,
+              timestamp: Date.now()
+          };
+      } catch (error) {
+          console.error('Error capturing Active Weapons/Armor state:', error);
+          return null;
+      }
+  }
+
   // Clear character-specific storage
   clearCharacterStorage(character) {
       try {
           const characterId = character.id;
-          localStorage.removeItem(`zevi-equipment-${characterId}`);
-          localStorage.removeItem(`zevi-journal-${characterId}`);
-          localStorage.removeItem(`zevi-experiences-${characterId}`);
-          localStorage.removeItem(`zevi-hope-${characterId}`);
-          localStorage.removeItem(`zevi-downtime-${characterId}`);
+          
+          // Clear all character-specific storage keys
+          const characterKeys = [
+              `zevi-equipment-${characterId}`,
+              `zevi-journal-${characterId}`,
+              `zevi-journal-entries-${characterId}`,
+              `zevi-experiences-${characterId}`,
+              `zevi-hope-${characterId}`,
+              `zevi-max-hope-${characterId}`,
+              `zevi-downtime-${characterId}`,
+              `zevi-projects-${characterId}`,
+              `zevi-character-details-${characterId}`,
+              `zevi-hp-circles-${characterId}`,
+              `zevi-stress-circles-${characterId}`,
+              `zevi-armor-circles-${characterId}`,
+              `zevi-minor-damage-value-${characterId}`,
+              `zevi-major-damage-value-${characterId}`,
+              `zevi-active-armor-count-${characterId}`,
+              `zevi-total-armor-circles-${characterId}`,
+              `zevi-evasion-${characterId}`,
+              `zevi-hp-stress-state-${characterId}`,
+              `zevi-active-weapons-armor-${characterId}`
+          ];
+          
+          characterKeys.forEach(key => {
+              localStorage.removeItem(key);
+          });
+          
+          console.log('Character-specific storage cleared for:', characterId);
       } catch (error) {
           console.error('Error clearing character storage:', error);
       }
@@ -567,13 +781,19 @@ function loadCharacter(characterId) {
 }
 
 function createNewCharacter() {
-  // Clear any existing character data
+  console.log('=== CREATE NEW CHARACTER: Starting fresh character creation ===');
+  
+  // Save current character data if one exists
+  if (characterManager.currentCharacter) {
+      console.log('Saving current character before creating new one');
+      characterManager.saveCharacterData(characterManager.currentCharacter);
+  }
+  
+  // Clear all global character data to ensure fresh start
+  characterManager.clearGlobalCharacterData();
+  
+  // Clear current character ID
   localStorage.removeItem('zevi-current-character-id');
-  localStorage.removeItem('zevi-equipment');
-  localStorage.removeItem('zevi-journal');
-  localStorage.removeItem('zevi-experiences');
-  localStorage.removeItem('zevi-hope');
-  localStorage.removeItem('zevi-downtime');
   
   // Create a new character entry
   const newCharacter = characterManager.createCharacter({
@@ -581,6 +801,8 @@ function createNewCharacter() {
       subtitle: '',
       level: 1
   });
+  
+  console.log('New character created:', newCharacter.name, 'ID:', newCharacter.id);
   
   // Load the new character and redirect
   characterManager.loadCharacterAndRedirect(newCharacter);

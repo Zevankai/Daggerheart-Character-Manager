@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Isolation Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 3px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        button { margin: 5px; padding: 10px 15px; cursor: pointer; }
+        .storage-display { font-family: monospace; background: #f8f9fa; padding: 10px; border-radius: 3px; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>Character Isolation Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Controls</h2>
+        <button onclick="createTestCharacters()">Create Test Characters</button>
+        <button onclick="testCharacterSwitching()">Test Character Switching</button>
+        <button onclick="displayStorageState()">Display Storage State</button>
+        <button onclick="clearAllData()">Clear All Data</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="testResults"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>LocalStorage Contents</h2>
+        <div id="storageDisplay" class="storage-display"></div>
+    </div>
+
+    <script src="characterManager.js"></script>
+    <script>
+        let testResults = [];
+
+        function addTestResult(message, isSuccess = true) {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${isSuccess ? 'success' : 'error'}`;
+            resultDiv.textContent = message;
+            document.getElementById('testResults').appendChild(resultDiv);
+            testResults.push({ message, isSuccess, timestamp: new Date() });
+        }
+
+        function createTestCharacters() {
+            addTestResult('Creating test characters...');
+            
+            try {
+                // Clear any existing data first
+                clearAllData();
+                
+                // Create first test character
+                const char1 = window.characterManager.createCharacter({
+                    name: 'Test Character 1',
+                    subtitle: 'Fighter Human',
+                    level: 3
+                });
+                
+                // Set some test data for character 1
+                localStorage.setItem('zevi-equipment', JSON.stringify([{name: 'Sword', type: 'weapon'}]));
+                localStorage.setItem('zevi-hope', '3');
+                localStorage.setItem('zevi-journal-entries', JSON.stringify([{title: 'Adventure 1', content: 'Found a sword'}]));
+                
+                // Save character 1 data
+                window.characterManager.saveCharacterData(char1);
+                
+                // Create second test character
+                const char2 = window.characterManager.createCharacter({
+                    name: 'Test Character 2',
+                    subtitle: 'Wizard Elf',
+                    level: 5
+                });
+                
+                // Set different test data for character 2
+                localStorage.setItem('zevi-equipment', JSON.stringify([{name: 'Staff', type: 'weapon'}]));
+                localStorage.setItem('zevi-hope', '5');
+                localStorage.setItem('zevi-journal-entries', JSON.stringify([{title: 'Magic Study', content: 'Learned fireball'}]));
+                
+                // Save character 2 data
+                window.characterManager.saveCharacterData(char2);
+                
+                addTestResult(`Created characters: ${char1.name} (ID: ${char1.id}) and ${char2.name} (ID: ${char2.id})`);
+                
+                // Display the storage state
+                displayStorageState();
+                
+            } catch (error) {
+                addTestResult(`Error creating test characters: ${error.message}`, false);
+            }
+        }
+
+        function testCharacterSwitching() {
+            addTestResult('Testing character switching isolation...');
+            
+            try {
+                const characters = window.characterManager.characters;
+                if (characters.length < 2) {
+                    addTestResult('Need at least 2 characters to test switching. Create test characters first.', false);
+                    return;
+                }
+                
+                const char1 = characters[0];
+                const char2 = characters[1];
+                
+                // Load character 1
+                window.characterManager.loadCharacterData(char1);
+                const char1Equipment = localStorage.getItem('zevi-equipment');
+                const char1Hope = localStorage.getItem('zevi-hope');
+                const char1Journal = localStorage.getItem('zevi-journal-entries');
+                
+                addTestResult(`Loaded ${char1.name} - Equipment: ${char1Equipment ? 'Present' : 'None'}, Hope: ${char1Hope || 'None'}, Journal: ${char1Journal ? 'Present' : 'None'}`);
+                
+                // Load character 2
+                window.characterManager.loadCharacterData(char2);
+                const char2Equipment = localStorage.getItem('zevi-equipment');
+                const char2Hope = localStorage.getItem('zevi-hope');
+                const char2Journal = localStorage.getItem('zevi-journal-entries');
+                
+                addTestResult(`Loaded ${char2.name} - Equipment: ${char2Equipment ? 'Present' : 'None'}, Hope: ${char2Hope || 'None'}, Journal: ${char2Journal ? 'Present' : 'None'}`);
+                
+                // Check if data is different
+                const dataIsDifferent = char1Equipment !== char2Equipment || char1Hope !== char2Hope || char1Journal !== char2Journal;
+                
+                if (dataIsDifferent) {
+                    addTestResult('SUCCESS: Character data is properly isolated!', true);
+                } else {
+                    addTestResult('FAILURE: Character data is not properly isolated!', false);
+                }
+                
+                // Switch back to character 1 and verify data persistence
+                window.characterManager.loadCharacterData(char1);
+                const char1EquipmentReload = localStorage.getItem('zevi-equipment');
+                
+                if (char1EquipmentReload === char1Equipment) {
+                    addTestResult('SUCCESS: Character data persists after switching!', true);
+                } else {
+                    addTestResult('FAILURE: Character data does not persist after switching!', false);
+                }
+                
+            } catch (error) {
+                addTestResult(`Error testing character switching: ${error.message}`, false);
+            }
+        }
+
+        function displayStorageState() {
+            const storageDiv = document.getElementById('storageDisplay');
+            let output = 'LocalStorage Contents:\n\n';
+            
+            // Get all localStorage keys and sort them
+            const keys = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                keys.push(localStorage.key(i));
+            }
+            keys.sort();
+            
+            // Display ZEVI-related keys
+            const zeviKeys = keys.filter(key => key.startsWith('zevi-'));
+            
+            output += 'ZEVI Keys:\n';
+            zeviKeys.forEach(key => {
+                const value = localStorage.getItem(key);
+                const displayValue = value.length > 100 ? value.substring(0, 100) + '...' : value;
+                output += `  ${key}: ${displayValue}\n`;
+            });
+            
+            output += `\nTotal ZEVI keys: ${zeviKeys.length}`;
+            output += `\nTotal localStorage keys: ${keys.length}`;
+            
+            storageDiv.textContent = output;
+        }
+
+        function clearAllData() {
+            addTestResult('Clearing all test data...');
+            
+            // Clear all ZEVI-related localStorage
+            const keys = Object.keys(localStorage);
+            keys.forEach(key => {
+                if (key.startsWith('zevi-')) {
+                    localStorage.removeItem(key);
+                }
+            });
+            
+            // Reset character manager
+            window.characterManager.characters = [];
+            window.characterManager.currentCharacter = null;
+            window.characterManager.saveCharacters();
+            
+            addTestResult('All test data cleared');
+            displayStorageState();
+        }
+
+        // Initialize display on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            displayStorageState();
+            addTestResult('Character isolation test page loaded');
+        });
+    </script>
+</body>
+</html>

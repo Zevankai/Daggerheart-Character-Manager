@@ -269,141 +269,23 @@ class AutoSaveManager {
         try {
             console.log('Saving UI state to character-specific storage for:', characterId);
             
-            // Get current localStorage data that should be character-specific
-            const equipment = localStorage.getItem('zevi-equipment');
-            const journal = localStorage.getItem('zevi-journal');
-            const experiences = localStorage.getItem('zevi-experiences');
-            const hope = localStorage.getItem('zevi-hope');
-            const downtime = localStorage.getItem('zevi-downtime');
-
-            // IMPORTANT: Also capture HP/Stress states and other character data
-            const hpStress = this.captureHPStressState();
-            const activeWeaponsArmor = this.captureActiveWeaponsArmorState();
-
-            // Save to character-specific keys
-            if (equipment) {
-                localStorage.setItem(`zevi-equipment-${characterId}`, equipment);
+            // Use the CharacterManager's comprehensive save method
+            if (window.characterManager && window.characterManager.currentCharacter) {
+                const success = window.characterManager.saveCharacterData(window.characterManager.currentCharacter);
+                if (success) {
+                    console.log('UI state saved via CharacterManager');
+                } else {
+                    console.error('Failed to save UI state via CharacterManager');
+                }
+            } else {
+                console.warn('CharacterManager or current character not available for saving UI state');
             }
-            if (journal) {
-                localStorage.setItem(`zevi-journal-${characterId}`, journal);
-            }
-            if (experiences) {
-                localStorage.setItem(`zevi-experiences-${characterId}`, experiences);
-            }
-            if (hope) {
-                localStorage.setItem(`zevi-hope-${characterId}`, hope);
-            }
-            if (downtime) {
-                localStorage.setItem(`zevi-downtime-${characterId}`, downtime);
-            }
-
-            // Save HP/Stress state
-            if (hpStress) {
-                localStorage.setItem(`zevi-hp-stress-state-${characterId}`, JSON.stringify(hpStress));
-            }
-
-            // Save Active Weapons/Armor state  
-            if (activeWeaponsArmor) {
-                localStorage.setItem(`zevi-active-weapons-armor-${characterId}`, JSON.stringify(activeWeaponsArmor));
-            }
-
-            console.log('UI state saved to character-specific storage');
         } catch (error) {
             console.error('Error saving UI state to character storage:', error);
         }
     }
 
-    // Capture current HP/Stress state from the UI
-    captureHPStressState() {
-        try {
-            const hpTracker = document.getElementById('hp-tracker');
-            const stressTracker = document.getElementById('stress-tracker');
-            
-            let hpState = { current: 0, max: 0 };
-            let stressState = { current: 0, max: 0 };
 
-            if (hpTracker) {
-                const hpFilled = hpTracker.querySelectorAll('.hp-pip.filled').length;
-                const hpTotal = hpTracker.querySelectorAll('.hp-pip').length;
-                hpState = { current: hpFilled, max: hpTotal };
-            }
-
-            if (stressTracker) {
-                const stressFilled = stressTracker.querySelectorAll('.stress-pip.filled').length;
-                const stressTotal = stressTracker.querySelectorAll('.stress-pip').length;
-                stressState = { current: stressFilled, max: stressTotal };
-            }
-
-            // Also capture damage values if they exist
-            const minorDamage = document.getElementById('minor-damage-value')?.value || 0;
-            const majorDamage = document.getElementById('major-damage-value')?.value || 0;
-
-            return {
-                hp: hpState,
-                stress: stressState,
-                damage: {
-                    minor: parseInt(minorDamage) || 0,
-                    major: parseInt(majorDamage) || 0
-                },
-                timestamp: Date.now()
-            };
-        } catch (error) {
-            console.error('Error capturing HP/Stress state:', error);
-            return null;
-        }
-    }
-
-    // Capture current Active Weapons/Armor state from the UI
-    captureActiveWeaponsArmorState() {
-        try {
-            // Look for active weapons section
-            const activeWeaponsSection = document.getElementById('active-weapons-section') || 
-                                       document.querySelector('.active-weapons') ||
-                                       document.querySelector('[data-section="active-weapons"]');
-            
-            // Look for armor section
-            const armorSection = document.getElementById('armor-section') ||
-                               document.querySelector('.armor-section') ||
-                               document.querySelector('[data-section="armor"]');
-
-            let weaponsData = null;
-            let armorData = null;
-
-            // Capture weapons data
-            if (activeWeaponsSection) {
-                const weaponElements = activeWeaponsSection.querySelectorAll('.weapon-item, .active-weapon');
-                weaponsData = Array.from(weaponElements).map(el => {
-                    return {
-                        name: el.querySelector('.weapon-name, .item-name')?.textContent || '',
-                        type: el.querySelector('.weapon-type')?.textContent || '',
-                        dice: el.querySelector('.weapon-dice, .dice-roll')?.textContent || '',
-                        ability: el.querySelector('.weapon-ability, .ability')?.textContent || ''
-                    };
-                });
-            }
-
-            // Capture armor data
-            if (armorSection) {
-                const armorElements = armorSection.querySelectorAll('.armor-item, .active-armor');
-                armorData = Array.from(armorElements).map(el => {
-                    return {
-                        name: el.querySelector('.armor-name, .item-name')?.textContent || '',
-                        type: el.querySelector('.armor-type')?.textContent || '',
-                        protection: el.querySelector('.armor-protection, .protection')?.textContent || ''
-                    };
-                });
-            }
-
-            return {
-                weapons: weaponsData,
-                armor: armorData,
-                timestamp: Date.now()
-            };
-        } catch (error) {
-            console.error('Error capturing Active Weapons/Armor state:', error);
-            return null;
-        }
-    }
 
     // Manual save trigger
     saveNow() {
