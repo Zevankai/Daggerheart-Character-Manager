@@ -221,31 +221,45 @@ class CharacterManager {
 
   // Check if this is a first-time user or if they have characters
   checkFirstTimeUser() {
-      const hasCharacters = this.characters.length > 0;
-      const currentCharacterId = localStorage.getItem('zevi-current-character-id');
-      
-      if (hasCharacters && currentCharacterId) {
-          // Try to load the last character automatically
-          const lastCharacter = this.getCharacter(currentCharacterId);
-          if (lastCharacter) {
-              this.loadCharacterAndRedirect(lastCharacter);
-              return;
-          }
+    // Add guard to prevent infinite redirects
+    const redirectGuard = sessionStorage.getItem('zevi-redirect-guard');
+    if (redirectGuard && parseInt(redirectGuard) > Date.now() - 5000) {
+      console.warn('Redirect guard active in character manager - skipping auto-redirect');
+      return;
+    }
+
+    const hasCharacters = this.characters.length > 0;
+    const currentCharacterId = localStorage.getItem('zevi-current-character-id');
+    
+    if (hasCharacters && currentCharacterId) {
+      // Try to load the last character automatically
+      const lastCharacter = this.getCharacter(currentCharacterId);
+      if (lastCharacter) {
+        // Only auto-redirect if we're on the landing page
+        if (window.location.pathname.includes('landing.html')) {
+          this.loadCharacterAndRedirect(lastCharacter);
+        }
+        return;
+      } else {
+        // Character ID exists but character not found - clean up
+        console.warn('Character ID found but character does not exist, cleaning up');
+        localStorage.removeItem('zevi-current-character-id');
       }
-      
-      // If no valid character or first time, disable load button if no characters
-      if (!hasCharacters) {
-          const loadBtn = document.getElementById('loadCharacterCard');
-          if (loadBtn) {
-              loadBtn.style.opacity = '0.6';
-              loadBtn.style.pointerEvents = 'none';
-              const button = loadBtn.querySelector('.option-btn');
-              if (button) {
-                  button.textContent = 'No Characters';
-                  button.disabled = true;
-              }
-          }
+    }
+    
+    // If no valid character or first time, disable load button if no characters
+    if (!hasCharacters) {
+      const loadBtn = document.getElementById('loadCharacterCard');
+      if (loadBtn) {
+        loadBtn.style.opacity = '0.6';
+        loadBtn.style.pointerEvents = 'none';
+        const button = loadBtn.querySelector('.option-btn');
+        if (button) {
+          button.textContent = 'No Characters';
+          button.disabled = true;
+        }
       }
+    }
   }
 
   // Format date for display
@@ -261,11 +275,13 @@ class CharacterManager {
 
   // Load character and redirect to main app
   loadCharacterAndRedirect(character) {
-      if (this.loadCharacterData(character)) {
-          window.location.href = 'index.html';
-      } else {
-          alert('Error loading character data. Please try again.');
-      }
+    if (this.loadCharacterData(character)) {
+      // Set redirect guard before redirecting
+      sessionStorage.setItem('zevi-redirect-guard', Date.now().toString());
+      window.location.href = 'index.html';
+    } else {
+      alert('Error loading character data. Please try again.');
+    }
   }
 }
 

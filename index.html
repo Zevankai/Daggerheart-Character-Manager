@@ -490,16 +490,43 @@
   
   // Check if user has a current character loaded
   document.addEventListener('DOMContentLoaded', () => {
+    // Add a guard to prevent infinite redirects
+    const redirectGuard = sessionStorage.getItem('zevi-redirect-guard');
+    if (redirectGuard && parseInt(redirectGuard) > Date.now() - 5000) {
+      console.warn('Redirect guard active - preventing potential infinite loop');
+      return;
+    }
+
     const currentCharacterId = localStorage.getItem('zevi-current-character-id');
     if (!currentCharacterId) {
+      // Set redirect guard before redirecting
+      sessionStorage.setItem('zevi-redirect-guard', Date.now().toString());
       // No character loaded, redirect to landing page
       window.location.href = 'landing.html';
-    } else if (window.characterManager) {
-      // Set the current character for the character manager
-      const character = window.characterManager.getCharacter(currentCharacterId);
-      if (character) {
-        window.characterManager.currentCharacter = character;
-      }
+    } else {
+      // Wait for character manager to be ready
+      const checkCharacterManager = () => {
+        if (window.characterManager) {
+          // Set the current character for the character manager
+          const character = window.characterManager.getCharacter(currentCharacterId);
+          if (character) {
+            window.characterManager.currentCharacter = character;
+            // Clear redirect guard on successful load
+            sessionStorage.removeItem('zevi-redirect-guard');
+          } else {
+            console.error('Character not found:', currentCharacterId);
+            // Character ID exists but character not found - clear invalid ID and redirect
+            localStorage.removeItem('zevi-current-character-id');
+            sessionStorage.setItem('zevi-redirect-guard', Date.now().toString());
+            window.location.href = 'landing.html';
+          }
+        } else {
+          // Wait a bit longer for character manager to load
+          setTimeout(checkCharacterManager, 100);
+        }
+      };
+      
+      checkCharacterManager();
     }
   });
  </script>
