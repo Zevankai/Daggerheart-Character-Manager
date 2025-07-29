@@ -1,0 +1,22 @@
+{
+  "name": "zevi-character-sheet",
+  "version": "1.0.0",
+  "description": "Interactive character sheet for the Zevi tabletop RPG",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server . -p 3000 -o",
+    "dev": "npx live-server --port=3000 --open=index.html",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": ["character-sheet", "rpg", "web-app"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "live-server": "^1.2.2"
+  },
+  "dependencies": {},
+  "stackblitz": {
+    "startCommand": "npm start"
+  }
+}
