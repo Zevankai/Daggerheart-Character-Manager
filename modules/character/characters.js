@@ -177,9 +177,6 @@ class CharactersPageManager {
                 <button class="${loadButtonClass}" onclick="charactersPageManager.loadCharacter('${character.id}')" title="${loadButtonText}" ${loadButtonDisabled}>
                     <span>${loadButtonIcon}</span> ${loadButtonText}
                 </button>
-                <button class="character-action-btn edit-btn" onclick="charactersPageManager.editCharacter('${character.id}')" title="Edit Character">
-                    <span>✏️</span> Edit
-                </button>
             </div>
         `;
 
@@ -400,23 +397,9 @@ class CharactersPageManager {
             return;
         }
 
-        // Get image if uploaded
-        const imageFile = document.getElementById('newCharacterImage').files[0];
-        let imageUrl = '';
-        
-        if (imageFile) {
-            console.log('Image file found, processing...');
-            // Convert to data URL for storage
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                imageUrl = e.target.result;
-                this.saveNewCharacter(name, platform, level, imageUrl);
-            };
-            reader.readAsDataURL(imageFile);
-        } else {
-            console.log('No image file, proceeding without image');
-            this.saveNewCharacter(name, platform, level, imageUrl);
-        }
+        // Create character without image (image can be added later on character page)
+        console.log('Creating character without image');
+        this.saveNewCharacter(name, platform, level, '');
     }
 
     async saveNewCharacter(name, platform, level, imageUrl) {
