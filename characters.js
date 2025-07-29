@@ -673,14 +673,66 @@ function executeCharacterDelete() {
 }
 
 function previewCharacterImage(event) {
+    console.log('=== PREVIEW CHARACTER IMAGE: Function called ===');
+    console.log('Event:', event);
+    console.log('charactersPageManager available:', !!window.charactersPageManager);
+    
+    // Check if file was selected
+    const file = event.target.files[0];
+    console.log('File selected:', file);
+    
+    if (!file) {
+        console.warn('No file selected');
+        return;
+    }
+
+    // Handle image preview directly if charactersPageManager isn't available
     if (window.charactersPageManager) {
+        console.log('Using charactersPageManager.previewCharacterImage');
         window.charactersPageManager.previewCharacterImage(event);
+    } else {
+        console.log('charactersPageManager not available, handling preview directly');
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            console.log('Image loaded, updating preview');
+            const previewElement = document.getElementById('characterImagePreview');
+            if (previewElement) {
+                previewElement.innerHTML = `<img src="${e.target.result}" alt="Character preview">`;
+                console.log('Image preview updated successfully');
+            } else {
+                console.error('characterImagePreview element not found');
+            }
+        };
+        
+        reader.onerror = (error) => {
+            console.error('Error reading file:', error);
+        };
+        
+        console.log('Starting to read file as data URL');
+        reader.readAsDataURL(file);
     }
 }
 
 function previewEditCharacterImage(event) {
+    console.log('=== PREVIEW EDIT CHARACTER IMAGE: Function called ===');
+    
     if (window.charactersPageManager) {
         window.charactersPageManager.previewEditCharacterImage(event);
+    } else {
+        console.log('charactersPageManager not available, handling edit preview directly');
+        
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const previewElement = document.getElementById('editCharacterImagePreview');
+            if (previewElement) {
+                previewElement.innerHTML = `<img src="${e.target.result}" alt="Character preview">`;
+            }
+        };
+        reader.readAsDataURL(file);
     }
 }
 

@@ -111,12 +111,18 @@ class CharacterManager {
           const hope = localStorage.getItem(`zevi-hope-${character.id}`);
           const downtime = localStorage.getItem(`zevi-downtime-${character.id}`);
 
+          // IMPORTANT: Also load HP/Stress states and active weapons/armor
+          const hpStressState = localStorage.getItem(`zevi-hp-stress-state-${character.id}`);
+          const activeWeaponsArmorState = localStorage.getItem(`zevi-active-weapons-armor-${character.id}`);
+
           console.log('Loading character-specific data for:', character.id);
           console.log('Equipment data found:', !!equipment);
           console.log('Journal data found:', !!journal);
           console.log('Experiences data found:', !!experiences);
           console.log('Hope data found:', !!hope);
           console.log('Downtime data found:', !!downtime);
+          console.log('HP/Stress state found:', !!hpStressState);
+          console.log('Active Weapons/Armor state found:', !!activeWeaponsArmorState);
 
           // Set character-specific data as current
           if (equipment) {
@@ -161,12 +167,16 @@ class CharacterManager {
 
           // Set current character
           localStorage.setItem('zevi-current-character-id', character.id);
-
-          // Set current character
           this.currentCharacter = character;
           
           // Populate UI fields with character data
           this.populateUIFields(character);
+
+          // IMPORTANT: Restore HP/Stress and Active Weapons/Armor states
+          setTimeout(() => {
+              this.restoreHPStressState(hpStressState);
+              this.restoreActiveWeaponsArmorState(activeWeaponsArmorState);
+          }, 100); // Small delay to ensure UI is ready
 
           console.log('Character data loaded successfully');
           return true;
@@ -241,6 +251,87 @@ class CharacterManager {
       // Hope value will be handled by hope initialization function
 
       console.log('UI fields populated successfully');
+  }
+
+  // Restore HP/Stress state from saved data
+  restoreHPStressState(hpStressStateJson) {
+      if (!hpStressStateJson) return;
+      
+      try {
+          console.log('Restoring HP/Stress state...');
+          const state = JSON.parse(hpStressStateJson);
+          
+          // Restore HP pips
+          if (state.hp) {
+              const hpTracker = document.getElementById('hp-tracker');
+              if (hpTracker) {
+                  const hpPips = hpTracker.querySelectorAll('.hp-pip');
+                  hpPips.forEach((pip, index) => {
+                      if (index < state.hp.current) {
+                          pip.classList.add('filled');
+                      } else {
+                          pip.classList.remove('filled');
+                      }
+                  });
+                  console.log('HP state restored:', state.hp.current, '/', state.hp.max);
+              }
+          }
+
+          // Restore Stress pips
+          if (state.stress) {
+              const stressTracker = document.getElementById('stress-tracker');
+              if (stressTracker) {
+                  const stressPips = stressTracker.querySelectorAll('.stress-pip');
+                  stressPips.forEach((pip, index) => {
+                      if (index < state.stress.current) {
+                          pip.classList.add('filled');
+                      } else {
+                          pip.classList.remove('filled');
+                      }
+                  });
+                  console.log('Stress state restored:', state.stress.current, '/', state.stress.max);
+              }
+          }
+
+          // Restore damage values
+          if (state.damage) {
+              const minorDamageInput = document.getElementById('minor-damage-value');
+              const majorDamageInput = document.getElementById('major-damage-value');
+              
+              if (minorDamageInput) {
+                  minorDamageInput.value = state.damage.minor || 0;
+              }
+              if (majorDamageInput) {
+                  majorDamageInput.value = state.damage.major || 0;
+              }
+              
+              console.log('Damage values restored:', state.damage);
+          }
+
+      } catch (error) {
+          console.error('Error restoring HP/Stress state:', error);
+      }
+  }
+
+  // Restore Active Weapons/Armor state from saved data
+  restoreActiveWeaponsArmorState(weaponsArmorStateJson) {
+      if (!weaponsArmorStateJson) return;
+      
+      try {
+          console.log('Restoring Active Weapons/Armor state...');
+          const state = JSON.parse(weaponsArmorStateJson);
+          
+          // This is a complex restoration since it depends on the specific UI structure
+          // For now, just log what we would restore
+          console.log('Weapons data to restore:', state.weapons);
+          console.log('Armor data to restore:', state.armor);
+          
+          // TODO: Implement specific restoration based on how the active weapons/armor UI works
+          // This would require understanding the exact structure of these sections
+          
+      } catch (error) {
+          console.error('Error restoring Active Weapons/Armor state:', error);
+      }
   }
 
   // Save current character data to character-specific storage
