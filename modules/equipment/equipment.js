@@ -1352,14 +1352,16 @@ function updateEncumbranceWarning() {
         
         console.log(`🎒 Encumbrance Check: ${encumbrance}/${maxCapacity}, HasItems: ${hasItems}, OverEncumbered: ${isOverEncumbered}`);
         
-        if (hasItems && isOverEncumbered) {
+        // Only show warning if we have items AND are actually over capacity AND encumbrance > 0
+        if (hasItems && isOverEncumbered && encumbrance > 0) {
             mainWarning.innerHTML = '⚠️ You are over-encumbered! -2 to strength & agility checks';
             mainWarning.style.display = 'block';
             mainWarning.style.visibility = 'visible';
             console.log('✅ Showing encumbrance warning');
         } else {
+            mainWarning.innerHTML = ''; // Clear any content
             mainWarning.style.display = 'none';
-            console.log('❌ Hiding encumbrance warning');
+            console.log(`❌ Hiding encumbrance warning (encumbrance: ${encumbrance}, hasItems: ${hasItems}, isOverEncumbered: ${isOverEncumbered})`);
         }
     }
 }
@@ -1590,12 +1592,17 @@ function initializeEquipment() {
         // Initialize encumbrance warning properly
         const mainWarning = document.getElementById('encumbrance-warning-main');
         if (mainWarning) {
-            mainWarning.style.visibility = 'visible'; // Reset visibility
-            console.log('Encumbrance warning initialized');
+            // Force hide initially and clear any content
+            mainWarning.style.display = 'none';
+            mainWarning.style.visibility = 'visible'; // Reset visibility for future use
+            mainWarning.innerHTML = ''; // Clear any existing content
+            console.log('Encumbrance warning initialized and cleared');
         }
         
-        // Update encumbrance warning based on current state
-        updateEncumbranceWarning();
+        // Update encumbrance warning based on current state (with small delay to ensure equipment data is ready)
+        setTimeout(() => {
+            updateEncumbranceWarning();
+        }, 100);
         
         console.log('Equipment initialization complete');
         
