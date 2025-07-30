@@ -203,7 +203,9 @@ function renderEquipmentOverview() {
     
     const encumbrance = calculateEncumbrance();
     const isOverEncumbered = isEncumbered();
-    console.log('Encumbrance calculated:', encumbrance, 'Over encumbered:', isOverEncumbered);
+    const hasItems = Object.values(equipmentData.inventory).some(categoryItems => categoryItems.length > 0);
+    console.log('Encumbrance calculated:', encumbrance, 'Over encumbered:', isOverEncumbered, 'Has items:', hasItems);
+    console.log('Equipment inventory:', equipmentData.inventory);
     
     try {
         const overviewContent = renderOverviewContent();
@@ -213,7 +215,7 @@ function renderEquipmentOverview() {
             <div class="equipment-container">
                 <div class="equipment-header">
                     <h2>Equipment Overview</h2>
-                    ${isOverEncumbered ? '<div class="encumbrance-warning">⚠️ ENCUMBERED - Carrying too much weight!</div>' : ''}
+                    ${(hasItems && isOverEncumbered) ? '<div class="encumbrance-warning">⚠️ ENCUMBERED - Carrying too much weight!</div>' : ''}
                                     <div class="encumbrance-display">
                     <span class="encumbrance-text">Encumbrance: ${encumbrance}/${getMaxCapacity()} units</span>
                     <div class="encumbrance-bar">
@@ -1343,7 +1345,11 @@ function updateActiveWeaponsAndArmor() {
 function updateEncumbranceWarning() {
     const mainWarning = document.getElementById('encumbrance-warning-main');
     if (mainWarning) {
-        if (isEncumbered()) {
+        // Only show warning if we have actual items and are over capacity
+        const encumbrance = calculateEncumbrance();
+        const hasItems = Object.values(equipmentData.inventory).some(categoryItems => categoryItems.length > 0);
+        
+        if (hasItems && isEncumbered()) {
             mainWarning.style.display = 'block';
         } else {
             mainWarning.style.display = 'none';
