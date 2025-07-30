@@ -53,19 +53,23 @@ function initializeDomainVault() {
     
     console.log('Current content:', domainVaultContent.innerHTML);
     
+    // TEMPORARY: Simple test to see if function is called
+    domainVaultContent.innerHTML = '<h2>Domain Vault is Working!</h2><p>Function was called successfully.</p>';
+    console.log('Set simple test content');
+    
     // Only initialize if not already initialized
-    if (!domainVaultContent.querySelector('.domain-vault-container')) {
-        console.log('Rendering Domain Vault...');
-        try {
-            renderDomainVault();
-            setupEventListeners();
-            console.log('Domain Vault initialized successfully');
-        } catch (error) {
-            console.error('Error initializing Domain Vault:', error);
-        }
-    } else {
-        console.log('Domain Vault already initialized');
-    }
+    // if (!domainVaultContent.querySelector('.domain-vault-container')) {
+    //     console.log('Rendering Domain Vault...');
+    //     try {
+    //         renderDomainVault();
+    //         setupEventListeners();
+    //         console.log('Domain Vault initialized successfully');
+    //     } catch (error) {
+    //         console.error('Error initializing Domain Vault:', error);
+    //     }
+    // } else {
+    //     console.log('Domain Vault already initialized');
+    // }
 }
 
 // Render the complete Domain Vault interface
@@ -77,8 +81,11 @@ function renderDomainVault() {
         return;
     }
 
+    console.log('About to get domain names...');
     const domains = getDomainNames();
     console.log('Domains found:', domains);
+    
+    console.log('About to set innerHTML...');
     
     domainVaultContent.innerHTML = `
         <div class="domain-vault-container">
@@ -772,3 +779,15 @@ window.testSimpleModal = testSimpleModal;
 // Domain Vault will be initialized by the main tab switching logic in script.js
 console.log('domainVault.js loaded successfully');
 console.log('initializeDomainVault function defined:', typeof initializeDomainVault);
+
+// Emergency fallback - if tab switching doesn't work, try direct initialization
+setTimeout(() => {
+    console.log('Checking if Domain Vault needs emergency initialization...');
+    const domainVaultContent = document.getElementById('domain-vault-tab-content');
+    if (domainVaultContent && domainVaultContent.innerHTML.includes('Content for Domain Vault will go here')) {
+        console.log('Domain Vault not initialized, attempting emergency initialization...');
+        if (typeof initializeDomainVault === 'function') {
+            initializeDomainVault();
+        }
+    }
+}, 2000);
