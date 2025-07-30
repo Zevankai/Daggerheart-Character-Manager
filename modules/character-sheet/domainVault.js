@@ -22,14 +22,7 @@ function generateCardId() {
     return Date.now() + Math.random().toString(36).substr(2, 9);
 }
 
-// Truncate description to first few words
-function truncateDescription(description, wordLimit = 6) {
-    const words = description.trim().split(/\s+/);
-    if (words.length <= wordLimit) {
-        return description;
-    }
-    return words.slice(0, wordLimit).join(' ') + '...';
-}
+
 
 // Get domain names from the header
 function getDomainNames() {
@@ -279,7 +272,6 @@ function renderCard(card, isEquipped = false) {
                         <span class="card-recall">Cost: ${card.recallCost}</span>
                     </div>
                 </div>
-                <div class="card-description">${truncateDescription(card.description)}</div>
                 ${!isEquipped ? `
                     <div class="card-actions">
                         <button class="card-action-btn edit-btn" onclick="editCard('${card.id}')">Edit</button>
