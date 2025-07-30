@@ -4813,3 +4813,599 @@
         padding: 1rem;
     }
 }
+
+/* ===== DOMAIN VAULT STYLES ===== */
+
+.domain-vault-container {
+    padding: 20px 0;
+}
+
+.domain-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.domain-header h2 {
+    color: var(--text-color);
+    margin-bottom: 10px;
+    font-size: 2rem;
+}
+
+.domain-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.domain-name {
+    background: var(--glass-background-color);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 8px 16px;
+    color: var(--accent-color);
+    font-weight: bold;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.domain-separator {
+    color: var(--accent-color);
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+/* Equipped Cards Section */
+.equipped-cards-section {
+    margin-bottom: 40px;
+}
+
+.equipped-cards-section h3 {
+    color: var(--text-color);
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 1.5rem;
+}
+
+.equipped-slots {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+    min-height: 200px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+.equipped-slot {
+    min-width: 200px;
+    min-height: 180px;
+    position: relative;
+}
+
+.empty-equipped-slot {
+    width: 200px;
+    height: 180px;
+    border: 2px dashed var(--accent-color-50);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-color-70);
+    font-size: 0.9rem;
+    text-align: center;
+    background: rgba(255, 215, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.empty-equipped-slot:hover {
+    border-color: var(--accent-color);
+    background: rgba(255, 215, 0, 0.1);
+    transform: scale(1.02);
+}
+
+/* Card Management Section */
+.card-management-section {
+    margin-top: 40px;
+}
+
+.card-management-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.card-management-header h3 {
+    color: var(--text-color);
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+/* Cards Grid */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    min-height: 100px;
+}
+
+.no-cards-message {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--text-color);
+    font-size: 1.1rem;
+    padding: 40px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Domain Card Styles */
+.domain-card {
+    background: var(--glass-background-color);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 16px;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    transition: all 0.3s ease;
+    cursor: grab;
+    position: relative;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+}
+
+.domain-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.domain-card:active {
+    cursor: grabbing;
+}
+
+.domain-card.equipped {
+    background: rgba(255, 215, 0, 0.1);
+    border-color: var(--accent-color-50);
+}
+
+.card-wrapper.equipped {
+    opacity: 0.7;
+    position: relative;
+}
+
+.card-wrapper.equipped::after {
+    content: "EQUIPPED";
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--accent-color);
+    color: #000;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    z-index: 10;
+}
+
+/* Card Header */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    gap: 10px;
+}
+
+.card-name {
+    color: var(--text-color);
+    font-size: 1.1rem;
+    font-weight: bold;
+    flex: 1;
+    line-height: 1.2;
+}
+
+.card-type-badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+}
+
+.card-type-grimoire {
+    background: #9b59b6;
+    color: white;
+}
+
+.card-type-ability {
+    background: #3498db;
+    color: white;
+}
+
+.card-type-spell {
+    background: #e74c3c;
+    color: white;
+}
+
+/* Card Info */
+.card-info {
+    margin-bottom: 12px;
+}
+
+.card-domain {
+    color: var(--accent-color);
+    font-size: 0.9rem;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.card-stats {
+    display: flex;
+    gap: 12px;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.card-level, .card-recall {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* Card Description */
+.card-description {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    flex: 1;
+    margin-bottom: 12px;
+}
+
+/* Card Actions */
+.card-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: auto;
+}
+
+.card-action-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.card-action-btn.edit-btn {
+    background: rgba(52, 152, 219, 0.8);
+    color: white;
+}
+
+.card-action-btn.edit-btn:hover {
+    background: #3498db;
+    transform: scale(1.05);
+}
+
+.card-action-btn.equip-btn {
+    background: rgba(46, 204, 113, 0.8);
+    color: white;
+}
+
+.card-action-btn.equip-btn:hover {
+    background: #2ecc71;
+    transform: scale(1.05);
+}
+
+.card-action-btn.unequip-btn {
+    background: rgba(231, 76, 60, 0.8);
+    color: white;
+}
+
+.card-action-btn.unequip-btn:hover {
+    background: #e74c3c;
+    transform: scale(1.05);
+}
+
+/* Drag and Drop Styles */
+.card-ghost {
+    opacity: 0.5;
+    transform: rotate(5deg);
+}
+
+.card-chosen {
+    transform: scale(1.05);
+    z-index: 1000;
+}
+
+.card-drag {
+    transform: rotate(10deg);
+    opacity: 0.8;
+}
+
+.equipped-slots.sortable-drag-over {
+    background: rgba(255, 215, 0, 0.1);
+    border-color: var(--accent-color);
+}
+
+/* Modal Styles for Domain Vault */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+.modal {
+    background: var(--glass-background-color);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 0;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    position: relative;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 20px 0 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
+}
+
+.modal-header h3 {
+    color: var(--text-color);
+    margin: 0;
+    font-size: 1.4rem;
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-color);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--accent-color);
+}
+
+.modal-content {
+    padding: 0 20px 20px 20px;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 20px;
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.form-group label {
+    display: block;
+    color: var(--text-color);
+    font-weight: bold;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-color);
+    font-size: 0.9rem;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Color Picker Grid */
+.color-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    max-width: 200px;
+}
+
+.color-option {
+    width: 40px;
+    height: 40px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.color-option:hover {
+    transform: scale(1.1);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.color-option.selected {
+    border-color: var(--accent-color);
+    transform: scale(1.1);
+}
+
+.color-option.selected::after {
+    content: "✓";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* Button Styles */
+.button.primary-btn {
+    background: var(--accent-color);
+    color: #000;
+    font-weight: bold;
+}
+
+.button.primary-btn:hover {
+    background: var(--accent-color-dark);
+    transform: scale(1.05);
+}
+
+.button.danger-btn {
+    background: #e74c3c;
+    color: white;
+    font-weight: bold;
+}
+
+.button.danger-btn:hover {
+    background: #c0392b;
+    transform: scale(1.05);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .domain-display {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .equipped-slots {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .equipped-slot {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .empty-equipped-slot {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .cards-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .card-management-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal {
+        width: 95%;
+        margin: 10px;
+    }
+    
+    .modal-buttons {
+        flex-direction: column;
+    }
+    
+    .color-picker-grid {
+        grid-template-columns: repeat(4, 1fr);
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .domain-vault-container {
+        padding: 10px 0;
+    }
+    
+    .equipped-slots {
+        padding: 15px;
+        gap: 10px;
+    }
+    
+    .cards-grid {
+        gap: 15px;
+    }
+    
+    .domain-card {
+        padding: 12px;
+    }
+    
+    .card-actions {
+        flex-direction: column;
+    }
+    
+    .card-action-btn {
+        width: 100%;
+    }
+}
