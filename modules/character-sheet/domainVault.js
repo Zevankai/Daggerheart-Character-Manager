@@ -150,13 +150,13 @@ function renderDomainVault() {
                         <div>
                             <label for="card-image" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">Card Image</label>
                             <input type="file" id="card-image" accept="image/*" style="width: 100%; padding: 8px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--text-color); backdrop-filter: blur(10px); font-size: 0.8rem; margin-bottom: 8px;">
-                            <label for="card-image-crop" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color); font-size: 0.9rem;">Image Fit</label>
-                            <select id="card-image-crop" style="width: 100%; padding: 8px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--text-color); backdrop-filter: blur(10px);">
-                                <option value="cover">Cover (crop to fill)</option>
-                                <option value="contain">Contain (fit entire image)</option>
-                                <option value="fill">Fill (stretch to fit)</option>
-                                <option value="center">Center (actual size)</option>
-                            </select>
+                            <div id="image-crop-container" style="display: none; margin-bottom: 8px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color); font-size: 0.9rem;">Position Image (drag to crop)</label>
+                                <div id="crop-preview" style="width: 100%; height: 120px; border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 8px; overflow: hidden; position: relative; cursor: move; background: #f0f0f0;">
+                                    <img id="crop-image" style="position: absolute; max-width: none; max-height: none; user-select: none; pointer-events: none;">
+                                </div>
+                                <div style="margin-top: 5px; font-size: 0.8rem; color: rgba(255, 255, 255, 0.7);">Drag the image to position it within the card area</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -217,13 +217,13 @@ function renderDomainVault() {
                             <label for="edit-card-image" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">Card Image</label>
                             <input type="file" id="edit-card-image" accept="image/*" style="width: 100%; padding: 8px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--text-color); backdrop-filter: blur(10px); font-size: 0.8rem; margin-bottom: 8px;">
                             <div id="edit-current-image" style="margin-bottom: 8px; font-size: 0.8rem; color: rgba(255, 255, 255, 0.7);"></div>
-                            <label for="edit-card-image-crop" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color); font-size: 0.9rem;">Image Fit</label>
-                            <select id="edit-card-image-crop" style="width: 100%; padding: 8px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--text-color); backdrop-filter: blur(10px);">
-                                <option value="cover">Cover (crop to fill)</option>
-                                <option value="contain">Contain (fit entire image)</option>
-                                <option value="fill">Fill (stretch to fit)</option>
-                                <option value="center">Center (actual size)</option>
-                            </select>
+                            <div id="edit-image-crop-container" style="display: none; margin-bottom: 8px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color); font-size: 0.9rem;">Position Image (drag to crop)</label>
+                                <div id="edit-crop-preview" style="width: 100%; height: 120px; border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 8px; overflow: hidden; position: relative; cursor: move; background: #f0f0f0;">
+                                    <img id="edit-crop-image" style="position: absolute; max-width: none; max-height: none; user-select: none; pointer-events: none;">
+                                </div>
+                                <div style="margin-top: 5px; font-size: 0.8rem; color: rgba(255, 255, 255, 0.7);">Drag the image to position it within the card area</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -272,8 +272,22 @@ function renderCards() {
 
 // Render individual card
 function renderCard(card, isEquipped = false) {
-    const imageCrop = card.imageCrop || 'cover';
-    const imageHtml = card.image ? `<div class="card-image" style="background-image: url('${card.image}'); background-size: ${imageCrop}; background-repeat: no-repeat; background-position: center;"></div>` : '';
+    let imageHtml = '';
+    if (card.image) {
+        let backgroundStyle = `background-image: url('${card.image}'); background-repeat: no-repeat;`;
+        
+        if (card.cropData) {
+            // Use crop data to position the image
+            const { x, y, width, height } = card.cropData;
+            backgroundStyle += ` background-size: ${100/width}% ${100/height}%; background-position: ${-x*100/width}% ${-y*100/height}%;`;
+        } else {
+            // Default to cover behavior for backward compatibility
+            backgroundStyle += ` background-size: cover; background-position: center;`;
+        }
+        
+        imageHtml = `<div class="card-image" style="${backgroundStyle}"></div>`;
+    }
+    
     
     return `
         <div class="domain-card ${isEquipped ? 'equipped' : ''}" 
@@ -473,6 +487,15 @@ function setupEventListeners() {
         createCardBtn.removeEventListener('click', showCreateCardModal);
         createCardBtn.addEventListener('click', showCreateCardModal);
     }
+    
+    // Initialize image cropping interfaces
+    if (document.getElementById('card-image')) {
+        window.createCardCropFunction = initializeImageCropping('card-image', 'image-crop-container', 'crop-image', 'crop-preview');
+    }
+    
+    if (document.getElementById('edit-card-image')) {
+        window.editCardCropFunction = initializeImageCropping('edit-card-image', 'edit-image-crop-container', 'edit-crop-image', 'edit-crop-preview');
+    }
 }
 
 
@@ -524,6 +547,132 @@ function handleImageUpload(file) {
     });
 }
 
+// Initialize image cropping interface
+function initializeImageCropping(imageInputId, containerId, imageId, previewId) {
+    const imageInput = document.getElementById(imageInputId);
+    const container = document.getElementById(containerId);
+    const image = document.getElementById(imageId);
+    const preview = document.getElementById(previewId);
+    
+    if (!imageInput || !container || !image || !preview) return;
+    
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let currentX = 0;
+    let currentY = 0;
+    
+    imageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                image.src = event.target.result;
+                image.onload = function() {
+                    // Show the cropping interface
+                    container.style.display = 'block';
+                    
+                    // Scale image to fit nicely in preview
+                    const previewRect = preview.getBoundingClientRect();
+                    const imgAspect = image.naturalWidth / image.naturalHeight;
+                    const previewAspect = previewRect.width / previewRect.height;
+                    
+                    if (imgAspect > previewAspect) {
+                        // Image is wider - fit to height and allow horizontal scrolling
+                        image.style.height = previewRect.height + 'px';
+                        image.style.width = 'auto';
+                    } else {
+                        // Image is taller - fit to width and allow vertical scrolling
+                        image.style.width = previewRect.width + 'px';
+                        image.style.height = 'auto';
+                    }
+                    
+                    // Center the image initially
+                    const imgRect = image.getBoundingClientRect();
+                    currentX = (previewRect.width - imgRect.width) / 2;
+                    currentY = (previewRect.height - imgRect.height) / 2;
+                    updateImagePosition();
+                };
+            };
+            reader.readAsDataURL(file);
+        } else {
+            container.style.display = 'none';
+        }
+    });
+    
+    // Mouse drag functionality
+    preview.addEventListener('mousedown', function(e) {
+        isDragging = true;
+        startX = e.clientX - currentX;
+        startY = e.clientY - currentY;
+        preview.style.cursor = 'grabbing';
+    });
+    
+    document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        
+        currentX = e.clientX - startX;
+        currentY = e.clientY - startY;
+        updateImagePosition();
+    });
+    
+    document.addEventListener('mouseup', function() {
+        if (isDragging) {
+            isDragging = false;
+            preview.style.cursor = 'move';
+        }
+    });
+    
+    // Touch support for mobile
+    preview.addEventListener('touchstart', function(e) {
+        isDragging = true;
+        const touch = e.touches[0];
+        startX = touch.clientX - currentX;
+        startY = touch.clientY - currentY;
+        e.preventDefault();
+    });
+    
+    document.addEventListener('touchmove', function(e) {
+        if (!isDragging) return;
+        
+        const touch = e.touches[0];
+        currentX = touch.clientX - startX;
+        currentY = touch.clientY - startY;
+        updateImagePosition();
+        e.preventDefault();
+    });
+    
+    document.addEventListener('touchend', function() {
+        isDragging = false;
+    });
+    
+    function updateImagePosition() {
+        image.style.left = currentX + 'px';
+        image.style.top = currentY + 'px';
+    }
+    
+    // Return function to get crop data
+    return function getCropData() {
+        if (!image.src) return null;
+        
+        const previewRect = preview.getBoundingClientRect();
+        const imgRect = image.getBoundingClientRect();
+        
+        // Calculate the crop position as percentages
+        const cropX = -currentX / imgRect.width;
+        const cropY = -currentY / imgRect.height;
+        const cropWidth = previewRect.width / imgRect.width;
+        const cropHeight = previewRect.height / imgRect.height;
+        
+        return {
+            x: Math.max(0, Math.min(1 - cropWidth, cropX)),
+            y: Math.max(0, Math.min(1 - cropHeight, cropY)),
+            width: Math.min(1, cropWidth),
+            height: Math.min(1, cropHeight)
+        };
+    };
+}
+
 // Save new card
 async function saveNewCard() {
     const name = document.getElementById('card-name').value.trim();
@@ -534,7 +683,6 @@ async function saveNewCard() {
     const type = document.getElementById('card-type').value;
     const color = document.getElementById('card-color').value;
     const imageFile = document.getElementById('card-image').files[0];
-    const imageCrop = document.getElementById('card-image-crop').value;
 
     // Validation
     if (!name || !description) {
@@ -544,8 +692,9 @@ async function saveNewCard() {
         return;
     }
 
-    // Handle image upload
+    // Handle image upload and crop data
     const image = await handleImageUpload(imageFile);
+    const cropData = window.createCardCropFunction ? window.createCardCropFunction() : null;
 
     // Create new card
     const newCard = {
@@ -558,7 +707,7 @@ async function saveNewCard() {
         type,
         color,
         image,
-        imageCrop: imageCrop || 'cover'
+        cropData: cropData
     };
 
     domainVaultData.cards.push(newCard);
@@ -594,7 +743,7 @@ function editCard(cardId) {
     document.getElementById('edit-card-type').value = card.type;
     document.getElementById('edit-card-color').value = card.color;
     
-    // Show current image info and set crop option
+    // Show current image info
     const currentImageDiv = document.getElementById('edit-current-image');
     if (currentImageDiv) {
         if (card.image) {
@@ -602,12 +751,6 @@ function editCard(cardId) {
         } else {
             currentImageDiv.innerHTML = 'No image uploaded';
         }
-    }
-    
-    // Set current crop option
-    const cropSelect = document.getElementById('edit-card-image-crop');
-    if (cropSelect) {
-        cropSelect.value = card.imageCrop || 'cover';
     }
     
     // Show modal
@@ -635,7 +778,6 @@ async function saveEditedCard() {
     const type = document.getElementById('edit-card-type').value;
     const color = document.getElementById('edit-card-color').value;
     const imageFile = document.getElementById('edit-card-image').files[0];
-    const imageCrop = document.getElementById('edit-card-image-crop').value;
 
     // Validation
     if (!name || !description) {
@@ -648,6 +790,10 @@ async function saveEditedCard() {
     // Handle image upload (keep existing image if no new one is uploaded)
     const newImage = await handleImageUpload(imageFile);
     const image = newImage || domainVaultData.cards[cardIndex].image;
+    
+    // Get crop data (keep existing if no new image)
+    const newCropData = window.editCardCropFunction ? window.editCardCropFunction() : null;
+    const cropData = newImage ? newCropData : domainVaultData.cards[cardIndex].cropData;
 
     // Update card
     domainVaultData.cards[cardIndex] = {
@@ -660,7 +806,7 @@ async function saveEditedCard() {
         type,
         color,
         image,
-        imageCrop: imageCrop || 'cover'
+        cropData: cropData
     };
 
     saveDomainVaultData();
@@ -751,13 +897,25 @@ function expandCard(cardId) {
         hyphens: auto;
     `;
 
-    const imageCrop = card.imageCrop || 'cover';
-    const imageHtml = card.image ? 
-        `<div style="width: 100%; height: 200px; background-image: url('${card.image}'); background-size: ${imageCrop}; background-repeat: no-repeat; background-position: center; border-radius: 12px; margin-bottom: 20px;"></div>` : '';
+    let expandedImageHtml = '';
+    if (card.image) {
+        let backgroundStyle = `background-image: url('${card.image}'); background-repeat: no-repeat;`;
+        
+        if (card.cropData) {
+            // Use crop data to position the image
+            const { x, y, width, height } = card.cropData;
+            backgroundStyle += ` background-size: ${100/width}% ${100/height}%; background-position: ${-x*100/width}% ${-y*100/height}%;`;
+        } else {
+            // Default to cover behavior for backward compatibility
+            backgroundStyle += ` background-size: cover; background-position: center;`;
+        }
+        
+        expandedImageHtml = `<div style="width: 100%; height: 200px; ${backgroundStyle} border-radius: 12px; margin-bottom: 20px;"></div>`;
+    }
 
     expandedCard.innerHTML = `
         <div style="text-align: center; margin-bottom: 15px; color: rgba(255, 255, 255, 0.9); font-size: 0.9rem; font-weight: bold;">Click anywhere to close</div>
-        ${imageHtml}
+        ${expandedImageHtml}
         <div style="background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 25px; box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; gap: 15px;">
                 <h2 style="margin: 0; color: #2c3e50; font-size: 1.8rem; flex: 1;">${card.name}</h2>
