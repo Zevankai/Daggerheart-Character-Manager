@@ -1052,6 +1052,36 @@ window.setupGlobalDomainChangeListeners = setupGlobalDomainChangeListeners;
 
 window.expandCard = expandCard;
 
+// Test function to create multiple cards (for debugging)
+window.testCreateMultipleCards = function(count = 10) {
+    console.log('Testing creation of', count, 'cards...');
+    for (let i = 0; i < count; i++) {
+        const testCard = {
+            id: generateCardId(),
+            name: `Test Card ${i + 1}`,
+            description: `This is test card number ${i + 1} for debugging purposes.`,
+            domain: 'Domain 1',
+            level: 1,
+            recallCost: 1,
+            type: 'ability',
+            color: '#3498db',
+            image: null,
+            cropData: null
+        };
+        domainVaultData.cards.push(testCard);
+    }
+    saveDomainVaultData();
+    console.log('Created', count, 'test cards. Total cards:', domainVaultData.cards.length);
+    
+    // Re-render if domain vault is visible
+    const cardsGrid = document.getElementById('cards-grid');
+    if (cardsGrid) {
+        cardsGrid.innerHTML = renderCards();
+        initializeDragAndDrop();
+        setupEventListeners();
+    }
+};
+
 // Set up listeners for domain changes in the header
 function setupDomainChangeListeners() {
     const domainBadges = document.querySelectorAll('.name-box .domain-badge');
