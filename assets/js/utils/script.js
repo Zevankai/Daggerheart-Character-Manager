@@ -343,14 +343,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             if (targetPanelId === 'domain-vault-tab-content') {
-                console.log('Domain Vault tab clicked');
-                console.log('window.initializeDomainVault exists:', typeof window.initializeDomainVault);
+                // Add debug message function if it doesn't exist
+                if (typeof window.addDebugMessage === 'function') {
+                    window.addDebugMessage('Domain Vault tab clicked');
+                    window.addDebugMessage('window.initializeDomainVault exists: ' + (typeof window.initializeDomainVault));
+                }
+                
                 if (window.initializeDomainVault && typeof window.initializeDomainVault === 'function') {
-                    console.log('Calling initializeDomainVault...');
+                    if (typeof window.addDebugMessage === 'function') {
+                        window.addDebugMessage('Calling initializeDomainVault...');
+                    }
                     window.initializeDomainVault();
                 } else {
-                    console.warn('initializeDomainVault function not found. Ensure domainVault.js is loaded.');
-                    console.log('Available window functions:', Object.keys(window).filter(key => key.includes('Domain') || key.includes('domain')));
+                    if (typeof window.addDebugMessage === 'function') {
+                        window.addDebugMessage('ERROR: initializeDomainVault function not found!');
+                        window.addDebugMessage('Available domain functions: ' + Object.keys(window).filter(key => key.includes('Domain') || key.includes('domain')).join(', '));
+                    }
                 }
             }
             if (targetPanelId === 'characters-tab-content') {

@@ -42,20 +42,20 @@ function getDomainNames() {
 
 // Initialize Domain Vault tab
 function initializeDomainVault() {
-    console.log('=== INITIALIZING DOMAIN VAULT ===');
+    addDebugMessage('=== INITIALIZING DOMAIN VAULT ===');
     const domainVaultContent = document.getElementById('domain-vault-tab-content');
-    console.log('Domain vault content element:', domainVaultContent);
+    addDebugMessage('Domain vault content element: ' + (domainVaultContent ? 'FOUND' : 'NOT FOUND'));
     
     if (!domainVaultContent) {
-        console.error('Domain Vault tab content not found');
+        addDebugMessage('ERROR: Domain Vault tab content not found');
         return;
     }
     
-    console.log('Current content:', domainVaultContent.innerHTML);
+    addDebugMessage('Current content length: ' + domainVaultContent.innerHTML.length);
     
     // TEMPORARY: Simple test to see if function is called
-    domainVaultContent.innerHTML = '<h2>Domain Vault is Working!</h2><p>Function was called successfully.</p>';
-    console.log('Set simple test content');
+    domainVaultContent.innerHTML = '<h2 style="color: green;">Domain Vault is Working!</h2><p>Function was called successfully at ' + new Date().toLocaleTimeString() + '</p><p>Debug info will appear in top-right corner.</p>';
+    addDebugMessage('Set simple test content - SUCCESS!');
     
     // Only initialize if not already initialized
     // if (!domainVaultContent.querySelector('.domain-vault-container')) {
@@ -775,19 +775,49 @@ window.quickEquipCard = quickEquipCard;
 window.unequipCard = unequipCard;
 window.initializeDomainVault = initializeDomainVault;
 window.testSimpleModal = testSimpleModal;
+window.addDebugMessage = addDebugMessage;
 
 // Domain Vault will be initialized by the main tab switching logic in script.js
-console.log('domainVault.js loaded successfully');
-console.log('initializeDomainVault function defined:', typeof initializeDomainVault);
+
+// Add visible debugging to the page
+function addDebugMessage(message) {
+    let debugDiv = document.getElementById('domain-vault-debug');
+    if (!debugDiv) {
+        debugDiv = document.createElement('div');
+        debugDiv.id = 'domain-vault-debug';
+        debugDiv.style.cssText = `
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            max-width: 300px;
+            z-index: 9999;
+            font-family: monospace;
+        `;
+        document.body.appendChild(debugDiv);
+    }
+    const timestamp = new Date().toLocaleTimeString();
+    debugDiv.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+    debugDiv.scrollTop = debugDiv.scrollHeight;
+}
+
+addDebugMessage('domainVault.js loaded successfully');
+addDebugMessage('initializeDomainVault function: ' + (typeof initializeDomainVault));
 
 // Emergency fallback - if tab switching doesn't work, try direct initialization
 setTimeout(() => {
-    console.log('Checking if Domain Vault needs emergency initialization...');
+    addDebugMessage('Checking if Domain Vault needs emergency initialization...');
     const domainVaultContent = document.getElementById('domain-vault-tab-content');
     if (domainVaultContent && domainVaultContent.innerHTML.includes('Content for Domain Vault will go here')) {
-        console.log('Domain Vault not initialized, attempting emergency initialization...');
+        addDebugMessage('Domain Vault not initialized, attempting emergency initialization...');
         if (typeof initializeDomainVault === 'function') {
             initializeDomainVault();
         }
+    } else {
+        addDebugMessage('Domain Vault appears to be initialized or content changed');
     }
 }, 2000);
