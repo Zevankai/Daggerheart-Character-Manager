@@ -1350,6 +1350,7 @@ function updateEncumbranceWarning() {
         const hasItems = Object.values(equipmentData.inventory).some(categoryItems => categoryItems.length > 0);
         
         if (hasItems && isEncumbered()) {
+            mainWarning.innerHTML = '⚠️ You are over-encumbered! -2 to strength & agility checks';
             mainWarning.style.display = 'block';
         } else {
             mainWarning.style.display = 'none';
@@ -1530,6 +1531,8 @@ function loadEquipmentData() {
         'Personal': []
     };
     
+    console.log('Equipment data after initialization:', equipmentData);
+    
     // Ensure inventory categories exist
     if (!equipmentData.inventory) {
         equipmentData.inventory = {};
@@ -1576,6 +1579,14 @@ function initializeEquipment() {
         
         // Update active weapons and armor
         updateActiveWeaponsAndArmor();
+        
+        // Ensure encumbrance warning is hidden initially
+        const mainWarning = document.getElementById('encumbrance-warning-main');
+        if (mainWarning) {
+            mainWarning.style.display = 'none';
+            console.log('Encumbrance warning hidden on initialization');
+        }
+        
         console.log('Equipment initialization complete');
         
     } catch (error) {

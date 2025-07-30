@@ -54,20 +54,40 @@ function uploadCharacterImage(event) {
 
         console.log('✅ Character image updated');
 
-        // Trigger immediate save if comprehensive system is available
-        if (window.comprehensiveIntegration && window.comprehensiveIntegration.isInitialized) {
-            setTimeout(() => {
-                window.comprehensiveIntegration.scheduleImmediateSave();
-                console.log('💾 Triggered save after image upload');
-            }, 500);
-        } else if (window.app && window.app.initialized) {
-            // Fallback to old system
-            window.app.handleImageUpload(event);
+        // Save the image to localStorage for persistence
+        try {
+            localStorage.setItem('zevi-character-image', imageUrl);
+            console.log('💾 Character image saved to localStorage');
+        } catch (error) {
+            console.error('Failed to save character image:', error);
         }
     };
 
     reader.readAsDataURL(file);
 }
+
+// Load saved character image on page load
+function loadSavedCharacterImage() {
+    try {
+        const savedImage = localStorage.getItem('zevi-character-image');
+        if (savedImage) {
+            const charImage = document.querySelector('#charImage');
+            const charPlaceholder = document.querySelector('#charPlaceholder');
+            
+            if (charImage && charPlaceholder) {
+                charImage.src = savedImage;
+                charImage.style.display = 'block';
+                charPlaceholder.style.display = 'none';
+                console.log('✅ Loaded saved character image');
+            }
+        }
+    } catch (error) {
+        console.error('Failed to load saved character image:', error);
+    }
+}
+
+// Load saved image when DOM is ready
+document.addEventListener('DOMContentLoaded', loadSavedCharacterImage);
 
 function uploadBackground(event) {
     const reader = new FileReader();
