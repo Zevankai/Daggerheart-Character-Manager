@@ -95,108 +95,108 @@ function renderDomainVault() {
         </div>
 
         <!-- Create Card Modal -->
-        <div id="create-card-modal" class="modal-overlay" style="display: none;">
-            <div class="modal glassmorphic">
-                <div class="modal-header">
-                    <h3>Create New Card</h3>
-                    <button type="button" class="modal-close-btn" onclick="closeCreateCardModal()">×</button>
+        <div id="create-card-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; align-items: center; justify-content: center;">
+            <div style="background: var(--glass-background-color); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; padding: 20px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; color: var(--text-color);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px;">
+                    <h3 style="margin: 0; color: var(--text-color);">Create New Card</h3>
+                    <button type="button" onclick="closeCreateCardModal()" style="background: none; border: none; color: var(--text-color); font-size: 20px; cursor: pointer; padding: 5px; border-radius: 50%; width: 30px; height: 30px;">×</button>
                 </div>
-                <div class="modal-content">
-                    <div class="form-group">
-                        <label for="card-name">Card Name</label>
-                        <input type="text" id="card-name" placeholder="Enter card name">
+                <div>
+                    <div style="margin-bottom: 15px;">
+                        <label for="card-name" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">Card Name</label>
+                        <input type="text" id="card-name" placeholder="Enter card name" style="width: 100%; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--text-color); backdrop-filter: blur(10px);">
                     </div>
-                    <div class="form-group">
-                        <label for="card-description">Description</label>
-                        <textarea id="card-description" placeholder="Describe the card's effect or ability" rows="3"></textarea>
+                    <div style="margin-bottom: 15px;">
+                        <label for="card-description" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">Description</label>
+                        <textarea id="card-description" placeholder="Describe the card's effect or ability" rows="3" style="width: 100%; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--text-color); backdrop-filter: blur(10px); resize: vertical;"></textarea>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="card-domain">Primary Domain</label>
-                            <select id="card-domain">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <label for="card-domain" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">Primary Domain</label>
+                            <select id="card-domain" style="width: 100%; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--text-color); backdrop-filter: blur(10px);">
                                 <option value="${domains.domain1}">${domains.domain1}</option>
                                 <option value="${domains.domain2}">${domains.domain2}</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="card-level">Level</label>
-                            <input type="number" id="card-level" min="1" max="10" value="1">
+                        <div>
+                            <label for="card-level" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">Level</label>
+                            <input type="number" id="card-level" min="1" max="10" value="1" style="width: 100%; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--text-color); backdrop-filter: blur(10px);">
                         </div>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="card-recall-cost">Recall Cost</label>
-                            <input type="number" id="card-recall-cost" min="0" max="10" value="1">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <label for="card-recall-cost" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">Recall Cost</label>
+                            <input type="number" id="card-recall-cost" min="0" max="10" value="1" style="width: 100%; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--text-color); backdrop-filter: blur(10px);">
                         </div>
-                        <div class="form-group">
-                            <label for="card-type">Card Type</label>
-                            <select id="card-type">
+                        <div>
+                            <label for="card-type" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">Card Type</label>
+                            <select id="card-type" style="width: 100%; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--text-color); backdrop-filter: blur(10px);">
                                 ${CARD_TYPES.map(type => `<option value="${type}">${type.charAt(0).toUpperCase() + type.slice(1)}</option>`).join('')}
                             </select>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="card-color">Card Color</label>
-                        <input type="color" id="card-color" value="${DEFAULT_COLOR}" class="color-wheel-input">
+                    <div style="margin-bottom: 15px;">
+                        <label for="card-color" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">Card Color</label>
+                        <input type="color" id="card-color" value="${DEFAULT_COLOR}" style="width: 60px; height: 40px; padding: 0; border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 8px; cursor: pointer; background: none;">
                     </div>
                 </div>
-                <div class="modal-buttons">
-                    <button class="button primary-btn" onclick="saveNewCard()">Create Card</button>
-                    <button class="button" onclick="closeCreateCardModal()">Cancel</button>
+                <div style="display: flex; gap: 10px; justify-content: flex-end; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                    <button onclick="saveNewCard()" style="background: var(--accent-color); color: #000; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">Create Card</button>
+                    <button onclick="closeCreateCardModal()" style="background: rgba(255, 255, 255, 0.1); color: var(--text-color); border: 1px solid rgba(255, 255, 255, 0.2); padding: 10px 20px; border-radius: 6px; cursor: pointer;">Cancel</button>
                 </div>
             </div>
         </div>
 
         <!-- Edit Card Modal -->
-        <div id="edit-card-modal" class="modal-overlay" style="display: none;">
-            <div class="modal glassmorphic">
-                <div class="modal-header">
-                    <h3>Edit Card</h3>
-                    <button type="button" class="modal-close-btn" onclick="closeEditCardModal()">×</button>
+        <div id="edit-card-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; align-items: center; justify-content: center;">
+            <div style="background: var(--glass-background-color); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; padding: 20px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; color: var(--text-color);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px;">
+                    <h3 style="margin: 0; color: var(--text-color);">Edit Card</h3>
+                    <button type="button" onclick="closeEditCardModal()" style="background: none; border: none; color: var(--text-color); font-size: 20px; cursor: pointer; padding: 5px; border-radius: 50%; width: 30px; height: 30px;">×</button>
                 </div>
-                <div class="modal-content">
-                    <div class="form-group">
-                        <label for="edit-card-name">Card Name</label>
-                        <input type="text" id="edit-card-name" placeholder="Enter card name">
+                <div>
+                    <div style="margin-bottom: 15px;">
+                        <label for="edit-card-name" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">Card Name</label>
+                        <input type="text" id="edit-card-name" placeholder="Enter card name" style="width: 100%; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--text-color); backdrop-filter: blur(10px);">
                     </div>
-                    <div class="form-group">
-                        <label for="edit-card-description">Description</label>
-                        <textarea id="edit-card-description" placeholder="Describe the card's effect or ability" rows="3"></textarea>
+                    <div style="margin-bottom: 15px;">
+                        <label for="edit-card-description" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">Description</label>
+                        <textarea id="edit-card-description" placeholder="Describe the card's effect or ability" rows="3" style="width: 100%; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--text-color); backdrop-filter: blur(10px); resize: vertical;"></textarea>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="edit-card-domain">Primary Domain</label>
-                            <select id="edit-card-domain">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <label for="edit-card-domain" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">Primary Domain</label>
+                            <select id="edit-card-domain" style="width: 100%; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--text-color); backdrop-filter: blur(10px);">
                                 <option value="${domains.domain1}">${domains.domain1}</option>
                                 <option value="${domains.domain2}">${domains.domain2}</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="edit-card-level">Level</label>
-                            <input type="number" id="edit-card-level" min="1" max="10" value="1">
+                        <div>
+                            <label for="edit-card-level" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">Level</label>
+                            <input type="number" id="edit-card-level" min="1" max="10" value="1" style="width: 100%; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--text-color); backdrop-filter: blur(10px);">
                         </div>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="edit-card-recall-cost">Recall Cost</label>
-                            <input type="number" id="edit-card-recall-cost" min="0" max="10" value="1">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <label for="edit-card-recall-cost" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">Recall Cost</label>
+                            <input type="number" id="edit-card-recall-cost" min="0" max="10" value="1" style="width: 100%; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--text-color); backdrop-filter: blur(10px);">
                         </div>
-                        <div class="form-group">
-                            <label for="edit-card-type">Card Type</label>
-                            <select id="edit-card-type">
+                        <div>
+                            <label for="edit-card-type" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">Card Type</label>
+                            <select id="edit-card-type" style="width: 100%; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--text-color); backdrop-filter: blur(10px);">
                                 ${CARD_TYPES.map(type => `<option value="${type}">${type.charAt(0).toUpperCase() + type.slice(1)}</option>`).join('')}
                             </select>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="edit-card-color">Card Color</label>
-                        <input type="color" id="edit-card-color" value="${DEFAULT_COLOR}" class="color-wheel-input">
+                    <div style="margin-bottom: 15px;">
+                        <label for="edit-card-color" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">Card Color</label>
+                        <input type="color" id="edit-card-color" value="${DEFAULT_COLOR}" style="width: 60px; height: 40px; padding: 0; border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 8px; cursor: pointer; background: none;">
                     </div>
                 </div>
-                <div class="modal-buttons">
-                    <button class="button primary-btn" onclick="saveEditedCard()">Save Changes</button>
-                    <button class="button danger-btn" onclick="deleteCard()">Delete Card</button>
-                    <button class="button" onclick="closeEditCardModal()">Cancel</button>
+                <div style="display: flex; gap: 10px; justify-content: flex-end; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                    <button onclick="saveEditedCard()" style="background: var(--accent-color); color: #000; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">Save Changes</button>
+                    <button onclick="deleteCard()" style="background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">Delete Card</button>
+                    <button onclick="closeEditCardModal()" style="background: rgba(255, 255, 255, 0.1); color: var(--text-color); border: 1px solid rgba(255, 255, 255, 0.2); padding: 10px 20px; border-radius: 6px; cursor: pointer;">Cancel</button>
                 </div>
             </div>
         </div>
