@@ -61,10 +61,15 @@ function initializeDomainVault() {
 
 // Render the complete Domain Vault interface
 function renderDomainVault() {
+    console.log('renderDomainVault called');
     const domainVaultContent = document.getElementById('domain-vault-tab-content');
-    if (!domainVaultContent) return;
+    if (!domainVaultContent) {
+        console.error('Domain vault content element not found');
+        return;
+    }
 
     const domains = getDomainNames();
+    console.log('Domains found:', domains);
     
     domainVaultContent.innerHTML = `
         <div class="domain-vault-container">
@@ -216,6 +221,12 @@ function renderDomainVault() {
             </div>
         </div>
     `;
+
+    console.log('Domain Vault HTML rendered');
+    
+    // Check if modal was created
+    const modal = document.getElementById('create-card-modal');
+    console.log('Modal created successfully:', !!modal);
 
     // Initialize drag and drop after rendering
     initializeDragAndDrop();

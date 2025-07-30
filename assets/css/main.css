@@ -5166,7 +5166,7 @@
     display: flex !important;
 }
 
-.modal {
+.domain-vault-modal-overlay .modal {
     background: var(--glass-background-color);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
@@ -5180,7 +5180,7 @@
     position: relative;
 }
 
-.modal-header {
+.domain-vault-modal-overlay .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -5189,13 +5189,13 @@
     margin-bottom: 20px;
 }
 
-.modal-header h3 {
+.domain-vault-modal-overlay .modal-header h3 {
     color: var(--text-color);
     margin: 0;
     font-size: 1.4rem;
 }
 
-.modal-close-btn {
+.domain-vault-modal-overlay .modal-close-btn {
     background: none;
     border: none;
     color: var(--text-color);
@@ -5211,16 +5211,16 @@
     transition: all 0.2s ease;
 }
 
-.modal-close-btn:hover {
+.domain-vault-modal-overlay .modal-close-btn:hover {
     background: rgba(255, 255, 255, 0.1);
     color: var(--accent-color);
 }
 
-.modal-content {
+.domain-vault-modal-overlay .modal-content {
     padding: 0 20px 20px 20px;
 }
 
-.modal-buttons {
+.domain-vault-modal-overlay .modal-buttons {
     display: flex;
     gap: 10px;
     justify-content: flex-end;
@@ -5229,18 +5229,18 @@
     margin-top: 20px;
 }
 
-/* Form Styles */
-.form-group {
+/* Form Styles for Domain Vault */
+.domain-vault-modal-overlay .form-group {
     margin-bottom: 20px;
 }
 
-.form-row {
+.domain-vault-modal-overlay .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 15px;
 }
 
-.form-group label {
+.domain-vault-modal-overlay .form-group label {
     display: block;
     color: var(--text-color);
     font-weight: bold;
@@ -5248,9 +5248,9 @@
     font-size: 0.9rem;
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
+.domain-vault-modal-overlay .form-group input,
+.domain-vault-modal-overlay .form-group select,
+.domain-vault-modal-overlay .form-group textarea {
     width: 100%;
     padding: 10px;
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -5263,28 +5263,28 @@
     transition: all 0.2s ease;
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
+.domain-vault-modal-overlay .form-group input:focus,
+.domain-vault-modal-overlay .form-group select:focus,
+.domain-vault-modal-overlay .form-group textarea:focus {
     outline: none;
     border-color: var(--accent-color);
     background: rgba(255, 255, 255, 0.15);
 }
 
-.form-group textarea {
+.domain-vault-modal-overlay .form-group textarea {
     resize: vertical;
     min-height: 80px;
 }
 
-/* Color Picker Grid */
-.color-picker-grid {
+/* Color Picker Grid for Domain Vault */
+.domain-vault-modal-overlay .color-picker-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 10px;
     max-width: 200px;
 }
 
-.color-option {
+.domain-vault-modal-overlay .color-option {
     width: 40px;
     height: 40px;
     border: 2px solid transparent;
@@ -5294,17 +5294,17 @@
     position: relative;
 }
 
-.color-option:hover {
+.domain-vault-modal-overlay .color-option:hover {
     transform: scale(1.1);
     border-color: rgba(255, 255, 255, 0.5);
 }
 
-.color-option.selected {
+.domain-vault-modal-overlay .color-option.selected {
     border-color: var(--accent-color);
     transform: scale(1.1);
 }
 
-.color-option.selected::after {
+.domain-vault-modal-overlay .color-option.selected::after {
     content: "✓";
     position: absolute;
     top: 50%;
