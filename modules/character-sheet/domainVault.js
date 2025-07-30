@@ -9,17 +9,8 @@ let domainVaultData = JSON.parse(localStorage.getItem('zevi-domain-vault')) || {
 // Card types available for selection
 const CARD_TYPES = ['grimoire', 'ability', 'spell'];
 
-// Default card colors
-const DEFAULT_COLORS = [
-    '#3498db', // Blue
-    '#e74c3c', // Red
-    '#2ecc71', // Green
-    '#f39c12', // Orange
-    '#9b59b6', // Purple
-    '#1abc9c', // Teal
-    '#e67e22', // Dark Orange
-    '#34495e'  // Dark Gray
-];
+// Default card color
+const DEFAULT_COLOR = '#3498db';
 
 // Save domain vault data to localStorage
 function saveDomainVaultData() {
@@ -42,47 +33,33 @@ function getDomainNames() {
 
 // Initialize Domain Vault tab
 function initializeDomainVault() {
-    addDebugMessage('=== INITIALIZING DOMAIN VAULT ===');
     const domainVaultContent = document.getElementById('domain-vault-tab-content');
-    addDebugMessage('Domain vault content element: ' + (domainVaultContent ? 'FOUND' : 'NOT FOUND'));
     
     if (!domainVaultContent) {
-        addDebugMessage('ERROR: Domain Vault tab content not found');
+        console.error('Domain Vault tab content not found');
         return;
     }
     
-    addDebugMessage('Current content length: ' + domainVaultContent.innerHTML.length);
-    
     // Only initialize if not already initialized
     if (!domainVaultContent.querySelector('.domain-vault-container')) {
-        addDebugMessage('Rendering Domain Vault...');
         try {
             renderDomainVault();
             setupEventListeners();
-            addDebugMessage('Domain Vault initialized successfully');
-            removeDebugOverlay();
         } catch (error) {
-            addDebugMessage('Error initializing Domain Vault: ' + error.message);
+            console.error('Error initializing Domain Vault:', error);
         }
-    } else {
-        addDebugMessage('Domain Vault already initialized');
     }
 }
 
 // Render the complete Domain Vault interface
 function renderDomainVault() {
-    console.log('renderDomainVault called');
     const domainVaultContent = document.getElementById('domain-vault-tab-content');
     if (!domainVaultContent) {
         console.error('Domain vault content element not found');
         return;
     }
 
-    console.log('About to get domain names...');
     const domains = getDomainNames();
-    console.log('Domains found:', domains);
-    
-    console.log('About to set innerHTML...');
     
     domainVaultContent.innerHTML = `
         <div class="domain-vault-container">
@@ -118,72 +95,66 @@ function renderDomainVault() {
         </div>
 
         <!-- Create Card Modal -->
-        <div id="create-card-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; align-items: center; justify-content: center;">
-            <div style="background: white; color: black; padding: 20px; border-radius: 8px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
-                    <h3 style="margin: 0; color: black;">Create New Card</h3>
-                    <button type="button" onclick="closeCreateCardModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: black;">×</button>
+        <div id="create-card-modal" class="modal-overlay" style="display: none;">
+            <div class="modal glassmorphic">
+                <div class="modal-header">
+                    <h3>Create New Card</h3>
+                    <button type="button" class="modal-close-btn" onclick="closeCreateCardModal()">×</button>
                 </div>
-                <div>
-                    <div style="margin-bottom: 15px;">
-                        <label for="card-name" style="display: block; margin-bottom: 5px; font-weight: bold; color: black;">Card Name</label>
-                        <input type="text" id="card-name" placeholder="Enter card name" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <div class="modal-content">
+                    <div class="form-group">
+                        <label for="card-name">Card Name</label>
+                        <input type="text" id="card-name" placeholder="Enter card name">
                     </div>
-                    <div style="margin-bottom: 15px;">
-                        <label for="card-description" style="display: block; margin-bottom: 5px; font-weight: bold; color: black;">Description</label>
-                        <textarea id="card-description" placeholder="Describe the card's effect or ability" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+                    <div class="form-group">
+                        <label for="card-description">Description</label>
+                        <textarea id="card-description" placeholder="Describe the card's effect or ability" rows="3"></textarea>
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                        <div>
-                            <label for="card-domain" style="display: block; margin-bottom: 5px; font-weight: bold; color: black;">Primary Domain</label>
-                            <select id="card-domain" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="card-domain">Primary Domain</label>
+                            <select id="card-domain">
                                 <option value="${domains.domain1}">${domains.domain1}</option>
                                 <option value="${domains.domain2}">${domains.domain2}</option>
                             </select>
                         </div>
-                        <div>
-                            <label for="card-level" style="display: block; margin-bottom: 5px; font-weight: bold; color: black;">Level</label>
-                            <input type="number" id="card-level" min="1" max="10" value="1" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <div class="form-group">
+                            <label for="card-level">Level</label>
+                            <input type="number" id="card-level" min="1" max="10" value="1">
                         </div>
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                        <div>
-                            <label for="card-recall-cost" style="display: block; margin-bottom: 5px; font-weight: bold; color: black;">Recall Cost</label>
-                            <input type="number" id="card-recall-cost" min="0" max="10" value="1" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="card-recall-cost">Recall Cost</label>
+                            <input type="number" id="card-recall-cost" min="0" max="10" value="1">
                         </div>
-                        <div>
-                            <label for="card-type" style="display: block; margin-bottom: 5px; font-weight: bold; color: black;">Card Type</label>
-                            <select id="card-type" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <div class="form-group">
+                            <label for="card-type">Card Type</label>
+                            <select id="card-type">
                                 ${CARD_TYPES.map(type => `<option value="${type}">${type.charAt(0).toUpperCase() + type.slice(1)}</option>`).join('')}
                             </select>
                         </div>
                     </div>
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: bold; color: black;">Card Color</label>
-                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 200px;">
-                            ${DEFAULT_COLORS.map((color, index) => `
-                                <button type="button" class="color-option ${index === 0 ? 'selected' : ''}" 
-                                        data-color="${color}" style="width: 40px; height: 40px; border: 2px solid ${index === 0 ? '#ffd700' : 'transparent'}; border-radius: 8px; cursor: pointer; background-color: ${color}"></button>
-                            `).join('')}
-                        </div>
+                    <div class="form-group">
+                        <label for="card-color">Card Color</label>
+                        <input type="color" id="card-color" value="${DEFAULT_COLOR}" class="color-wheel-input">
                     </div>
                 </div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end; padding-top: 15px; border-top: 1px solid #ccc;">
-                    <button onclick="saveNewCard()" style="background: #ffd700; color: black; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">Create Card</button>
-                    <button onclick="closeCreateCardModal()" style="background: #ccc; color: black; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Cancel</button>
+                <div class="modal-buttons">
+                    <button class="button primary-btn" onclick="saveNewCard()">Create Card</button>
+                    <button class="button" onclick="closeCreateCardModal()">Cancel</button>
                 </div>
             </div>
         </div>
 
         <!-- Edit Card Modal -->
-        <div id="edit-card-modal" class="domain-vault-modal-overlay" style="display: none;">
-            <div class="modal">
+        <div id="edit-card-modal" class="modal-overlay" style="display: none;">
+            <div class="modal glassmorphic">
                 <div class="modal-header">
                     <h3>Edit Card</h3>
                     <button type="button" class="modal-close-btn" onclick="closeEditCardModal()">×</button>
                 </div>
                 <div class="modal-content">
-                    <!-- Same form structure as create modal -->
                     <div class="form-group">
                         <label for="edit-card-name">Card Name</label>
                         <input type="text" id="edit-card-name" placeholder="Enter card name">
@@ -218,13 +189,8 @@ function renderDomainVault() {
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Card Color</label>
-                        <div class="color-picker-grid" id="edit-color-picker-grid">
-                            ${DEFAULT_COLORS.map(color => `
-                                <button type="button" class="color-option" 
-                                        data-color="${color}" style="background-color: ${color}"></button>
-                            `).join('')}
-                        </div>
+                        <label for="edit-card-color">Card Color</label>
+                        <input type="color" id="edit-card-color" value="${DEFAULT_COLOR}" class="color-wheel-input">
                     </div>
                 </div>
                 <div class="modal-buttons">
@@ -452,21 +418,6 @@ function setupEventListeners() {
         createCardBtn.removeEventListener('click', showCreateCardModal);
         createCardBtn.addEventListener('click', showCreateCardModal);
     }
-
-    // Color picker event listeners - use event delegation on the domain vault container
-    const domainVaultContainer = document.querySelector('.domain-vault-container');
-    if (domainVaultContainer) {
-        domainVaultContainer.addEventListener('click', function(e) {
-            if (e.target.classList.contains('color-option')) {
-                // Remove selected class from siblings
-                e.target.parentNode.querySelectorAll('.color-option').forEach(btn => {
-                    btn.classList.remove('selected');
-                });
-                // Add selected class to clicked option
-                e.target.classList.add('selected');
-            }
-        });
-    }
 }
 
 // Test function to create a simple modal
@@ -515,82 +466,25 @@ function testSimpleModal() {
 
 // Show create card modal
 function showCreateCardModal() {
-    console.log('=== CREATE CARD MODAL DEBUG ===');
-    console.log('showCreateCardModal called');
-    
-    // Check if Domain Vault is initialized
-    const domainVaultContainer = document.querySelector('.domain-vault-container');
-    console.log('Domain Vault container exists:', !!domainVaultContainer);
-    
     const modal = document.getElementById('create-card-modal');
-    console.log('Modal element found:', !!modal);
-    console.log('Modal element:', modal);
-    
     if (modal) {
-        console.log('Modal current style:', modal.style.cssText);
-        console.log('Modal computed style display:', window.getComputedStyle(modal).display);
-        
-        // Check modal structure
-        const modalContent = modal.querySelector('.modal');
-        console.log('Modal content found:', !!modalContent);
-        
-        if (modalContent) {
-            console.log('Modal content computed style:', window.getComputedStyle(modalContent).display);
-        }
-        
-        // Try to show modal
-        console.log('Setting modal display to flex');
-        modal.style.display = 'flex';
-        
-        // Force modal content to be visible with inline styles (reuse modalContent from above)
-        if (modalContent) {
-            modalContent.style.display = 'block';
-            modalContent.style.background = 'rgba(255, 255, 255, 0.95)';
-            modalContent.style.color = '#333';
-            modalContent.style.visibility = 'visible';
-            modalContent.style.opacity = '1';
-            console.log('Applied inline styles to modal content');
-        }
-        
-        console.log('Modal style after setting:', modal.style.cssText);
-        console.log('Modal computed style after setting:', window.getComputedStyle(modal).display);
-        
-        // Reset form if elements exist
+        // Reset form
         const nameInput = document.getElementById('card-name');
         const descInput = document.getElementById('card-description');
         const levelInput = document.getElementById('card-level');
         const costInput = document.getElementById('card-recall-cost');
         const typeInput = document.getElementById('card-type');
-        
-        console.log('Form elements found:', {
-            name: !!nameInput,
-            desc: !!descInput,
-            level: !!levelInput,
-            cost: !!costInput,
-            type: !!typeInput
-        });
+        const colorInput = document.getElementById('card-color');
         
         if (nameInput) nameInput.value = '';
         if (descInput) descInput.value = '';
         if (levelInput) levelInput.value = '1';
         if (costInput) costInput.value = '1';
         if (typeInput) typeInput.value = 'ability';
+        if (colorInput) colorInput.value = DEFAULT_COLOR;
         
-        // Reset color selection
-        const colorOptions = document.querySelectorAll('#create-card-modal .color-option');
-        console.log('Color options found:', colorOptions.length);
-        colorOptions.forEach((btn, index) => {
-            btn.classList.toggle('selected', index === 0);
-        });
-        
-    } else {
-        console.error('Modal element not found!');
-        console.log('Available elements with "modal" in ID:');
-        document.querySelectorAll('[id*="modal"]').forEach(el => {
-            console.log(`- ${el.id}:`, el);
-        });
+        modal.style.display = 'flex';
     }
-    console.log('=== END DEBUG ===');
 }
 
 // Close create card modal
@@ -609,8 +503,7 @@ function saveNewCard() {
     const level = parseInt(document.getElementById('card-level').value);
     const recallCost = parseInt(document.getElementById('card-recall-cost').value);
     const type = document.getElementById('card-type').value;
-    const selectedColor = document.querySelector('#create-card-modal .color-option.selected');
-    const color = selectedColor ? selectedColor.dataset.color : DEFAULT_COLORS[0];
+    const color = document.getElementById('card-color').value;
 
     // Validation
     if (!name || !description) {
@@ -662,11 +555,7 @@ function editCard(cardId) {
     document.getElementById('edit-card-level').value = card.level;
     document.getElementById('edit-card-recall-cost').value = card.recallCost;
     document.getElementById('edit-card-type').value = card.type;
-    
-    // Set color selection
-    document.querySelectorAll('#edit-card-modal .color-option').forEach(btn => {
-        btn.classList.toggle('selected', btn.dataset.color === card.color);
-    });
+    document.getElementById('edit-card-color').value = card.color;
     
     // Show modal
     document.getElementById('edit-card-modal').style.display = 'flex';
@@ -691,8 +580,7 @@ function saveEditedCard() {
     const level = parseInt(document.getElementById('edit-card-level').value);
     const recallCost = parseInt(document.getElementById('edit-card-recall-cost').value);
     const type = document.getElementById('edit-card-type').value;
-    const selectedColor = document.querySelector('#edit-card-modal .color-option.selected');
-    const color = selectedColor ? selectedColor.dataset.color : DEFAULT_COLORS[0];
+    const color = document.getElementById('edit-card-color').value;
 
     // Validation
     if (!name || !description) {
@@ -771,48 +659,7 @@ window.quickEquipCard = quickEquipCard;
 window.unequipCard = unequipCard;
 window.initializeDomainVault = initializeDomainVault;
 window.testSimpleModal = testSimpleModal;
-window.addDebugMessage = addDebugMessage;
 
 // Domain Vault will be initialized by the main tab switching logic in script.js
 
-// Add visible debugging to the page
-function addDebugMessage(message) {
-    let debugDiv = document.getElementById('domain-vault-debug');
-    if (!debugDiv) {
-        debugDiv = document.createElement('div');
-        debugDiv.id = 'domain-vault-debug';
-        debugDiv.style.cssText = `
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            max-width: 300px;
-            z-index: 9999;
-            font-family: monospace;
-        `;
-        document.body.appendChild(debugDiv);
-    }
-    const timestamp = new Date().toLocaleTimeString();
-    debugDiv.innerHTML += `<div>[${timestamp}] ${message}</div>`;
-    debugDiv.scrollTop = debugDiv.scrollHeight;
-}
-
-addDebugMessage('domainVault.js loaded successfully');
-addDebugMessage('initializeDomainVault function: ' + (typeof initializeDomainVault));
-
-// Remove debug overlay after successful initialization
-function removeDebugOverlay() {
-    setTimeout(() => {
-        const debugDiv = document.getElementById('domain-vault-debug');
-        if (debugDiv) {
-            debugDiv.style.opacity = '0.3';
-            setTimeout(() => {
-                debugDiv.remove();
-            }, 2000);
-        }
-    }, 3000);
-}
+// Domain Vault initialization - cleaned up and production ready

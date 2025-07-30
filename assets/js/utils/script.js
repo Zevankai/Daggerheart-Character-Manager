@@ -343,22 +343,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             if (targetPanelId === 'domain-vault-tab-content') {
-                // Add debug message function if it doesn't exist
-                if (typeof window.addDebugMessage === 'function') {
-                    window.addDebugMessage('Domain Vault tab clicked');
-                    window.addDebugMessage('window.initializeDomainVault exists: ' + (typeof window.initializeDomainVault));
-                }
-                
                 if (window.initializeDomainVault && typeof window.initializeDomainVault === 'function') {
-                    if (typeof window.addDebugMessage === 'function') {
-                        window.addDebugMessage('Calling initializeDomainVault...');
-                    }
                     window.initializeDomainVault();
                 } else {
-                    if (typeof window.addDebugMessage === 'function') {
-                        window.addDebugMessage('ERROR: initializeDomainVault function not found!');
-                        window.addDebugMessage('Available domain functions: ' + Object.keys(window).filter(key => key.includes('Domain') || key.includes('domain')).join(', '));
-                    }
+                    console.warn('initializeDomainVault function not found. Ensure domainVault.js is loaded.');
                 }
             }
             if (targetPanelId === 'characters-tab-content') {
