@@ -22,6 +22,15 @@ function generateCardId() {
     return Date.now() + Math.random().toString(36).substr(2, 9);
 }
 
+// Truncate description to first few words
+function truncateDescription(description, wordLimit = 6) {
+    const words = description.trim().split(/\s+/);
+    if (words.length <= wordLimit) {
+        return description;
+    }
+    return words.slice(0, wordLimit).join(' ') + '...';
+}
+
 // Get domain names from the header
 function getDomainNames() {
     const domainBadges = document.querySelectorAll('.domain-badge');
@@ -270,7 +279,7 @@ function renderCard(card, isEquipped = false) {
                         <span class="card-recall">Cost: ${card.recallCost}</span>
                     </div>
                 </div>
-                <div class="card-description">${card.description}</div>
+                <div class="card-description">${truncateDescription(card.description)}</div>
                 ${!isEquipped ? `
                     <div class="card-actions">
                         <button class="card-action-btn edit-btn" onclick="editCard('${card.id}')">Edit</button>
@@ -691,12 +700,14 @@ function expandCard(cardId) {
         padding: 30px;
         max-width: 500px;
         width: 90%;
-        max-height: 80vh;
+        max-height: 90vh;
         overflow-y: auto;
         color: var(--text-color);
         cursor: pointer;
         transition: all 0.3s ease;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        word-wrap: break-word;
+        hyphens: auto;
     `;
 
     const imageHtml = card.image ? 
@@ -717,7 +728,7 @@ function expandCard(cardId) {
                     <span style="background: rgba(0, 0, 0, 0.1); color: #333; padding: 6px 12px; border-radius: 6px;">Cost: ${card.recallCost}</span>
                 </div>
             </div>
-            <div style="color: #444; font-size: 1.1rem; line-height: 1.6;">${card.description}</div>
+                         <div style="color: #444; font-size: 1.1rem; line-height: 1.6; word-wrap: break-word; white-space: pre-wrap; hyphens: auto;">${card.description}</div>
         </div>
     `;
 
