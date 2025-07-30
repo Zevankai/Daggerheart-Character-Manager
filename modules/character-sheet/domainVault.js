@@ -276,10 +276,19 @@ function renderCard(card, isEquipped = false) {
     if (card.image) {
         let backgroundStyle = `background-image: url('${card.image}'); background-repeat: no-repeat;`;
         
-        if (card.cropData) {
+        if (card.cropData && card.cropData.width > 0 && card.cropData.height > 0) {
             // Use crop data to position the image
             const { x, y, width, height } = card.cropData;
-            backgroundStyle += ` background-size: ${100/width}% ${100/height}%; background-position: ${-x*100/width}% ${-y*100/height}%;`;
+            
+            // Scale the image so the cropped portion fills the container
+            const scaleX = 100 / width;  // Scale to make the visible width fill 100%
+            const scaleY = 100 / height; // Scale to make the visible height fill 100%
+            
+            // Position the image so the cropped area appears in the container
+            const positionX = -x * scaleX; // Move left by the crop offset * scale
+            const positionY = -y * scaleY; // Move up by the crop offset * scale
+            
+            backgroundStyle += ` background-size: ${scaleX}% ${scaleY}%; background-position: ${positionX}% ${positionY}%;`;
         } else {
             // Default to cover behavior for backward compatibility
             backgroundStyle += ` background-size: cover; background-position: center;`;
@@ -647,6 +656,19 @@ function initializeImageCropping(imageInputId, containerId, imageId, previewId) 
     });
     
     function updateImagePosition() {
+        // Constrain the image position so it can't be dragged completely out of view
+        const previewRect = preview.getBoundingClientRect();
+        const imgRect = image.getBoundingClientRect();
+        
+        // Ensure at least some part of the image is always visible
+        const minX = previewRect.width - imgRect.width;
+        const maxX = 0;
+        const minY = previewRect.height - imgRect.height;
+        const maxY = 0;
+        
+        currentX = Math.max(minX, Math.min(maxX, currentX));
+        currentY = Math.max(minY, Math.min(maxY, currentY));
+        
         image.style.left = currentX + 'px';
         image.style.top = currentY + 'px';
     }
@@ -658,17 +680,23 @@ function initializeImageCropping(imageInputId, containerId, imageId, previewId) 
         const previewRect = preview.getBoundingClientRect();
         const imgRect = image.getBoundingClientRect();
         
-        // Calculate the crop position as percentages
-        const cropX = -currentX / imgRect.width;
-        const cropY = -currentY / imgRect.height;
-        const cropWidth = previewRect.width / imgRect.width;
-        const cropHeight = previewRect.height / imgRect.height;
+        // Calculate what portion of the image is visible in the preview area
+        const visibleLeft = Math.max(0, -currentX);
+        const visibleTop = Math.max(0, -currentY);
+        const visibleRight = Math.min(imgRect.width, previewRect.width - currentX);
+        const visibleBottom = Math.min(imgRect.height, previewRect.height - currentY);
+        
+        // Convert to percentages of the original image
+        const cropX = visibleLeft / imgRect.width;
+        const cropY = visibleTop / imgRect.height;
+        const cropWidth = (visibleRight - visibleLeft) / imgRect.width;
+        const cropHeight = (visibleBottom - visibleTop) / imgRect.height;
         
         return {
-            x: Math.max(0, Math.min(1 - cropWidth, cropX)),
-            y: Math.max(0, Math.min(1 - cropHeight, cropY)),
-            width: Math.min(1, cropWidth),
-            height: Math.min(1, cropHeight)
+            x: cropX,
+            y: cropY,
+            width: cropWidth,
+            height: cropHeight
         };
     };
 }
@@ -901,10 +929,19 @@ function expandCard(cardId) {
     if (card.image) {
         let backgroundStyle = `background-image: url('${card.image}'); background-repeat: no-repeat;`;
         
-        if (card.cropData) {
+        if (card.cropData && card.cropData.width > 0 && card.cropData.height > 0) {
             // Use crop data to position the image
             const { x, y, width, height } = card.cropData;
-            backgroundStyle += ` background-size: ${100/width}% ${100/height}%; background-position: ${-x*100/width}% ${-y*100/height}%;`;
+            
+            // Scale the image so the cropped portion fills the container
+            const scaleX = 100 / width;  // Scale to make the visible width fill 100%
+            const scaleY = 100 / height; // Scale to make the visible height fill 100%
+            
+            // Position the image so the cropped area appears in the container
+            const positionX = -x * scaleX; // Move left by the crop offset * scale
+            const positionY = -y * scaleY; // Move up by the crop offset * scale
+            
+            backgroundStyle += ` background-size: ${scaleX}% ${scaleY}%; background-position: ${positionX}% ${positionY}%;`;
         } else {
             // Default to cover behavior for backward compatibility
             backgroundStyle += ` background-size: cover; background-position: center;`;
