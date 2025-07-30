@@ -42,11 +42,40 @@ function saveDomainVaultData() {
         console.log('Saving domain vault data. Size:', dataString.length, 'bytes');
         localStorage.setItem('zevi-domain-vault', dataString);
         console.log('Domain vault data saved successfully');
+        
+        // Update debug panel
+        updateDebugPanel(dataString.length, null);
     } catch (error) {
         console.error('Error saving domain vault data:', error);
         if (error.name === 'QuotaExceededError') {
             console.error('localStorage quota exceeded. Consider clearing some data.');
         }
+        
+        // Update debug panel with error
+        updateDebugPanel(0, error.message);
+    }
+}
+
+// Update debug panel with current information
+function updateDebugPanel(storageSize = null, error = null) {
+    const cardCountElement = document.getElementById('debug-card-count');
+    const storageSizeElement = document.getElementById('debug-storage-size');
+    const lastErrorElement = document.getElementById('debug-last-error');
+    
+    if (cardCountElement) {
+        cardCountElement.textContent = domainVaultData.cards.length;
+    }
+    
+    if (storageSizeElement && storageSize !== null) {
+        storageSizeElement.textContent = `${storageSize} bytes`;
+    }
+    
+    if (lastErrorElement && error) {
+        lastErrorElement.textContent = error;
+        lastErrorElement.style.color = '#e74c3c';
+    } else if (lastErrorElement) {
+        lastErrorElement.textContent = 'None';
+        lastErrorElement.style.color = '#27ae60';
     }
 }
 
@@ -123,6 +152,16 @@ function renderDomainVault() {
                     <h3>Card Collection</h3>
                     <button class="button primary-btn" id="create-card-btn">Create New Card</button>
                 </div>
+                
+                <!-- Debug Panel -->
+                <div style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 10px; margin-bottom: 15px; font-size: 0.9rem;">
+                    <div style="color: var(--accent-color); font-weight: bold; margin-bottom: 5px;">Debug Info:</div>
+                    <div>Total Cards: <span id="debug-card-count">${domainVaultData.cards.length}</span></div>
+                    <div>Storage Size: <span id="debug-storage-size">Calculating...</span></div>
+                    <div>Last Error: <span id="debug-last-error">None</span></div>
+                    <button onclick="testCreateMultipleCards(5)" style="background: var(--accent-color); color: #000; border: none; padding: 5px 10px; border-radius: 4px; margin-top: 5px; font-size: 0.8rem; cursor: pointer;">Test: Create 5 Cards</button>
+                </div>
+                
                 <div class="cards-grid" id="cards-grid">
                     ${renderCards()}
                 </div>
@@ -778,10 +817,19 @@ async function saveNewCard() {
     console.log('Card created successfully. Total cards:', domainVaultData.cards.length);
     console.log('Current cards:', domainVaultData.cards);
     
+    // Update debug panel
+    updateDebugPanel();
+    
     // Re-render cards
     document.getElementById('cards-grid').innerHTML = renderCards();
     initializeDragAndDrop();
     setupEventListeners();
+    
+    // Initialize debug panel
+    setTimeout(() => {
+        const dataString = JSON.stringify(domainVaultData);
+        updateDebugPanel(dataString.length, null);
+    }, 100);
     
     closeCreateCardModal();
     
@@ -1072,6 +1120,9 @@ window.testCreateMultipleCards = function(count = 10) {
     }
     saveDomainVaultData();
     console.log('Created', count, 'test cards. Total cards:', domainVaultData.cards.length);
+    
+    // Update debug panel
+    updateDebugPanel();
     
     // Re-render if domain vault is visible
     const cardsGrid = document.getElementById('cards-grid');
