@@ -261,7 +261,7 @@ function renderCard(card, isEquipped = false) {
                 </div>
             ` : `
                 <div class="card-actions">
-                    <button class="card-action-btn unequip-btn" onclick="unequipCard('${card.id}')">Unequip</button>
+                    <button class="card-action-btn unequip-btn" onclick="unequipCard('${card.id}')" title="Unequip card">↓</button>
                 </div>
             `}
         </div>

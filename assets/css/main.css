@@ -4883,13 +4883,16 @@
 }
 
 .equipped-slot {
-    min-width: 200px;
+    width: 280px;
     min-height: 180px;
+    max-height: 220px;
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .empty-equipped-slot {
-    width: 200px;
+    width: 100%;
     height: 180px;
     border: 2px dashed var(--accent-color-50);
     border-radius: 12px;
@@ -4960,8 +4963,12 @@
     cursor: grab;
     position: relative;
     min-height: 180px;
+    max-height: 220px;
+    width: 100%;
+    max-width: 280px;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .domain-card:hover {
@@ -5072,6 +5079,13 @@
     line-height: 1.4;
     flex: 1;
     margin-bottom: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    word-wrap: break-word;
+    max-height: 4.2rem; /* 3 lines * 1.4 line-height */
 }
 
 /* Card Actions */
@@ -5117,11 +5131,21 @@
 .card-action-btn.unequip-btn {
     background: rgba(231, 76, 60, 0.8);
     color: white;
+    min-width: 30px;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 50%;
 }
 
 .card-action-btn.unequip-btn:hover {
     background: #e74c3c;
-    transform: scale(1.05);
+    transform: scale(1.1);
 }
 
 /* Drag and Drop Styles */
@@ -5336,12 +5360,11 @@
     
     .equipped-slot {
         width: 100%;
-        max-width: 300px;
+        max-width: 320px;
     }
     
     .empty-equipped-slot {
         width: 100%;
-        max-width: 300px;
     }
     
     .cards-grid {
