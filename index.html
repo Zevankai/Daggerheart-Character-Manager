@@ -1,39 +1,565 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zevi Character Sheet</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background: #1a1a2e;
-            color: #eee;
-        }
-        .container {
-            background: rgba(255,255,255,0.1);
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-    </style>
+ <meta charset="UTF-8" />
+ <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+ <title>Zevi Character Sheet</title>
+     <link rel="stylesheet" href="assets/css/main.css">
 </head>
 <body>
-    <div class="container">
-        <h1>🎲 Zevi Character Sheet</h1>
-        <p>Character management system is loading...</p>
-        <p><strong>Status:</strong> <span id="status">Initializing</span></p>
-        <p><em>This is a simplified version to test deployment.</em></p>
-        <p>Time: <span id="time"></span></p>
+ <div class="glass" data-color-target="main-glass">
+  <header>
+   <div class="char-img-wrapper">
+    <div class="char-img-border" data-color-target="char-image-border"></div>
+    <img src="" alt="Character Portrait" id="charImage" onclick="document.getElementById('charUpload').click();">
+    <div class="placeholder" id="charPlaceholder">Click to add character image</div>
+    <input type="file" id="charUpload" accept="image/*" style="display:none;" onchange="uploadCharacterImage(event)">
+   </div>
+
+               <div class="name-box" data-color-target="name-box">
+                <input type="text" value="Character Name" />
+                <div class="subtitle" contenteditable="true">Community Ancestry Class (Subclass)</div>
+    <div class="domain-row">
+     <span class="domain-badge" contenteditable="true">Domain 1</span>
+     <span class="domain-divider">||</span>
+     <span class="level-display" id="charLevel" contenteditable="true">5</span>
+     <span class="domain-divider">||</span>
+     <span class="domain-badge" contenteditable="true">Domain 2</span>
     </div>
     
-    <script>
-        document.getElementById('time').textContent = new Date().toISOString();
-        document.getElementById('status').textContent = 'Ready';
-        console.log('Zevi Character Sheet - Minimal Version Loaded');
-    </script>
-</body>
+    <div class="hope-tracker-inline">
+     <h4>Hope</h4>
+     <div class="trackers-wrapper">
+      <div class="tracker-btn" id="hope-decrement">-</div>
+      <div class="trackers" id="hope-tracker">
+       </div>
+      <div class="tracker-btn" id="hope-increment">+</div>
+     </div>
+     <div id="encumbrance-warning-main" class="encumbrance-warning" style="display: none; margin-top: 10px; font-size: 0.8rem;">
+      ⚠️ You are over-encumbered! -2 to strength & agility checks
+     </div>
+    </div>
+   </div>
+
+   <div class="right-info">
+    <span id="toggleTheme" style="cursor: pointer;">🌙</span><br />
+   </div>
+   
+   <div class="header-bottom-center">
+    <a href="https://drive.google.com/file/d/1KPD_jt2jaNn2Okd9dDbQNRVdk5PAk2R2/view?usp=drivesdk" target="_blank" class="rulebook-link">Official Rulebook</a>
+   </div>
+  </header>
+
+  <div class="divider"></div>
+
+  <div class="flex-row" id="draggable-sections">
+   <div class="column section" data-id="ability" data-color-target="ability-scores">
+    <h3>Ability Scores</h3>
+    <div class="attributes-grid">
+     <div class="attribute-box">
+      <h4>Agility</h4>
+      <input type="number" class="attribute-value" data-attribute="agility" value="0">
+      <p class="attribute-text">Sprint || Dodge || Leap</p>
+     </div>
+     <div class="attribute-box">
+      <h4>Strength</h4>
+      <input type="number" class="attribute-value" data-attribute="strength" value="0">
+      <p class="attribute-text">Lift || Smash || Grapple</p>
+     </div>
+     <div class="attribute-box">
+      <h4>Finesse</h4>
+      <input type="number" class="attribute-value" data-attribute="finesse" value="0">
+      <p class="attribute-text">Control || Hide || Tinker</p>
+     </div>
+     <div class="attribute-box">
+      <h4>Instinct</h4>
+      <input type="number" class="attribute-value" data-attribute="instinct" value="0">
+      <p class="attribute-text">Perceive || Sense || Navigate</p>
+     </div>
+     <div class="attribute-box">
+      <h4>Presence</h4>
+      <input type="number" class="attribute-value" data-attribute="presence" value="0">
+      <p class="attribute-text">Charm || Perform || Deceive</p>
+     </div>
+     <div class="attribute-box">
+      <h4>Knowledge</h4>
+      <input type="number" class="attribute-value" data-attribute="knowledge" value="0">
+      <p class="attribute-text">Recall || Analyze || Comprehend</p>
+     </div>
+    </div>
+    <div class="evasion-display">
+     <div class="evasion-label">Evasion</div>
+     <input type="number" class="evasion-value" id="evasionValue" value="10" contenteditable="true">
+    </div>
+   </div>
+   <div class="column section" data-id="hp" data-color-target="hp-stress">
+    <h3>Hit Points & Stress</h3>
+    <div class="damage-control-row">
+     <button class="damage-btn" id="minor-damage-btn">
+      <span>Minor</span>
+      <span>Damage</span>
+     </button>
+     <input type="number" class="damage-value-input" id="minor-damage-value" min="0" onchange="window.updateDamageValue(this, 'minor')">
+
+     <button class="damage-btn" id="major-damage-btn">
+      <span>Major</span>
+      <span>Damage</span>
+     </button>
+     <input type="number" class="damage-value-input" id="major-damage-value" min="0" onchange="window.updateDamageValue(this, 'major')">
+
+     <button class="damage-btn" id="severe-damage-btn">
+      <span>Severe</span>
+      <span>Damage</span>
+     </button>
+    </div>
+    <div class="trackers-wrapper">
+     <button class="tracker-btn remove-hp">-</button>
+     <div class="trackers" id="hp-tracker">
+      </div>
+     <button class="tracker-btn add-hp">+</button>
+    </div>
+    <div class="divider"></div>
+    <div class="trackers-wrapper">
+     <button class="tracker-btn remove-stress">-</button>
+     <div class="trackers" id="stress-tracker">
+      </div>
+     <button class="tracker-btn add-stress">+</button>
+    </div>
+   </div>
+   <div class="column section" data-id="weapons" data-color-target="active-weapons">
+    <h3>Active Weapons</h3>
+   </div>
+   <div class="column section" data-id="armor" data-color-target="armor-section">
+    <h3>Armor</h3>
+    <div class="trackers-wrapper">
+     <button class="tracker-btn remove-armor">-</button>
+     <div class="trackers" id="armor-tracker">
+      </div>
+     <button class="tracker-btn add-armor">+</button>
+    </div>
+
+   </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <nav class="tabs">
+   <button data-target="domain-vault-tab-content">Domain Vault</button>
+   <button data-target="effects-features-tab-content">Effects & Features</button>
+   <button data-target="equipment-tab-content">Equipment</button>
+   <button data-target="details-tab-content">Details</button>
+   <button data-target="experiences-tab-content">Experiences</button>
+   <button data-target="journal-tab-content">Journal</button>
+   <button data-target="downtime-tab-content" class="active">Downtime</button>
+   <button data-target="characters-tab-content">Characters</button>
+   <button data-target="settings-tab-content">Settings</button>
+  </nav>
+
+  <div class="divider"></div>
+
+  <div class="tab-content-area">
+   <div id="domain-vault-tab-content" class="tab-panel">
+    <p style="text-align: center;">Content for Domain Vault will go here.</p>
+   </div>
+   <div id="effects-features-tab-content" class="tab-panel">
+    <p style="text-align: center;">Content for Effects & Features will go here.</p>
+   </div>
+   <div id="equipment-tab-content" class="tab-panel">
+    <!-- Equipment content will be populated by equipment.js -->
+   </div>
+   <div id="details-tab-content" class="tab-panel">
+    <p style="text-align: center;">Content for Details will go here.</p>
+   </div>
+   <div id="experiences-tab-content" class="tab-panel">
+    <button id="show-create-experience-modal-btn" class="button" onclick="window.showCreateExperienceModal()">Create New Experience</button>
+    <div id="experiences-list-container" class="experiences-list-container">
+    </div>
+
+    <div id="experience-detail-container" class="experience-detail-container" style="display: none;">
+     <h4 id="detail-experience-title"></h4>
+     <p id="detail-experience-description"></p>
+     <p>Modifier: <input type="number" id="detail-experience-modifier" class="mini-input" min="-2" max="2" onchange="window.updateExperienceModifier(this)"></p>
+     <button class="button" onclick="window.closeExperienceDetail()">Back to Experiences</button>
+    </div>
+   </div>
+   <div id="journal-tab-content" class="tab-panel">
+    <div class="journal-category-buttons">
+     <button class="button active" data-journal-category="all">All Entries</button>
+     <button class="button" data-journal-category="downtime">Downtime</button>
+     <button class="button" data-journal-category="combat">Combat</button>
+     <button class="button" data-journal-category="exploration">Exploration</button>
+     <button class="button" data-journal-category="social">Social</button>
+     <button class="button" data-journal-category="other">Other</button>
+    </div>
+    <div id="journal-entries-list" class="journal-entries-list">
+    </div>
+    <div id="journal-entry-detail" class="journal-entry-detail" style="display: none;">
+     <div class="journal-detail-header">
+      <h4 id="journal-detail-title"></h4>
+      <span id="journal-detail-date"></span>
+      <span id="journal-detail-category"></span>
+     </div>
+     <div id="journal-detail-content" class="journal-detail-content"></div>
+     <button class="button" onclick="window.closeJournalDetail()">Back to Entries</button>
+    </div>
+    <button class="button" onclick="window.showJournalEntryModal()">Add New Entry</button>
+   </div>
+
+   <div id="downtime-tab-content" class="tab-panel active">
+    <div id="rest-type-selector">
+     <h2>Choose Rest Type</h2>
+     <div class="button-group">
+      <button class="button" onclick="window.startRest('short')">Short Rest (1 Hour)</button>
+      <button class="button" onclick="window.startRest('long')">Long Rest (6 Hours)</button>
+     </div>
+    </div>
+
+    <div id="rest-options-container" style="display: none;">
+     <h3 id="rest-title"></h3>
+     <div class="gm-notification" id="gm-notification"></div>
+     <div class="notification-area" id="downtime-notification-area"></div>
+     <div id="rest-options-list" class="rest-options-list">
+      </div>
+     <button class="button" onclick="window.confirmRest()">Confirm Rest</button>
+     <button class="button" onclick="window.resetDowntimeView()">Cancel Rest</button>
+
+     <div id="long-rest-projects-container" class="long-term-projects" style="display: none;">
+      <div class="projects-header">
+       <h4>Long-Term Projects</h4>
+       <div class="project-action-buttons">
+        <button class="button" onclick="window.showCompletedProjects()">View Completed Projects</button>
+        <button class="button" onclick="window.showActiveProjects()">View Active Projects</button>
+        <button class="button" onclick="window.showCreateNewProject()">Create New Project</button>
+       </div>
+      </div>
+      <div id="project-view-area">
+       <div id="completed-projects-view" style="display: none;">
+        <h5>Completed Projects</h5>
+        <div id="completed-projects-list"></div>
+       </div>
+       <div id="active-projects-view" style="display: none;">
+        <h5>Active Projects - Select one to advance</h5>
+        <div id="active-projects-list"></div>
+        <div id="selected-project-info" style="display: none;">
+         <p>Selected: <span id="selected-project-name"></span></p>
+        </div>
+       </div>
+       <div id="create-project-view" style="display: none;">
+        <h5>Create New Project</h5>
+        <input type="text" id="new-project-name" placeholder="Project Name">
+        <label for="new-project-segments">Number of segments (1-12):</label>
+        <input type="number" id="new-project-segments" min="1" max="12" value="4">
+        <div class="modal-buttons">
+         <button class="button" onclick="window.createNewProject()">Create Project</button>
+         <button class="button" onclick="window.hideProjectViews()">Cancel</button>
+        </div>
+       </div>
+      </div>
+     </div>
+
+     <div id="rest-summary-area" class="rest-summary-area" style="display: none;">
+      <h4>Rest Summary</h4>
+      <ul id="rest-summary-list">
+       </ul>
+      <button class="button" onclick="window.acknowledgeRest()">Okay</button>
+     </div>
+    </div>
+   </div>
+
+   <div id="characters-tab-content" class="tab-panel">
+    <div class="characters-page">
+      <h2>Characters</h2>
+      <p>Character management functionality has been simplified.</p>
+    </div>
+   </div>
+   <div id="settings-tab-content" class="tab-panel">
+    <div class="settings-container">
+     <h2>Settings</h2>
+     
+     <!-- Accent Color Theme Section -->
+     <div class="settings-section">
+      <h3>Accent Color Theme</h3>
+      <p>Change the color of accent elements (currently yellow) throughout the character sheet.</p>
+      <div class="color-control">
+       <label for="accentColorPicker">Accent Color:</label>
+       <div class="color-picker-group">
+        <input type="color" id="accentColorPicker" value="#ffd700">
+        <div class="color-preview" id="accentColorPreview"></div>
+        <button type="button" id="resetAccentColor" class="reset-btn">Reset to Default</button>
+       </div>
+      </div>
+     </div>
+     
+     <!-- Glassmorphic Background Tint Section -->
+     <div class="settings-section">
+      <h3>Glassmorphic Background Tint</h3>
+      <p>Customize the color and opacity of the glassmorphic background effect.</p>
+      <div class="color-control">
+       <label for="glassColorPicker">Glass Tint Color:</label>
+       <div class="color-picker-group">
+        <input type="color" id="glassColorPicker" value="#ffffff">
+        <div class="color-preview glass-preview" id="glassColorPreview"></div>
+        <button type="button" id="resetGlassColor" class="reset-btn">Reset to Default</button>
+       </div>
+      </div>
+      <div class="slider-control">
+       <label for="glassOpacitySlider">Glass Opacity:</label>
+       <div class="slider-group">
+        <input type="range" id="glassOpacitySlider" min="5" max="30" value="10" step="1">
+        <span id="glassOpacityValue">10%</span>
+       </div>
+      </div>
+     </div>
+     
+     <!-- Background Image Section -->
+     <div class="settings-section">
+      <h3>Background Image</h3>
+      <p>Upload a custom background image for your character sheet.</p>
+      <div class="file-upload-control">
+       <label for="bgUpload" class="file-upload-label">
+        <span class="upload-icon">🏞️</span>
+        <span class="upload-text">Choose Background Image</span>
+       </label>
+       <input type="file" id="bgUpload" accept="image/*" onchange="uploadBackground(event)" class="file-upload-input">
+      </div>
+     </div>
+     
+     <!-- Character Code Section -->
+     <div class="settings-section">
+      <h3>Character Code</h3>
+      <p>A unique code representing your character's current state. Share this code to let others import your character.</p>
+      <div class="character-code-control">
+       <div class="code-display-group">
+        <label for="characterCodeDisplay">Your Character Code:</label>
+        <div class="code-display">
+         <input type="text" id="characterCodeDisplay" readonly value="YWSAFHB">
+         <button type="button" id="copyCodeBtn" class="copy-btn" title="Copy to clipboard">📋</button>
+        </div>
+       </div>
+       <div class="code-actions">
+        <button type="button" id="generateCodeBtn" class="action-btn">Generate New Code</button>
+        <button type="button" id="importCodeBtn" class="action-btn">Import Character</button>
+       </div>
+      </div>
+     </div>
+     
+     <!-- Backpack & Encumbrance Toggle Section -->
+     <div class="settings-section">
+      <h3>Equipment Features</h3>
+      <p>Toggle advanced equipment features like backpack selection, encumbrance tracking, and additional equipment slots.</p>
+      <div class="toggle-control">
+       <label for="backpackToggle" class="toggle-label">
+        <input type="checkbox" id="backpackToggle" checked>
+        <span class="toggle-slider"></span>
+        <span class="toggle-text">Enable Backpack & Encumbrance System</span>
+       </label>
+       <div class="toggle-description">
+        <p><strong>When enabled:</strong> Backpack selection, encumbrance tracking, attire slots, and belt/consumables slots are available.</p>
+        <p><strong>When disabled:</strong> Simplified equipment view with only combat equipment and inventory management.</p>
+       </div>
+      </div>
+     </div>
+     
+     <!-- Character Deletion Section -->
+     <div class="settings-section danger-section">
+      <h3>Character Data</h3>
+      <p>Delete all character information and return to a fresh character sheet.</p>
+      <button type="button" id="deleteCharacterBtn" class="danger-btn">Delete Character</button>
+     </div>
+     
+     <!-- Account Deletion Section -->
+     <div class="settings-section danger-section">
+      <h3>Account Data</h3>
+      <p>Delete all account data including character information and settings.</p>
+      <button type="button" id="deleteAccountBtn" class="danger-btn">Delete Account</button>
+     </div>
+    </div>
+   </div>
+   
+   <!-- Character Delete Modal -->
+   <div id="characterDeleteModal" class="modal">
+    <div class="modal-content">
+     <h3>Delete Character</h3>
+     <p>Are you sure you want to delete all character data? This action cannot be undone.</p>
+     <div class="modal-buttons">
+      <button type="button" id="confirmCharacterDelete" class="confirm-delete-btn">Confirm Character Delete</button>
+      <button type="button" id="cancelCharacterDelete" class="cancel-btn">Cancel</button>
+     </div>
+    </div>
+   </div>
+   
+   <!-- Account Delete Modal -->
+   <div id="accountDeleteModal" class="modal">
+    <div class="modal-content">
+     <h3>Delete Account</h3>
+     <p>Are you sure you want to delete your entire account? This will remove all data and cannot be undone.</p>
+     <div class="modal-buttons">
+      <button type="button" id="confirmAccountDelete" class="confirm-delete-btn">Confirm Account Delete</button>
+      <button type="button" id="cancelAccountDelete" class="cancel-btn">Cancel</button>
+     </div>
+    </div>
+   </div>
+
+   <!-- Character Import Modal -->
+   <div id="characterImportModal" class="modal">
+    <div class="modal-content">
+     <h3>Import Character</h3>
+     <p>Enter a character code to import character data:</p>
+     <input type="text" id="importCodeInput" placeholder="Enter character code (e.g. YWSAFHB)" style="width: 100%; margin: 15px 0; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+     <div class="modal-buttons">
+      <button type="button" id="confirmCharacterImport" class="confirm-btn">Import Character</button>
+      <button type="button" id="cancelCharacterImport" class="cancel-btn">Cancel</button>
+     </div>
+    </div>
+   </div>
+
+  </div>
+ </div>
+
+
+
+ <div id="journal-entry-modal" class="modal-overlay">
+    <div class="modal">
+        <h3>New Journal Entry</h3>
+        <input type="text" id="journal-entry-title-input" placeholder="Entry Title (e.g., Encounter with Goblins)">
+        <select id="journal-entry-category-select">
+            <option value="downtime">Downtime</option>
+            <option value="combat">Combat</option>
+            <option value="exploration">Exploration</option>
+            <option value="social">Social</option>
+            <option value="other">Other</option>
+        </select>
+        <textarea id="journal-entry-content-input" placeholder="What happened?"></textarea>
+        <div class="modal-buttons">
+            <button class="button" onclick="window.saveJournalEntry()">Save Entry</button>
+            <button class="button" onclick="window.closeJournalEntryModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div id="prepare-choice-modal" class="modal-overlay">
+    <div class="modal glassmorphic">
+        <h3>Prepare</h3>
+        <p>Are you preparing with a party member?</p>
+        <div class="modal-buttons">
+            <button class="button" onclick="window.handlePrepareWithParty(true)">Yes (Gain 2 Hope)</button>
+            <button class="button" onclick="window.handlePrepareWithParty(false)">No (Gain 1 Hope)</button>
+        </div>
+    </div>
+</div>
+
+<div id="create-experience-modal" class="modal-overlay">
+    <div class="modal small-modal">
+        <div class="modal-header">
+            <h3>Create New Experience</h3>
+            <button type="button" class="modal-close-btn" onclick="window.closeCreateExperienceModal()" title="Close">×</button>
+        </div>
+        
+        <div class="modal-content">
+            <div class="form-group">
+                <label for="experience-title-input">Experience Title</label>
+                <input type="text" id="experience-title-input" placeholder="Experience Title">
+            </div>
+            
+            <div class="form-group">
+                <label for="experience-description-input">Description</label>
+                <textarea id="experience-description-input" placeholder="Describe this experience..." rows="4"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="experience-modifier-input">Modifier (-2 to +2)</label>
+                <input type="number" id="experience-modifier-input" value="0" min="-2" max="2">
+            </div>
+        </div>
+        
+        <div class="modal-buttons">
+            <button class="button primary-btn" onclick="window.saveNewExperience()">Save Experience</button>
+            <button class="button" onclick="window.closeCreateExperienceModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+        <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+        
+        <!-- Core Modules -->
+        <script src="core/CharacterData.js"></script>
+        <script src="core/UIManager.js"></script>
+        <script src="core/AutoSave.js"></script>
+        <script src="core/AppController.js"></script>
+        
+
+        
+        <!-- Character Sheet Modules -->
+        <script src="modules/character-sheet/hpStress.js"></script>
+        <script src="modules/character-sheet/hope.js"></script>
+        <script src="modules/character-sheet/downtime.js"></script>
+        <script src="modules/character-sheet/journal.js"></script>
+        <script src="modules/character-sheet/experiences.js"></script>
+        <script src="modules/character-sheet/details.js"></script>
+        <script src="modules/character-sheet/settings.js"></script>
+        
+        <!-- Equipment Modules -->
+        <script src="modules/equipment/equipment.js"></script>
+        
+        <!-- Utilities -->
+        <script src="assets/js/utils/script.js"></script>
+ <script>
+  // Character selection removed - single character mode
+  
+  // Auto-save character data periodically
+  setInterval(() => {
+    if (window.characterManager && window.characterManager.currentCharacter) {
+      window.characterManager.saveCharacterData(window.characterManager.currentCharacter);
+    }
+  }, 30000); // Save every 30 seconds
+  
+  // Flag to prevent multiple initializations
+  let indexPageInitialized = false;
+  
+  // Simplified initialization for single character mode
+  function initializeIndexPage() {
+    if (indexPageInitialized) {
+      console.log('Index page already initialized, skipping...');
+      return;
+    }
+    
+    indexPageInitialized = true;
+    console.log('=== INDEX.HTML: Single character mode - initializing page ===');
+    
+    // Check for debug parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const clearStorage = urlParams.get('clear');
+    
+    if (clearStorage) {
+      console.log('CLEAR STORAGE: Clearing all ZEVI data');
+      // Clear all ZEVI related data
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key.startsWith('zevi-')) {
+          localStorage.removeItem(key);
+        }
+      });
+      sessionStorage.removeItem('zevi-redirect-guard');
+      console.log('Storage cleared');
+    }
+    
+    // Initialize the app controller for single character mode
+    if (window.app && window.app.init) {
+      window.app.init();
+      console.log('App controller initialized');
+    }
+    
+    console.log('Single character sheet ready');
+  }
+  
+  // Check if user has a current character loaded
+  document.addEventListener('DOMContentLoaded', () => {
+    // Short delay to ensure character manager is loaded
+    setTimeout(initializeIndexPage, 50);
+  });
+ </script>
 </html>
