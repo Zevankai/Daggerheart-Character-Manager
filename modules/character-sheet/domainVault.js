@@ -375,6 +375,7 @@ function handleCardUnequip(evt) {
     document.getElementById('equipped-slots').innerHTML = renderEquippedSlots();
     document.getElementById('cards-grid').innerHTML = renderCards();
     initializeDragAndDrop();
+    setupEventListeners();
 }
 
 // Equip card to specific slot
@@ -399,6 +400,7 @@ function equipCardToSlot(cardId, slotIndex) {
     document.getElementById('equipped-slots').innerHTML = renderEquippedSlots();
     document.getElementById('cards-grid').innerHTML = renderCards();
     initializeDragAndDrop();
+    setupEventListeners();
 }
 
 // Quick equip card to first available slot
@@ -425,6 +427,7 @@ function unequipCard(cardId) {
         document.getElementById('equipped-slots').innerHTML = renderEquippedSlots();
         document.getElementById('cards-grid').innerHTML = renderCards();
         initializeDragAndDrop();
+        setupEventListeners();
     }
 }
 
@@ -529,6 +532,7 @@ async function saveNewCard() {
     // Re-render cards
     document.getElementById('cards-grid').innerHTML = renderCards();
     initializeDragAndDrop();
+    setupEventListeners();
     
     closeCreateCardModal();
     
@@ -622,6 +626,7 @@ async function saveEditedCard() {
     document.getElementById('equipped-slots').innerHTML = renderEquippedSlots();
     document.getElementById('cards-grid').innerHTML = renderCards();
     initializeDragAndDrop();
+    setupEventListeners();
     
     closeEditCardModal();
     
@@ -653,6 +658,7 @@ function deleteCard() {
     document.getElementById('equipped-slots').innerHTML = renderEquippedSlots();
     document.getElementById('cards-grid').innerHTML = renderCards();
     initializeDragAndDrop();
+    setupEventListeners();
     
     closeEditCardModal();
     
