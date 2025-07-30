@@ -920,8 +920,6 @@ function expandCard(cardId) {
         padding: 30px;
         max-width: 500px;
         width: 90%;
-        max-height: 90vh;
-        overflow-y: auto;
         color: var(--text-color);
         cursor: pointer;
         transition: all 0.3s ease;
@@ -971,7 +969,7 @@ function expandCard(cardId) {
                     <span style="background: rgba(0, 0, 0, 0.1); color: #333; padding: 6px 12px; border-radius: 6px;">Cost: ${card.recallCost}</span>
                 </div>
             </div>
-                         <div style="color: #444; font-size: 1.1rem; line-height: 1.6; word-wrap: break-word; white-space: pre-wrap; hyphens: auto;">${card.description}</div>
+            <div style="color: #444; font-size: 1.1rem; line-height: 1.6; word-wrap: break-word; white-space: pre-wrap; hyphens: auto; overflow-wrap: break-word;">${card.description}</div>
         </div>
     `;
 
@@ -981,6 +979,18 @@ function expandCard(cardId) {
 
     overlay.appendChild(expandedCard);
     document.body.appendChild(overlay);
+
+    // Check if card height exceeds viewport and adjust if needed
+    requestAnimationFrame(() => {
+        const cardHeight = expandedCard.offsetHeight;
+        const viewportHeight = window.innerHeight;
+        const maxCardHeight = viewportHeight * 0.95; // 95% of viewport height
+        
+        if (cardHeight > maxCardHeight) {
+            expandedCard.style.maxHeight = maxCardHeight + 'px';
+            expandedCard.style.overflowY = 'auto';
+        }
+    });
 
     // Animate in
     requestAnimationFrame(() => {
