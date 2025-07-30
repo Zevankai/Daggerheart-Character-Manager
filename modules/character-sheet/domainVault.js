@@ -39,63 +39,13 @@ const DEFAULT_COLOR = '#3498db';
 function saveDomainVaultData() {
     try {
         const dataString = JSON.stringify(domainVaultData);
-        console.log('Saving domain vault data. Size:', dataString.length, 'bytes');
-        
-        // Check if storage size is getting too large (over 4MB)
-        if (dataString.length > 4000000) {
-            console.warn('Storage size is large. Consider optimizing.');
-            const lastErrorElement = document.getElementById('debug-last-error');
-            if (lastErrorElement) {
-                lastErrorElement.textContent = 'Storage size is large. Click "Optimize Storage" to compress.';
-                lastErrorElement.style.color = '#f39c12';
-            }
-        }
-        
         localStorage.setItem('zevi-domain-vault', dataString);
-        console.log('Domain vault data saved successfully');
-        
-        // Update debug panel
-        updateDebugPanel(dataString.length, null);
     } catch (error) {
         console.error('Error saving domain vault data:', error);
-        if (error.name === 'QuotaExceededError') {
-            console.error('localStorage quota exceeded. Consider clearing some data.');
-            
-            // Show error in debug panel
-            const lastErrorElement = document.getElementById('debug-last-error');
-            if (lastErrorElement) {
-                lastErrorElement.textContent = 'Storage full! Click "Optimize Storage" or "Clear All Cards".';
-                lastErrorElement.style.color = '#e74c3c';
-            }
-        }
-        
-        // Update debug panel with error
-        updateDebugPanel(0, error.message);
     }
 }
 
-// Update debug panel with current information
-function updateDebugPanel(storageSize = null, error = null) {
-    const cardCountElement = document.getElementById('debug-card-count');
-    const storageSizeElement = document.getElementById('debug-storage-size');
-    const lastErrorElement = document.getElementById('debug-last-error');
-    
-    if (cardCountElement) {
-        cardCountElement.textContent = domainVaultData.cards.length;
-    }
-    
-    if (storageSizeElement && storageSize !== null) {
-        storageSizeElement.textContent = `${storageSize} bytes`;
-    }
-    
-    if (lastErrorElement && error) {
-        lastErrorElement.textContent = error;
-        lastErrorElement.style.color = '#e74c3c';
-    } else if (lastErrorElement) {
-        lastErrorElement.textContent = 'None';
-        lastErrorElement.style.color = '#27ae60';
-    }
-}
+
 
 // Generate unique ID for cards
 function generateCardId() {
@@ -171,18 +121,7 @@ function renderDomainVault() {
                     <button class="button primary-btn" id="create-card-btn">Create New Card</button>
                 </div>
                 
-                <!-- Debug Panel -->
-                <div style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 10px; margin-bottom: 15px; font-size: 0.9rem;">
-                    <div style="color: var(--accent-color); font-weight: bold; margin-bottom: 5px;">Debug Info:</div>
-                    <div>Total Cards: <span id="debug-card-count">${domainVaultData.cards.length}</span></div>
-                    <div>Storage Size: <span id="debug-storage-size">Calculating...</span></div>
-                    <div>Last Error: <span id="debug-last-error">None</span></div>
-                    <div style="margin-top: 10px;">
-                        <button onclick="testCreateMultipleCards(5)" style="background: var(--accent-color); color: #000; border: none; padding: 5px 10px; border-radius: 4px; margin-right: 5px; font-size: 0.8rem; cursor: pointer;">Test: Create 5 Cards</button>
-                        <button onclick="optimizeStorage()" style="background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; margin-right: 5px; font-size: 0.8rem; cursor: pointer;">Optimize Storage</button>
-                        <button onclick="clearAllCards()" style="background: #f39c12; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; cursor: pointer;">Clear All Cards</button>
-                    </div>
-                </div>
+
                 
                 <div class="cards-grid" id="cards-grid">
                     ${renderCards()}
@@ -630,7 +569,7 @@ function closeCreateCardModal() {
     }
 }
 
-// Handle image upload
+// Handle image upload with automatic compression
 function handleImageUpload(file) {
     return new Promise((resolve) => {
         if (!file) {
@@ -640,7 +579,39 @@ function handleImageUpload(file) {
         
         const reader = new FileReader();
         reader.onload = function(e) {
-            resolve(e.target.result);
+            const originalImage = e.target.result;
+            
+            // Create a temporary image to get dimensions
+            const img = new Image();
+            img.onload = function() {
+                // Calculate optimal dimensions (max 800px width/height)
+                let newWidth = img.width;
+                let newHeight = img.height;
+                const maxSize = 800;
+                
+                if (newWidth > maxSize || newHeight > maxSize) {
+                    if (newWidth > newHeight) {
+                        newHeight = (newHeight * maxSize) / newWidth;
+                        newWidth = maxSize;
+                    } else {
+                        newWidth = (newWidth * maxSize) / newHeight;
+                        newHeight = maxSize;
+                    }
+                }
+                
+                // Create canvas for compression
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = newWidth;
+                canvas.height = newHeight;
+                
+                // Draw and compress image
+                ctx.drawImage(img, 0, 0, newWidth, newHeight);
+                const compressedImage = canvas.toDataURL('image/jpeg', 0.8); // 80% quality
+                
+                resolve(compressedImage);
+            };
+            img.src = originalImage;
         };
         reader.readAsDataURL(file);
     });
@@ -818,6 +789,13 @@ async function saveNewCard() {
     const image = await handleImageUpload(imageFile);
     const cropData = window.createCardCropFunction ? window.createCardCropFunction() : null;
 
+    // Clean up crop data - only keep if it's meaningful
+    let cleanCropData = null;
+    if (cropData && cropData.width > 0 && cropData.height > 0 && 
+        (cropData.x > 0 || cropData.y > 0 || cropData.width < 1 || cropData.height < 1)) {
+        cleanCropData = cropData;
+    }
+
     // Create new card
     const newCard = {
         id: generateCardId(),
@@ -829,29 +807,16 @@ async function saveNewCard() {
         type,
         color,
         image,
-        cropData: cropData
+        cropData: cleanCropData
     };
 
     domainVaultData.cards.push(newCard);
     saveDomainVaultData();
     
-    // Debug logging
-    console.log('Card created successfully. Total cards:', domainVaultData.cards.length);
-    console.log('Current cards:', domainVaultData.cards);
-    
-    // Update debug panel
-    updateDebugPanel();
-    
     // Re-render cards
     document.getElementById('cards-grid').innerHTML = renderCards();
     initializeDragAndDrop();
     setupEventListeners();
-    
-    // Initialize debug panel
-    setTimeout(() => {
-        const dataString = JSON.stringify(domainVaultData);
-        updateDebugPanel(dataString.length, null);
-    }, 100);
     
     closeCreateCardModal();
     
@@ -929,6 +894,13 @@ async function saveEditedCard() {
     // Get crop data (keep existing if no new image)
     const newCropData = window.editCardCropFunction ? window.editCardCropFunction() : null;
     const cropData = newImage ? newCropData : domainVaultData.cards[cardIndex].cropData;
+    
+    // Clean up crop data - only keep if it's meaningful
+    let cleanCropData = null;
+    if (cropData && cropData.width > 0 && cropData.height > 0 && 
+        (cropData.x > 0 || cropData.y > 0 || cropData.width < 1 || cropData.height < 1)) {
+        cleanCropData = cropData;
+    }
 
     // Update card
     domainVaultData.cards[cardIndex] = {
@@ -941,7 +913,7 @@ async function saveEditedCard() {
         type,
         color,
         image,
-        cropData: cropData
+        cropData: cleanCropData
     };
 
     saveDomainVaultData();
@@ -1122,147 +1094,7 @@ window.setupGlobalDomainChangeListeners = setupGlobalDomainChangeListeners;
 
 window.expandCard = expandCard;
 
-// Test function to create multiple cards (for debugging)
-window.testCreateMultipleCards = function(count = 10) {
-    console.log('Testing creation of', count, 'cards...');
-    for (let i = 0; i < count; i++) {
-        const testCard = {
-            id: generateCardId(),
-            name: `Test Card ${i + 1}`,
-            description: `This is test card number ${i + 1} for debugging purposes.`,
-            domain: 'Domain 1',
-            level: 1,
-            recallCost: 1,
-            type: 'ability',
-            color: '#3498db',
-            image: null,
-            cropData: null
-        };
-        domainVaultData.cards.push(testCard);
-    }
-    saveDomainVaultData();
-    console.log('Created', count, 'test cards. Total cards:', domainVaultData.cards.length);
-    
-    // Update debug panel
-    updateDebugPanel();
-    
-    // Re-render if domain vault is visible
-    const cardsGrid = document.getElementById('cards-grid');
-    if (cardsGrid) {
-        cardsGrid.innerHTML = renderCards();
-        initializeDragAndDrop();
-        setupEventListeners();
-    }
-};
 
-// Optimize storage by compressing images and removing unnecessary data
-window.optimizeStorage = function() {
-    console.log('Optimizing storage...');
-    
-    let originalSize = JSON.stringify(domainVaultData).length;
-    let optimizedCount = 0;
-    
-    // Process each card to optimize storage
-    domainVaultData.cards.forEach(card => {
-        let cardOptimized = false;
-        
-        // Remove crop data if it's default/empty
-        if (card.cropData && (!card.cropData.width || !card.cropData.height)) {
-            delete card.cropData;
-            cardOptimized = true;
-        }
-        
-        // Compress image data if it's very large
-        if (card.image && card.image.length > 100000) { // If image is larger than 100KB
-            // Create a temporary canvas to compress the image
-            const img = new Image();
-            img.onload = function() {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                
-                // Calculate new dimensions (max 800px width/height)
-                let newWidth = img.width;
-                let newHeight = img.height;
-                const maxSize = 800;
-                
-                if (newWidth > maxSize || newHeight > maxSize) {
-                    if (newWidth > newHeight) {
-                        newHeight = (newHeight * maxSize) / newWidth;
-                        newWidth = maxSize;
-                    } else {
-                        newWidth = (newWidth * maxSize) / newHeight;
-                        newHeight = maxSize;
-                    }
-                }
-                
-                canvas.width = newWidth;
-                canvas.height = newHeight;
-                
-                // Draw and compress
-                ctx.drawImage(img, 0, 0, newWidth, newHeight);
-                const compressedImage = canvas.toDataURL('image/jpeg', 0.7); // 70% quality
-                
-                // Update the card with compressed image
-                card.image = compressedImage;
-                cardOptimized = true;
-                optimizedCount++;
-                
-                // Save after optimization
-                saveDomainVaultData();
-                updateDebugPanel();
-                
-                // Re-render cards
-                const cardsGrid = document.getElementById('cards-grid');
-                if (cardsGrid) {
-                    cardsGrid.innerHTML = renderCards();
-                    initializeDragAndDrop();
-                    setupEventListeners();
-                }
-            };
-            img.src = card.image;
-        }
-        
-        if (cardOptimized) {
-            optimizedCount++;
-        }
-    });
-    
-    // Save optimized data
-    saveDomainVaultData();
-    
-    let newSize = JSON.stringify(domainVaultData).length;
-    let savings = originalSize - newSize;
-    
-    // Show optimization results
-    const lastErrorElement = document.getElementById('debug-last-error');
-    if (lastErrorElement) {
-        lastErrorElement.textContent = `Optimized ${optimizedCount} cards. Saved ${savings} bytes.`;
-        lastErrorElement.style.color = '#27ae60';
-    }
-    
-    updateDebugPanel();
-    
-    console.log(`Storage optimization complete. Optimized ${optimizedCount} cards. Saved ${savings} bytes.`);
-};
-
-// Clear all cards (emergency function)
-window.clearAllCards = function() {
-    if (confirm('Are you sure you want to delete ALL cards? This cannot be undone!')) {
-        domainVaultData.cards = [];
-        saveDomainVaultData();
-        updateDebugPanel();
-        
-        // Re-render cards
-        const cardsGrid = document.getElementById('cards-grid');
-        if (cardsGrid) {
-            cardsGrid.innerHTML = renderCards();
-            initializeDragAndDrop();
-            setupEventListeners();
-        }
-        
-        console.log('All cards cleared.');
-    }
-};
 
 // Set up listeners for domain changes in the header
 function setupDomainChangeListeners() {
