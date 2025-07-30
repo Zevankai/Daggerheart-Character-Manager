@@ -42,18 +42,27 @@ function getDomainNames() {
 
 // Initialize Domain Vault tab
 function initializeDomainVault() {
-    console.log('Initializing Domain Vault...');
+    console.log('=== INITIALIZING DOMAIN VAULT ===');
     const domainVaultContent = document.getElementById('domain-vault-tab-content');
+    console.log('Domain vault content element:', domainVaultContent);
+    
     if (!domainVaultContent) {
-        console.warn('Domain Vault tab content not found');
+        console.error('Domain Vault tab content not found');
         return;
     }
     
+    console.log('Current content:', domainVaultContent.innerHTML);
+    
     // Only initialize if not already initialized
     if (!domainVaultContent.querySelector('.domain-vault-container')) {
-        renderDomainVault();
-        setupEventListeners();
-        console.log('Domain Vault initialized successfully');
+        console.log('Rendering Domain Vault...');
+        try {
+            renderDomainVault();
+            setupEventListeners();
+            console.log('Domain Vault initialized successfully');
+        } catch (error) {
+            console.error('Error initializing Domain Vault:', error);
+        }
     } else {
         console.log('Domain Vault already initialized');
     }
@@ -761,3 +770,5 @@ window.initializeDomainVault = initializeDomainVault;
 window.testSimpleModal = testSimpleModal;
 
 // Domain Vault will be initialized by the main tab switching logic in script.js
+console.log('domainVault.js loaded successfully');
+console.log('initializeDomainVault function defined:', typeof initializeDomainVault);

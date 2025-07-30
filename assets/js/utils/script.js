@@ -343,10 +343,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             if (targetPanelId === 'domain-vault-tab-content') {
+                console.log('Domain Vault tab clicked');
+                console.log('window.initializeDomainVault exists:', typeof window.initializeDomainVault);
                 if (window.initializeDomainVault && typeof window.initializeDomainVault === 'function') {
+                    console.log('Calling initializeDomainVault...');
                     window.initializeDomainVault();
                 } else {
                     console.warn('initializeDomainVault function not found. Ensure domainVault.js is loaded.');
+                    console.log('Available window functions:', Object.keys(window).filter(key => key.includes('Domain') || key.includes('domain')));
                 }
             }
             if (targetPanelId === 'characters-tab-content') {
