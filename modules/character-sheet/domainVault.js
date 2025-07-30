@@ -126,6 +126,13 @@ function renderDomainVault() {
                 <div class="cards-grid" id="cards-grid">
                     ${renderCards()}
                 </div>
+                
+                <!-- Delete Cards Section -->
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                    <button class="button danger-btn" id="delete-cards-btn" style="background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                        🗑️ Delete Cards
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -259,6 +266,26 @@ function renderDomainVault() {
                     <button onclick="saveEditedCard()" style="background: var(--accent-color); color: #000; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">Save Changes</button>
                     <button onclick="deleteCard()" style="background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">Delete Card</button>
                     <button onclick="closeEditCardModal()" style="background: rgba(255, 255, 255, 0.1); color: var(--text-color); border: 1px solid rgba(255, 255, 255, 0.2); padding: 10px 20px; border-radius: 6px; cursor: pointer;">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Cards Modal -->
+        <div id="delete-cards-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; align-items: center; justify-content: center;">
+            <div style="background: var(--glass-background-color); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; padding: 20px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; color: var(--text-color);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px;">
+                    <h3 style="margin: 0; color: var(--text-color);">Delete Cards</h3>
+                    <button type="button" onclick="closeDeleteCardsModal()" style="background: none; border: none; color: var(--text-color); font-size: 20px; cursor: pointer; padding: 5px; border-radius: 50%; width: 30px; height: 30px;">×</button>
+                </div>
+                <div>
+                    <p style="margin-bottom: 20px; color: rgba(255, 255, 255, 0.8);">Select the cards you want to delete. This action cannot be undone.</p>
+                    <div id="delete-cards-list" style="max-height: 400px; overflow-y: auto; margin-bottom: 20px;">
+                        <!-- Cards will be populated here -->
+                    </div>
+                    <div style="display: flex; gap: 10px; justify-content: flex-end; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                        <button onclick="confirmDeleteCards()" id="confirm-delete-btn" style="background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; opacity: 0.5; pointer-events: none;">Delete Selected (0)</button>
+                        <button onclick="closeDeleteCardsModal()" style="background: rgba(255, 255, 255, 0.1); color: var(--text-color); border: 1px solid rgba(255, 255, 255, 0.2); padding: 10px 20px; border-radius: 6px; cursor: pointer;">Cancel</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -524,6 +551,14 @@ function setupEventListeners() {
         // Remove any existing listeners to avoid duplicates
         createCardBtn.removeEventListener('click', showCreateCardModal);
         createCardBtn.addEventListener('click', showCreateCardModal);
+    }
+    
+    // Delete cards button
+    const deleteCardsBtn = document.getElementById('delete-cards-btn');
+    if (deleteCardsBtn) {
+        // Remove any existing listeners to avoid duplicates
+        deleteCardsBtn.removeEventListener('click', showDeleteCardsModal);
+        deleteCardsBtn.addEventListener('click', showDeleteCardsModal);
     }
     
     // Initialize image cropping interfaces
@@ -1094,6 +1129,12 @@ window.setupGlobalDomainChangeListeners = setupGlobalDomainChangeListeners;
 
 window.expandCard = expandCard;
 
+// Delete cards functions
+window.showDeleteCardsModal = showDeleteCardsModal;
+window.closeDeleteCardsModal = closeDeleteCardsModal;
+window.toggleCardSelection = toggleCardSelection;
+window.confirmDeleteCards = confirmDeleteCards;
+
 
 
 // Set up listeners for domain changes in the header
@@ -1115,6 +1156,97 @@ function setupDomainChangeListeners() {
             }
         });
     });
+}
+
+// Delete Cards functionality
+let selectedCardsForDeletion = new Set();
+
+// Show delete cards modal
+function showDeleteCardsModal() {
+    const modal = document.getElementById('delete-cards-modal');
+    const cardsList = document.getElementById('delete-cards-list');
+    
+    if (!modal || !cardsList) return;
+    
+    // Reset selection
+    selectedCardsForDeletion.clear();
+    
+    // Populate cards list
+    cardsList.innerHTML = domainVaultData.cards.map(card => `
+        <div style="display: flex; align-items: center; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; margin-bottom: 8px; background: rgba(255, 255, 255, 0.05);">
+            <input type="checkbox" id="delete-${card.id}" style="margin-right: 12px; transform: scale(1.2);" onchange="toggleCardSelection('${card.id}')">
+            <div style="flex: 1;">
+                <div style="font-weight: bold; color: var(--text-color);">${card.name}</div>
+                <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.7);">${card.domain} • Lv.${card.level} • ${card.type}</div>
+            </div>
+            <div style="width: 40px; height: 40px; border-radius: 6px; background-color: ${card.color}; border: 2px solid rgba(255, 255, 255, 0.3);"></div>
+        </div>
+    `).join('');
+    
+    // Update confirm button
+    updateConfirmDeleteButton();
+    
+    modal.style.display = 'flex';
+}
+
+// Close delete cards modal
+function closeDeleteCardsModal() {
+    const modal = document.getElementById('delete-cards-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        selectedCardsForDeletion.clear();
+    }
+}
+
+// Toggle card selection for deletion
+function toggleCardSelection(cardId) {
+    if (selectedCardsForDeletion.has(cardId)) {
+        selectedCardsForDeletion.delete(cardId);
+    } else {
+        selectedCardsForDeletion.add(cardId);
+    }
+    updateConfirmDeleteButton();
+}
+
+// Update confirm delete button state
+function updateConfirmDeleteButton() {
+    const confirmBtn = document.getElementById('confirm-delete-btn');
+    if (confirmBtn) {
+        const count = selectedCardsForDeletion.size;
+        confirmBtn.textContent = `Delete Selected (${count})`;
+        confirmBtn.style.opacity = count > 0 ? '1' : '0.5';
+        confirmBtn.style.pointerEvents = count > 0 ? 'auto' : 'none';
+    }
+}
+
+// Confirm and execute card deletion
+function confirmDeleteCards() {
+    if (selectedCardsForDeletion.size === 0) return;
+    
+    if (confirm(`Are you sure you want to delete ${selectedCardsForDeletion.size} card(s)? This action cannot be undone.`)) {
+        // Remove cards from collection
+        domainVaultData.cards = domainVaultData.cards.filter(card => !selectedCardsForDeletion.has(card.id));
+        
+        // Remove cards from equipped slots
+        domainVaultData.equippedCards = domainVaultData.equippedCards.filter(cardId => !selectedCardsForDeletion.has(cardId));
+        
+        // Save changes
+        saveDomainVaultData();
+        
+        // Re-render everything
+        document.getElementById('equipped-slots').innerHTML = renderEquippedSlots();
+        document.getElementById('cards-grid').innerHTML = renderCards();
+        initializeDragAndDrop();
+        setupEventListeners();
+        
+        // Close modal
+        closeDeleteCardsModal();
+        
+        // Show notification
+        if (window.showNotification) {
+            window.showNotification(`Successfully deleted ${selectedCardsForDeletion.size} card(s)!`, 'success');
+        }
+    }
 }
 
 // Set up global domain change listeners (called on page load)
