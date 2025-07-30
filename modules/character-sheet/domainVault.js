@@ -135,9 +135,15 @@ function renderDomainVault() {
                             </select>
                         </div>
                     </div>
-                    <div style="margin-bottom: 15px;">
-                        <label for="card-color" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">Card Color</label>
-                        <input type="color" id="card-color" value="${DEFAULT_COLOR}" style="width: 60px; height: 40px; padding: 0; border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 8px; cursor: pointer; background: none;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <label for="card-color" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">Card Color</label>
+                            <input type="color" id="card-color" value="${DEFAULT_COLOR}" style="width: 60px; height: 40px; padding: 0; border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 8px; cursor: pointer; background: none;">
+                        </div>
+                        <div>
+                            <label for="card-image" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">Card Image</label>
+                            <input type="file" id="card-image" accept="image/*" style="width: 100%; padding: 8px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--text-color); backdrop-filter: blur(10px); font-size: 0.8rem;">
+                        </div>
                     </div>
                 </div>
                 <div style="display: flex; gap: 10px; justify-content: flex-end; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
@@ -188,9 +194,16 @@ function renderDomainVault() {
                             </select>
                         </div>
                     </div>
-                    <div style="margin-bottom: 15px;">
-                        <label for="edit-card-color" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">Card Color</label>
-                        <input type="color" id="edit-card-color" value="${DEFAULT_COLOR}" style="width: 60px; height: 40px; padding: 0; border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 8px; cursor: pointer; background: none;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <label for="edit-card-color" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">Card Color</label>
+                            <input type="color" id="edit-card-color" value="${DEFAULT_COLOR}" style="width: 60px; height: 40px; padding: 0; border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 8px; cursor: pointer; background: none;">
+                        </div>
+                        <div>
+                            <label for="edit-card-image" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">Card Image</label>
+                            <input type="file" id="edit-card-image" accept="image/*" style="width: 100%; padding: 8px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--text-color); backdrop-filter: blur(10px); font-size: 0.8rem;">
+                            <div id="edit-current-image" style="margin-top: 5px; font-size: 0.8rem; color: rgba(255, 255, 255, 0.7);"></div>
+                        </div>
                     </div>
                 </div>
                 <div style="display: flex; gap: 10px; justify-content: flex-end; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
@@ -238,32 +251,38 @@ function renderCards() {
 
 // Render individual card
 function renderCard(card, isEquipped = false) {
+    const imageHtml = card.image ? `<div class="card-image" style="background-image: url('${card.image}');"></div>` : '';
+    
     return `
         <div class="domain-card ${isEquipped ? 'equipped' : ''}" 
              data-card-id="${card.id}" 
              style="border-left: 4px solid ${card.color};">
-            <div class="card-header">
-                <div class="card-name">${card.name}</div>
-                <div class="card-type-badge card-type-${card.type}">${card.type}</div>
+            <button class="card-expand-btn" onclick="expandCard('${card.id}')" title="Expand card">↗</button>
+            ${imageHtml}
+            <div class="card-content">
+                <div class="card-header">
+                    <div class="card-name">${card.name}</div>
+                    <div class="card-type-badge card-type-${card.type}">${card.type}</div>
+                </div>
+                <div class="card-info">
+                    <div class="card-domain">${card.domain}</div>
+                    <div class="card-stats">
+                        <span class="card-level">Lv.${card.level}</span>
+                        <span class="card-recall">Cost: ${card.recallCost}</span>
+                    </div>
+                </div>
+                <div class="card-description">${card.description}</div>
+                ${!isEquipped ? `
+                    <div class="card-actions">
+                        <button class="card-action-btn edit-btn" onclick="editCard('${card.id}')">Edit</button>
+                        <button class="card-action-btn equip-btn" onclick="quickEquipCard('${card.id}')">Equip</button>
+                    </div>
+                ` : `
+                    <div class="card-actions">
+                        <button class="card-action-btn unequip-btn" onclick="unequipCard('${card.id}')" title="Unequip card">↓</button>
+                    </div>
+                `}
             </div>
-            <div class="card-info">
-                <div class="card-domain">${card.domain}</div>
-                <div class="card-stats">
-                    <span class="card-level">Lv.${card.level}</span>
-                    <span class="card-recall">Cost: ${card.recallCost}</span>
-                </div>
-            </div>
-            <div class="card-description">${card.description}</div>
-            ${!isEquipped ? `
-                <div class="card-actions">
-                    <button class="card-action-btn edit-btn" onclick="editCard('${card.id}')">Edit</button>
-                    <button class="card-action-btn equip-btn" onclick="quickEquipCard('${card.id}')">Equip</button>
-                </div>
-            ` : `
-                <div class="card-actions">
-                    <button class="card-action-btn unequip-btn" onclick="unequipCard('${card.id}')" title="Unequip card">↓</button>
-                </div>
-            `}
         </div>
     `;
 }
@@ -495,8 +514,24 @@ function closeCreateCardModal() {
     }
 }
 
+// Handle image upload
+function handleImageUpload(file) {
+    return new Promise((resolve) => {
+        if (!file) {
+            resolve(null);
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            resolve(e.target.result);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
 // Save new card
-function saveNewCard() {
+async function saveNewCard() {
     const name = document.getElementById('card-name').value.trim();
     const description = document.getElementById('card-description').value.trim();
     const domain = document.getElementById('card-domain').value;
@@ -504,6 +539,7 @@ function saveNewCard() {
     const recallCost = parseInt(document.getElementById('card-recall-cost').value);
     const type = document.getElementById('card-type').value;
     const color = document.getElementById('card-color').value;
+    const imageFile = document.getElementById('card-image').files[0];
 
     // Validation
     if (!name || !description) {
@@ -512,6 +548,9 @@ function saveNewCard() {
         }
         return;
     }
+
+    // Handle image upload
+    const image = await handleImageUpload(imageFile);
 
     // Create new card
     const newCard = {
@@ -522,7 +561,8 @@ function saveNewCard() {
         level,
         recallCost,
         type,
-        color
+        color,
+        image
     };
 
     domainVaultData.cards.push(newCard);
@@ -557,6 +597,16 @@ function editCard(cardId) {
     document.getElementById('edit-card-type').value = card.type;
     document.getElementById('edit-card-color').value = card.color;
     
+    // Show current image info
+    const currentImageDiv = document.getElementById('edit-current-image');
+    if (currentImageDiv) {
+        if (card.image) {
+            currentImageDiv.innerHTML = 'Current image: <span style="color: var(--accent-color);">Uploaded</span>';
+        } else {
+            currentImageDiv.innerHTML = 'No image uploaded';
+        }
+    }
+    
     // Show modal
     document.getElementById('edit-card-modal').style.display = 'flex';
 }
@@ -568,7 +618,7 @@ function closeEditCardModal() {
 }
 
 // Save edited card
-function saveEditedCard() {
+async function saveEditedCard() {
     if (!editingCardId) return;
 
     const cardIndex = domainVaultData.cards.findIndex(c => c.id === editingCardId);
@@ -581,6 +631,7 @@ function saveEditedCard() {
     const recallCost = parseInt(document.getElementById('edit-card-recall-cost').value);
     const type = document.getElementById('edit-card-type').value;
     const color = document.getElementById('edit-card-color').value;
+    const imageFile = document.getElementById('edit-card-image').files[0];
 
     // Validation
     if (!name || !description) {
@@ -589,6 +640,10 @@ function saveEditedCard() {
         }
         return;
     }
+
+    // Handle image upload (keep existing image if no new one is uploaded)
+    const newImage = await handleImageUpload(imageFile);
+    const image = newImage || domainVaultData.cards[cardIndex].image;
 
     // Update card
     domainVaultData.cards[cardIndex] = {
@@ -599,7 +654,8 @@ function saveEditedCard() {
         level,
         recallCost,
         type,
-        color
+        color,
+        image
     };
 
     saveDomainVaultData();
@@ -647,6 +703,86 @@ function deleteCard() {
     }
 }
 
+// Expand card to full view
+function expandCard(cardId) {
+    const card = domainVaultData.cards.find(c => c.id === cardId);
+    if (!card) return;
+
+    // Create expanded card overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'expanded-card-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 20000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+    `;
+
+    const expandedCard = document.createElement('div');
+    expandedCard.style.cssText = `
+        background: var(--glass-background-color);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-left: 8px solid ${card.color};
+        border-radius: 16px;
+        padding: 30px;
+        max-width: 500px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        color: var(--text-color);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    `;
+
+    const imageHtml = card.image ? 
+        `<div style="width: 100%; height: 200px; background-image: url('${card.image}'); background-size: cover; background-position: center; border-radius: 12px; margin-bottom: 20px;"></div>` : '';
+
+    expandedCard.innerHTML = `
+        <div style="text-align: center; margin-bottom: 10px; color: rgba(255, 255, 255, 0.7); font-size: 0.9rem;">Click anywhere to close</div>
+        ${imageHtml}
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; gap: 15px;">
+            <h2 style="margin: 0; color: var(--text-color); font-size: 1.8rem; flex: 1;">${card.name}</h2>
+            <div style="background: ${card.type === 'grimoire' ? '#9b59b6' : card.type === 'ability' ? '#3498db' : '#e74c3c'}; color: white; padding: 8px 16px; border-radius: 8px; font-size: 0.9rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">${card.type}</div>
+        </div>
+        <div style="margin-bottom: 20px;">
+            <div style="color: var(--accent-color); font-size: 1.1rem; font-weight: bold; margin-bottom: 10px;">${card.domain}</div>
+            <div style="display: flex; gap: 20px; font-size: 1rem;">
+                <span style="background: rgba(255, 255, 255, 0.1); padding: 6px 12px; border-radius: 6px;">Level ${card.level}</span>
+                <span style="background: rgba(255, 255, 255, 0.1); padding: 6px 12px; border-radius: 6px;">Cost: ${card.recallCost}</span>
+            </div>
+        </div>
+        <div style="color: rgba(255, 255, 255, 0.9); font-size: 1.1rem; line-height: 1.6;">${card.description}</div>
+    `;
+
+    expandedCard.addEventListener('click', () => {
+        overlay.remove();
+    });
+
+    overlay.appendChild(expandedCard);
+    document.body.appendChild(overlay);
+
+    // Animate in
+    requestAnimationFrame(() => {
+        overlay.style.opacity = '0';
+        overlay.style.transform = 'scale(0.9)';
+        requestAnimationFrame(() => {
+            overlay.style.transition = 'all 0.3s ease';
+            overlay.style.opacity = '1';
+            overlay.style.transform = 'scale(1)';
+        });
+    });
+}
+
 // Make functions globally available
 window.showCreateCardModal = showCreateCardModal;
 window.closeCreateCardModal = closeCreateCardModal;
@@ -659,6 +795,7 @@ window.quickEquipCard = quickEquipCard;
 window.unequipCard = unequipCard;
 window.initializeDomainVault = initializeDomainVault;
 window.testSimpleModal = testSimpleModal;
+window.expandCard = expandCard;
 
 // Domain Vault will be initialized by the main tab switching logic in script.js
 
