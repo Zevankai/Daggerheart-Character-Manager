@@ -5061,6 +5061,13 @@
     /* background-size, background-position, and background-repeat are set inline based on user choice */
 }
 
+.card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
 /* Card content wrapper */
 .card-content {
     display: flex;

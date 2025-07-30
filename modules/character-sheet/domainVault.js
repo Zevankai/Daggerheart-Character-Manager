@@ -274,27 +274,28 @@ function renderCards() {
 function renderCard(card, isEquipped = false) {
     let imageHtml = '';
     if (card.image) {
-        let backgroundStyle = `background-image: url('${card.image}'); background-repeat: no-repeat;`;
-        
         if (card.cropData && card.cropData.width > 0 && card.cropData.height > 0) {
             // Use crop data to position the image
             const { x, y, width, height } = card.cropData;
             
-            // Scale the image so the cropped portion fills the container
-            const scaleX = 100 / width;  // Scale to make the visible width fill 100%
-            const scaleY = 100 / height; // Scale to make the visible height fill 100%
-            
-            // Position the image so the cropped area appears in the container
-            const positionX = -x * scaleX; // Move left by the crop offset * scale
-            const positionY = -y * scaleY; // Move up by the crop offset * scale
-            
-            backgroundStyle += ` background-size: ${scaleX}% ${scaleY}%; background-position: ${positionX}% ${positionY}%;`;
+            // Create a container with the image positioned using CSS transforms
+            // The crop data represents the visible portion of the image as percentages
+            imageHtml = `
+                <div class="card-image" style="overflow: hidden; position: relative;">
+                    <img src="${card.image}" style="
+                        width: ${100 / width}%;
+                        height: ${100 / height}%;
+                        position: absolute;
+                        left: ${-x * (100 / width)}%;
+                        top: ${-y * (100 / height)}%;
+                        object-fit: cover;
+                    ">
+                </div>
+            `;
         } else {
             // Default to cover behavior for backward compatibility
-            backgroundStyle += ` background-size: cover; background-position: center;`;
+            imageHtml = `<div class="card-image" style="background-image: url('${card.image}'); background-size: cover; background-position: center; background-repeat: no-repeat;"></div>`;
         }
-        
-        imageHtml = `<div class="card-image" style="${backgroundStyle}"></div>`;
     }
     
     
@@ -686,11 +687,15 @@ function initializeImageCropping(imageInputId, containerId, imageId, previewId) 
         const visibleRight = Math.min(imgRect.width, previewRect.width - currentX);
         const visibleBottom = Math.min(imgRect.height, previewRect.height - currentY);
         
-        // Convert to percentages of the original image
-        const cropX = visibleLeft / imgRect.width;
-        const cropY = visibleTop / imgRect.height;
-        const cropWidth = (visibleRight - visibleLeft) / imgRect.width;
-        const cropHeight = (visibleBottom - visibleTop) / imgRect.height;
+        // Convert to percentages of the original image dimensions
+        // We need to account for the scaling factor between displayed and natural dimensions
+        const scaleX = image.naturalWidth / imgRect.width;
+        const scaleY = image.naturalHeight / imgRect.height;
+        
+        const cropX = (visibleLeft * scaleX) / image.naturalWidth;
+        const cropY = (visibleTop * scaleY) / image.naturalHeight;
+        const cropWidth = ((visibleRight - visibleLeft) * scaleX) / image.naturalWidth;
+        const cropHeight = ((visibleBottom - visibleTop) * scaleY) / image.naturalHeight;
         
         return {
             x: cropX,
@@ -927,27 +932,28 @@ function expandCard(cardId) {
 
     let expandedImageHtml = '';
     if (card.image) {
-        let backgroundStyle = `background-image: url('${card.image}'); background-repeat: no-repeat;`;
-        
         if (card.cropData && card.cropData.width > 0 && card.cropData.height > 0) {
             // Use crop data to position the image
             const { x, y, width, height } = card.cropData;
             
-            // Scale the image so the cropped portion fills the container
-            const scaleX = 100 / width;  // Scale to make the visible width fill 100%
-            const scaleY = 100 / height; // Scale to make the visible height fill 100%
-            
-            // Position the image so the cropped area appears in the container
-            const positionX = -x * scaleX; // Move left by the crop offset * scale
-            const positionY = -y * scaleY; // Move up by the crop offset * scale
-            
-            backgroundStyle += ` background-size: ${scaleX}% ${scaleY}%; background-position: ${positionX}% ${positionY}%;`;
+            // Create a container with the image positioned using CSS transforms
+            // The crop data represents the visible portion of the image as percentages
+            expandedImageHtml = `
+                <div style="width: 100%; height: 200px; overflow: hidden; position: relative; border-radius: 12px; margin-bottom: 20px;">
+                    <img src="${card.image}" style="
+                        width: ${100 / width}%;
+                        height: ${100 / height}%;
+                        position: absolute;
+                        left: ${-x * (100 / width)}%;
+                        top: ${-y * (100 / height)}%;
+                        object-fit: cover;
+                    ">
+                </div>
+            `;
         } else {
             // Default to cover behavior for backward compatibility
-            backgroundStyle += ` background-size: cover; background-position: center;`;
+            expandedImageHtml = `<div style="width: 100%; height: 200px; background-image: url('${card.image}'); background-size: cover; background-position: center; background-repeat: no-repeat; border-radius: 12px; margin-bottom: 20px;"></div>`;
         }
-        
-        expandedImageHtml = `<div style="width: 100%; height: 200px; ${backgroundStyle} border-radius: 12px; margin-bottom: 20px;"></div>`;
     }
 
     expandedCard.innerHTML = `
