@@ -99,7 +99,7 @@ function renderDomainVault() {
         </div>
 
         <!-- Create Card Modal -->
-        <div id="create-card-modal" class="modal-overlay" style="display: none;">
+        <div id="create-card-modal" class="domain-vault-modal-overlay" style="display: none;">
             <div class="modal">
                 <div class="modal-header">
                     <h3>Create New Card</h3>
@@ -157,7 +157,7 @@ function renderDomainVault() {
         </div>
 
         <!-- Edit Card Modal -->
-        <div id="edit-card-modal" class="modal-overlay" style="display: none;">
+        <div id="edit-card-modal" class="domain-vault-modal-overlay" style="display: none;">
             <div class="modal">
                 <div class="modal-header">
                     <h3>Edit Card</h3>

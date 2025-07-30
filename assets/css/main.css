@@ -5146,7 +5146,7 @@
 }
 
 /* Modal Styles for Domain Vault */
-.modal-overlay {
+.domain-vault-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
