@@ -40,6 +40,17 @@ function saveDomainVaultData() {
     try {
         const dataString = JSON.stringify(domainVaultData);
         console.log('Saving domain vault data. Size:', dataString.length, 'bytes');
+        
+        // Check if storage size is getting too large (over 4MB)
+        if (dataString.length > 4000000) {
+            console.warn('Storage size is large. Consider optimizing.');
+            const lastErrorElement = document.getElementById('debug-last-error');
+            if (lastErrorElement) {
+                lastErrorElement.textContent = 'Storage size is large. Click "Optimize Storage" to compress.';
+                lastErrorElement.style.color = '#f39c12';
+            }
+        }
+        
         localStorage.setItem('zevi-domain-vault', dataString);
         console.log('Domain vault data saved successfully');
         
@@ -49,6 +60,13 @@ function saveDomainVaultData() {
         console.error('Error saving domain vault data:', error);
         if (error.name === 'QuotaExceededError') {
             console.error('localStorage quota exceeded. Consider clearing some data.');
+            
+            // Show error in debug panel
+            const lastErrorElement = document.getElementById('debug-last-error');
+            if (lastErrorElement) {
+                lastErrorElement.textContent = 'Storage full! Click "Optimize Storage" or "Clear All Cards".';
+                lastErrorElement.style.color = '#e74c3c';
+            }
         }
         
         // Update debug panel with error
@@ -159,7 +177,11 @@ function renderDomainVault() {
                     <div>Total Cards: <span id="debug-card-count">${domainVaultData.cards.length}</span></div>
                     <div>Storage Size: <span id="debug-storage-size">Calculating...</span></div>
                     <div>Last Error: <span id="debug-last-error">None</span></div>
-                    <button onclick="testCreateMultipleCards(5)" style="background: var(--accent-color); color: #000; border: none; padding: 5px 10px; border-radius: 4px; margin-top: 5px; font-size: 0.8rem; cursor: pointer;">Test: Create 5 Cards</button>
+                    <div style="margin-top: 10px;">
+                        <button onclick="testCreateMultipleCards(5)" style="background: var(--accent-color); color: #000; border: none; padding: 5px 10px; border-radius: 4px; margin-right: 5px; font-size: 0.8rem; cursor: pointer;">Test: Create 5 Cards</button>
+                        <button onclick="optimizeStorage()" style="background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; margin-right: 5px; font-size: 0.8rem; cursor: pointer;">Optimize Storage</button>
+                        <button onclick="clearAllCards()" style="background: #f39c12; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; cursor: pointer;">Clear All Cards</button>
+                    </div>
                 </div>
                 
                 <div class="cards-grid" id="cards-grid">
@@ -1130,6 +1152,115 @@ window.testCreateMultipleCards = function(count = 10) {
         cardsGrid.innerHTML = renderCards();
         initializeDragAndDrop();
         setupEventListeners();
+    }
+};
+
+// Optimize storage by compressing images and removing unnecessary data
+window.optimizeStorage = function() {
+    console.log('Optimizing storage...');
+    
+    let originalSize = JSON.stringify(domainVaultData).length;
+    let optimizedCount = 0;
+    
+    // Process each card to optimize storage
+    domainVaultData.cards.forEach(card => {
+        let cardOptimized = false;
+        
+        // Remove crop data if it's default/empty
+        if (card.cropData && (!card.cropData.width || !card.cropData.height)) {
+            delete card.cropData;
+            cardOptimized = true;
+        }
+        
+        // Compress image data if it's very large
+        if (card.image && card.image.length > 100000) { // If image is larger than 100KB
+            // Create a temporary canvas to compress the image
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Calculate new dimensions (max 800px width/height)
+                let newWidth = img.width;
+                let newHeight = img.height;
+                const maxSize = 800;
+                
+                if (newWidth > maxSize || newHeight > maxSize) {
+                    if (newWidth > newHeight) {
+                        newHeight = (newHeight * maxSize) / newWidth;
+                        newWidth = maxSize;
+                    } else {
+                        newWidth = (newWidth * maxSize) / newHeight;
+                        newHeight = maxSize;
+                    }
+                }
+                
+                canvas.width = newWidth;
+                canvas.height = newHeight;
+                
+                // Draw and compress
+                ctx.drawImage(img, 0, 0, newWidth, newHeight);
+                const compressedImage = canvas.toDataURL('image/jpeg', 0.7); // 70% quality
+                
+                // Update the card with compressed image
+                card.image = compressedImage;
+                cardOptimized = true;
+                optimizedCount++;
+                
+                // Save after optimization
+                saveDomainVaultData();
+                updateDebugPanel();
+                
+                // Re-render cards
+                const cardsGrid = document.getElementById('cards-grid');
+                if (cardsGrid) {
+                    cardsGrid.innerHTML = renderCards();
+                    initializeDragAndDrop();
+                    setupEventListeners();
+                }
+            };
+            img.src = card.image;
+        }
+        
+        if (cardOptimized) {
+            optimizedCount++;
+        }
+    });
+    
+    // Save optimized data
+    saveDomainVaultData();
+    
+    let newSize = JSON.stringify(domainVaultData).length;
+    let savings = originalSize - newSize;
+    
+    // Show optimization results
+    const lastErrorElement = document.getElementById('debug-last-error');
+    if (lastErrorElement) {
+        lastErrorElement.textContent = `Optimized ${optimizedCount} cards. Saved ${savings} bytes.`;
+        lastErrorElement.style.color = '#27ae60';
+    }
+    
+    updateDebugPanel();
+    
+    console.log(`Storage optimization complete. Optimized ${optimizedCount} cards. Saved ${savings} bytes.`);
+};
+
+// Clear all cards (emergency function)
+window.clearAllCards = function() {
+    if (confirm('Are you sure you want to delete ALL cards? This cannot be undone!')) {
+        domainVaultData.cards = [];
+        saveDomainVaultData();
+        updateDebugPanel();
+        
+        // Re-render cards
+        const cardsGrid = document.getElementById('cards-grid');
+        if (cardsGrid) {
+            cardsGrid.innerHTML = renderCards();
+            initializeDragAndDrop();
+            setupEventListeners();
+        }
+        
+        console.log('All cards cleared.');
     }
 };
 
