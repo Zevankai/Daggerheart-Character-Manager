@@ -96,6 +96,7 @@ function renderDomainVault() {
                 <div class="card-management-header">
                     <h3>Card Collection</h3>
                     <button class="button primary-btn" id="create-card-btn">Create New Card</button>
+                    <button class="button" onclick="window.testSimpleModal()" style="margin-left: 10px;">Test Modal</button>
                 </div>
                 <div class="cards-grid" id="cards-grid">
                     ${renderCards()}
@@ -455,21 +456,95 @@ function setupEventListeners() {
     }
 }
 
+// Test function to create a simple modal
+function testSimpleModal() {
+    console.log('Testing simple modal...');
+    
+    // Remove any existing test modal
+    const existingTest = document.getElementById('test-modal');
+    if (existingTest) existingTest.remove();
+    
+    // Create a simple test modal
+    const testModal = document.createElement('div');
+    testModal.id = 'test-modal';
+    testModal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+    `;
+    
+    const testContent = document.createElement('div');
+    testContent.style.cssText = `
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        color: black;
+        max-width: 400px;
+    `;
+    testContent.innerHTML = `
+        <h3>Test Modal</h3>
+        <p>If you can see this, basic modal functionality works!</p>
+        <button onclick="document.getElementById('test-modal').remove()">Close</button>
+    `;
+    
+    testModal.appendChild(testContent);
+    document.body.appendChild(testModal);
+    
+    console.log('Test modal created and added to body');
+}
+
 // Show create card modal
 function showCreateCardModal() {
+    console.log('=== CREATE CARD MODAL DEBUG ===');
     console.log('showCreateCardModal called');
+    
+    // Check if Domain Vault is initialized
+    const domainVaultContainer = document.querySelector('.domain-vault-container');
+    console.log('Domain Vault container exists:', !!domainVaultContainer);
+    
     const modal = document.getElementById('create-card-modal');
-    console.log('Modal element found:', modal);
+    console.log('Modal element found:', !!modal);
+    console.log('Modal element:', modal);
     
     if (modal) {
-        // Reset form
+        console.log('Modal current style:', modal.style.cssText);
+        console.log('Modal computed style display:', window.getComputedStyle(modal).display);
+        
+        // Check modal structure
+        const modalContent = modal.querySelector('.modal');
+        console.log('Modal content found:', !!modalContent);
+        
+        if (modalContent) {
+            console.log('Modal content computed style:', window.getComputedStyle(modalContent).display);
+        }
+        
+        // Try to show modal
+        console.log('Setting modal display to flex');
+        modal.style.display = 'flex';
+        console.log('Modal style after setting:', modal.style.cssText);
+        console.log('Modal computed style after setting:', window.getComputedStyle(modal).display);
+        
+        // Reset form if elements exist
         const nameInput = document.getElementById('card-name');
         const descInput = document.getElementById('card-description');
         const levelInput = document.getElementById('card-level');
         const costInput = document.getElementById('card-recall-cost');
         const typeInput = document.getElementById('card-type');
         
-        console.log('Form inputs found:', { nameInput, descInput, levelInput, costInput, typeInput });
+        console.log('Form elements found:', {
+            name: !!nameInput,
+            desc: !!descInput,
+            level: !!levelInput,
+            cost: !!costInput,
+            type: !!typeInput
+        });
         
         if (nameInput) nameInput.value = '';
         if (descInput) descInput.value = '';
@@ -484,12 +559,14 @@ function showCreateCardModal() {
             btn.classList.toggle('selected', index === 0);
         });
         
-        console.log('Setting modal display to flex');
-        modal.style.display = 'flex';
-        console.log('Modal display style set to:', modal.style.display);
     } else {
         console.error('Modal element not found!');
+        console.log('Available elements with "modal" in ID:');
+        document.querySelectorAll('[id*="modal"]').forEach(el => {
+            console.log(`- ${el.id}:`, el);
+        });
     }
+    console.log('=== END DEBUG ===');
 }
 
 // Close create card modal
@@ -669,5 +746,6 @@ window.deleteCard = deleteCard;
 window.quickEquipCard = quickEquipCard;
 window.unequipCard = unequipCard;
 window.initializeDomainVault = initializeDomainVault;
+window.testSimpleModal = testSimpleModal;
 
 // Domain Vault will be initialized by the main tab switching logic in script.js
