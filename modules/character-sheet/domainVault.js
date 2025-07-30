@@ -53,6 +53,7 @@ function initializeDomainVault() {
         try {
             renderDomainVault();
             setupEventListeners();
+            setupDomainChangeListeners();
         } catch (error) {
             console.error('Error initializing Domain Vault:', error);
         }
@@ -1015,9 +1016,93 @@ window.deleteCard = deleteCard;
 window.quickEquipCard = quickEquipCard;
 window.unequipCard = unequipCard;
 window.initializeDomainVault = initializeDomainVault;
+window.updateDomainVaultFromHeader = updateDomainVaultFromHeader;
+window.setupGlobalDomainChangeListeners = setupGlobalDomainChangeListeners;
 
 window.expandCard = expandCard;
+
+// Set up listeners for domain changes in the header
+function setupDomainChangeListeners() {
+    const domainBadges = document.querySelectorAll('.name-box .domain-badge');
+    
+    domainBadges.forEach(badge => {
+        // Remove existing listeners to prevent duplicates
+        badge.removeEventListener('input', updateDomainVaultFromHeader);
+        badge.removeEventListener('blur', updateDomainVaultFromHeader);
+        
+        // Listen for input events on contenteditable elements
+        badge.addEventListener('input', updateDomainVaultFromHeader);
+        badge.addEventListener('blur', updateDomainVaultFromHeader);
+        badge.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                badge.blur();
+            }
+        });
+    });
+}
+
+// Set up global domain change listeners (called on page load)
+function setupGlobalDomainChangeListeners() {
+    // Set up listeners immediately if DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupDomainChangeListeners);
+    } else {
+        setupDomainChangeListeners();
+    }
+    
+    // Also set up listeners when the domain vault tab is shown
+    const domainVaultTab = document.querySelector('[data-target="domain-vault-tab-content"]');
+    if (domainVaultTab) {
+        domainVaultTab.addEventListener('click', () => {
+            // Small delay to ensure the tab content is rendered
+            setTimeout(setupDomainChangeListeners, 100);
+        });
+    }
+}
+
+// Update domain vault when header domains change
+function updateDomainVaultFromHeader() {
+    const domainVaultContent = document.getElementById('domain-vault-tab-content');
+    if (!domainVaultContent) return;
+    
+    const domainVaultContainer = domainVaultContent.querySelector('.domain-vault-container');
+    if (!domainVaultContainer) return;
+    
+    const domains = getDomainNames();
+    
+    // Update the domain display in the header
+    const domainDisplay = domainVaultContainer.querySelector('.domain-display');
+    if (domainDisplay) {
+        domainDisplay.innerHTML = `
+            <span class="domain-name">${domains.domain1}</span>
+            <span class="domain-separator">||</span>
+            <span class="domain-name">${domains.domain2}</span>
+        `;
+    }
+    
+    // Update domain options in create card modal
+    const createDomainSelect = document.getElementById('card-domain');
+    if (createDomainSelect) {
+        createDomainSelect.innerHTML = `
+            <option value="${domains.domain1}">${domains.domain1}</option>
+            <option value="${domains.domain2}">${domains.domain2}</option>
+        `;
+    }
+    
+    // Update domain options in edit card modal
+    const editDomainSelect = document.getElementById('edit-card-domain');
+    if (editDomainSelect) {
+        editDomainSelect.innerHTML = `
+            <option value="${domains.domain1}">${domains.domain1}</option>
+            <option value="${domains.domain2}">${domains.domain2}</option>
+        `;
+    }
+}
 
 // Domain Vault will be initialized by the main tab switching logic in script.js
 
 // Domain Vault initialization - cleaned up and production ready
+
+// Set up global domain change listeners
+setupGlobalDomainChangeListeners();
