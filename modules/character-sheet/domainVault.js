@@ -1,10 +1,27 @@
 // domainVault.js - Domain Vault tab functionality
 
 // Retrieve domain vault data from localStorage or initialize with defaults
-let domainVaultData = JSON.parse(localStorage.getItem('zevi-domain-vault')) || {
-    cards: [],
-    equippedCards: [null, null, null, null, null] // 5 equipped slots
-};
+let domainVaultData;
+try {
+    const savedData = localStorage.getItem('zevi-domain-vault');
+    if (savedData) {
+        domainVaultData = JSON.parse(savedData);
+        console.log('Loaded domain vault data. Cards count:', domainVaultData.cards?.length || 0);
+    } else {
+        domainVaultData = {
+            cards: [],
+            equippedCards: [null, null, null, null, null] // 5 equipped slots
+        };
+        console.log('Initialized new domain vault data');
+    }
+} catch (error) {
+    console.error('Error loading domain vault data:', error);
+    domainVaultData = {
+        cards: [],
+        equippedCards: [null, null, null, null, null] // 5 equipped slots
+    };
+    console.log('Reset domain vault data due to error');
+}
 
 // Ensure equipped cards array always has exactly 5 slots
 if (!domainVaultData.equippedCards || domainVaultData.equippedCards.length !== 5) {
@@ -20,7 +37,17 @@ const DEFAULT_COLOR = '#3498db';
 
 // Save domain vault data to localStorage
 function saveDomainVaultData() {
-    localStorage.setItem('zevi-domain-vault', JSON.stringify(domainVaultData));
+    try {
+        const dataString = JSON.stringify(domainVaultData);
+        console.log('Saving domain vault data. Size:', dataString.length, 'bytes');
+        localStorage.setItem('zevi-domain-vault', dataString);
+        console.log('Domain vault data saved successfully');
+    } catch (error) {
+        console.error('Error saving domain vault data:', error);
+        if (error.name === 'QuotaExceededError') {
+            console.error('localStorage quota exceeded. Consider clearing some data.');
+        }
+    }
 }
 
 // Generate unique ID for cards
@@ -746,6 +773,10 @@ async function saveNewCard() {
 
     domainVaultData.cards.push(newCard);
     saveDomainVaultData();
+    
+    // Debug logging
+    console.log('Card created successfully. Total cards:', domainVaultData.cards.length);
+    console.log('Current cards:', domainVaultData.cards);
     
     // Re-render cards
     document.getElementById('cards-grid').innerHTML = renderCards();
