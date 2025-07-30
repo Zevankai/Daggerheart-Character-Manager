@@ -1372,7 +1372,8 @@ function updateEncumbranceDisplay() {
         encumbranceText.textContent = `Encumbrance: ${encumbrance}/${maxCapacity} units`;
         encumbranceFill.style.width = `${Math.min((encumbrance / maxCapacity) * 100, 100)}%`;
         
-        if (encumbranceWarning) {
+        // Only control the equipment tab warning, not the main header warning
+        if (encumbranceWarning && !encumbranceWarning.id) {
             encumbranceWarning.style.display = isOverEncumbered ? 'block' : 'none';
         }
     }
@@ -1580,12 +1581,29 @@ function initializeEquipment() {
         // Update active weapons and armor
         updateActiveWeaponsAndArmor();
         
-        // Ensure encumbrance warning is hidden initially
+        // Ensure encumbrance warning is hidden initially and stays hidden
         const mainWarning = document.getElementById('encumbrance-warning-main');
         if (mainWarning) {
-            mainWarning.style.display = 'none';
-            console.log('Encumbrance warning hidden on initialization');
+            mainWarning.style.display = 'none !important';
+            mainWarning.style.visibility = 'hidden';
+            mainWarning.innerHTML = '';
+            console.log('Encumbrance warning forcibly hidden on initialization');
         }
+        
+        // Set up interval to keep forcing it hidden until we have items
+        const forceHideWarning = setInterval(() => {
+            const warning = document.getElementById('encumbrance-warning-main');
+            if (warning) {
+                const hasItems = Object.values(equipmentData.inventory).some(categoryItems => categoryItems.length > 0);
+                if (!hasItems) {
+                    warning.style.display = 'none';
+                    warning.style.visibility = 'hidden';
+                }
+            }
+        }, 1000);
+        
+        // Clear the interval after 10 seconds
+        setTimeout(() => clearInterval(forceHideWarning), 10000);
         
         console.log('Equipment initialization complete');
         

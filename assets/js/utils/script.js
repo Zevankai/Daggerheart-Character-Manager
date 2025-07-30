@@ -31,12 +31,17 @@ function debugCharacterData() {
 // Make debug function globally available
 window.debugCharacterData = debugCharacterData;
 
-// Image upload with comprehensive save system
+// Image upload with localStorage save system
 function uploadCharacterImage(event) {
+    console.log('📸 uploadCharacterImage called', event);
+    
     const file = event.target.files[0];
-    if (!file) return;
+    if (!file) {
+        console.log('❌ No file selected');
+        return;
+    }
 
-    console.log('📸 Uploading character image...');
+    console.log('📸 File selected:', file.name, file.type, file.size);
 
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -86,8 +91,43 @@ function loadSavedCharacterImage() {
     }
 }
 
-// Load saved image when DOM is ready
-document.addEventListener('DOMContentLoaded', loadSavedCharacterImage);
+// Set up image upload handlers when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    loadSavedCharacterImage();
+    
+    // Set up click handlers for character image upload
+    const charImage = document.getElementById('charImage');
+    const charPlaceholder = document.getElementById('charPlaceholder');
+    const charUpload = document.getElementById('charUpload');
+    
+    console.log('🖼️ Image elements found:', {
+        charImage: !!charImage,
+        charPlaceholder: !!charPlaceholder, 
+        charUpload: !!charUpload
+    });
+    
+    // Add click handlers to both image and placeholder
+    if (charImage && charUpload) {
+        charImage.addEventListener('click', function() {
+            console.log('📸 Character image clicked');
+            charUpload.click();
+        });
+    }
+    
+    if (charPlaceholder && charUpload) {
+        charPlaceholder.addEventListener('click', function() {
+            console.log('📸 Character placeholder clicked');
+            charUpload.click();
+        });
+    }
+    
+    if (charUpload) {
+        charUpload.addEventListener('change', function(event) {
+            console.log('📸 File input changed');
+            uploadCharacterImage(event);
+        });
+    }
+});
 
 function uploadBackground(event) {
     const reader = new FileReader();
