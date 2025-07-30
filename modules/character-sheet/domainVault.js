@@ -53,23 +53,20 @@ function initializeDomainVault() {
     
     addDebugMessage('Current content length: ' + domainVaultContent.innerHTML.length);
     
-    // TEMPORARY: Simple test to see if function is called
-    domainVaultContent.innerHTML = '<h2 style="color: green;">Domain Vault is Working!</h2><p>Function was called successfully at ' + new Date().toLocaleTimeString() + '</p><p>Debug info will appear in top-right corner.</p>';
-    addDebugMessage('Set simple test content - SUCCESS!');
-    
     // Only initialize if not already initialized
-    // if (!domainVaultContent.querySelector('.domain-vault-container')) {
-    //     console.log('Rendering Domain Vault...');
-    //     try {
-    //         renderDomainVault();
-    //         setupEventListeners();
-    //         console.log('Domain Vault initialized successfully');
-    //     } catch (error) {
-    //         console.error('Error initializing Domain Vault:', error);
-    //     }
-    // } else {
-    //     console.log('Domain Vault already initialized');
-    // }
+    if (!domainVaultContent.querySelector('.domain-vault-container')) {
+        addDebugMessage('Rendering Domain Vault...');
+        try {
+            renderDomainVault();
+            setupEventListeners();
+            addDebugMessage('Domain Vault initialized successfully');
+            removeDebugOverlay();
+        } catch (error) {
+            addDebugMessage('Error initializing Domain Vault: ' + error.message);
+        }
+    } else {
+        addDebugMessage('Domain Vault already initialized');
+    }
 }
 
 // Render the complete Domain Vault interface
@@ -807,16 +804,15 @@ function addDebugMessage(message) {
 addDebugMessage('domainVault.js loaded successfully');
 addDebugMessage('initializeDomainVault function: ' + (typeof initializeDomainVault));
 
-// Emergency fallback - if tab switching doesn't work, try direct initialization
-setTimeout(() => {
-    addDebugMessage('Checking if Domain Vault needs emergency initialization...');
-    const domainVaultContent = document.getElementById('domain-vault-tab-content');
-    if (domainVaultContent && domainVaultContent.innerHTML.includes('Content for Domain Vault will go here')) {
-        addDebugMessage('Domain Vault not initialized, attempting emergency initialization...');
-        if (typeof initializeDomainVault === 'function') {
-            initializeDomainVault();
+// Remove debug overlay after successful initialization
+function removeDebugOverlay() {
+    setTimeout(() => {
+        const debugDiv = document.getElementById('domain-vault-debug');
+        if (debugDiv) {
+            debugDiv.style.opacity = '0.3';
+            setTimeout(() => {
+                debugDiv.remove();
+            }, 2000);
         }
-    } else {
-        addDebugMessage('Domain Vault appears to be initialized or content changed');
-    }
-}, 2000);
+    }, 3000);
+}
