@@ -4870,16 +4870,17 @@
 
 .equipped-slots {
     display: flex;
-    gap: 15px;
     justify-content: center;
-    flex-wrap: wrap;
-    min-height: 200px;
-    padding: 20px;
+    align-items: flex-end;
+    min-height: 350px;
+    padding: 40px 20px 20px;
     background: rgba(255, 255, 255, 0.05);
     border: 2px dashed rgba(255, 255, 255, 0.2);
     border-radius: 12px;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
+    position: relative;
+    overflow: visible;
 }
 
 .equipped-slot {
@@ -4889,6 +4890,48 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    transition: all 0.3s ease;
+    transform-origin: bottom center;
+    margin: 0 -30px; /* Overlap cards for fan effect */
+}
+
+/* Fan rotation for each card position */
+.equipped-slot:nth-child(1) {
+    transform: rotate(-20deg) translateY(40px);
+    z-index: 1;
+}
+
+.equipped-slot:nth-child(2) {
+    transform: rotate(-10deg) translateY(20px);
+    z-index: 2;
+}
+
+.equipped-slot:nth-child(3) {
+    transform: rotate(0deg) translateY(0px);
+    z-index: 3;
+}
+
+.equipped-slot:nth-child(4) {
+    transform: rotate(10deg) translateY(20px);
+    z-index: 2;
+}
+
+.equipped-slot:nth-child(5) {
+    transform: rotate(20deg) translateY(40px);
+    z-index: 1;
+}
+
+/* Hover effects - cards pop up and straighten */
+.equipped-slot:hover {
+    transform: rotate(0deg) translateY(-30px) scale(1.05);
+    z-index: 10 !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Smooth transitions for all card movements */
+.equipped-slot .domain-card,
+.equipped-slot .empty-equipped-slot {
+    transition: all 0.3s ease;
 }
 
 .empty-equipped-slot {
@@ -4900,15 +4943,18 @@
     align-items: center;
     justify-content: center;
     color: var(--accent-color-70);
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     text-align: center;
     background: rgba(255, 215, 0, 0.05);
     transition: all 0.3s ease;
+    opacity: 0.7;
 }
 
+/* Empty slot hover effect */
 .empty-equipped-slot:hover {
-    border-color: var(--accent-color);
+    opacity: 1;
     background: rgba(255, 215, 0, 0.1);
+    border-color: var(--accent-color);
     transform: scale(1.02);
 }
 
@@ -5404,11 +5450,42 @@
         align-items: center;
     }
     
+        .equipped-slots {
+        min-height: 280px;
+        padding: 30px 10px 15px;
+    }
+
     .equipped-slot {
         width: 100%;
-        max-width: 250px;
+        max-width: 180px;
+        margin: 0 -20px; /* Reduced overlap for mobile */
     }
-    
+
+    /* Reduced fan angles for mobile */
+    .equipped-slot:nth-child(1) {
+        transform: rotate(-15deg) translateY(30px);
+    }
+
+    .equipped-slot:nth-child(2) {
+        transform: rotate(-7deg) translateY(15px);
+    }
+
+    .equipped-slot:nth-child(3) {
+        transform: rotate(0deg) translateY(0px);
+    }
+
+    .equipped-slot:nth-child(4) {
+        transform: rotate(7deg) translateY(15px);
+    }
+
+    .equipped-slot:nth-child(5) {
+        transform: rotate(15deg) translateY(30px);
+    }
+
+    .equipped-slot:hover {
+        transform: rotate(0deg) translateY(-20px) scale(1.03);
+    }
+
     .empty-equipped-slot {
         width: 100%;
     }
