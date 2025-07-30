@@ -4937,25 +4937,27 @@
 .empty-equipped-slot {
     width: 100%;
     height: 300px;
-    border: 2px dashed var(--accent-color-50);
+    border: 3px dashed rgba(255, 215, 0, 0.6);
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--accent-color-70);
+    color: rgba(255, 215, 0, 0.8);
     font-size: 0.8rem;
     text-align: center;
-    background: rgba(255, 215, 0, 0.05);
+    background: rgba(255, 215, 0, 0.1);
     transition: all 0.3s ease;
     opacity: 0.7;
+    box-shadow: inset 0 2px 8px rgba(255, 215, 0, 0.1);
 }
 
 /* Empty slot hover effect */
 .empty-equipped-slot:hover {
     opacity: 1;
-    background: rgba(255, 215, 0, 0.1);
-    border-color: var(--accent-color);
+    background: rgba(255, 215, 0, 0.15);
+    border-color: rgba(255, 215, 0, 0.9);
     transform: scale(1.02);
+    box-shadow: inset 0 2px 12px rgba(255, 215, 0, 0.2);
 }
 
 /* Card Management Section */
@@ -4999,12 +5001,10 @@
 
 /* Domain Card Styles */
 .domain-card {
-    background: var(--glass-background-color);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: var(--accent-color);
+    border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 12px;
     padding: 16px;
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
     transition: all 0.3s ease;
     cursor: grab;
     position: relative;
@@ -5016,6 +5016,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .domain-card:hover {
@@ -5033,9 +5034,9 @@
     position: absolute;
     top: 8px;
     right: 8px;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.9);
     border: none;
-    color: var(--text-color);
+    color: #333;
     width: 24px;
     height: 24px;
     border-radius: 50%;
@@ -5047,11 +5048,13 @@
     justify-content: center;
     transition: all 0.2s ease;
     z-index: 10;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .card-expand-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: white;
     transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* Card image */
@@ -5071,6 +5074,11 @@
     flex-direction: column;
     flex: 1;
     min-height: 0;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 8px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .domain-card.equipped {
@@ -5107,7 +5115,7 @@
 }
 
 .card-name {
-    color: var(--text-color);
+    color: #2c3e50;
     font-size: 1.1rem;
     font-weight: bold;
     flex: 1;
@@ -5145,7 +5153,7 @@
 }
 
 .card-domain {
-    color: var(--accent-color);
+    color: #8e44ad;
     font-size: 0.9rem;
     font-weight: bold;
     margin-bottom: 6px;
@@ -5155,18 +5163,19 @@
     display: flex;
     gap: 12px;
     font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.7);
+    color: #555;
 }
 
 .card-level, .card-recall {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.1);
     padding: 2px 6px;
     border-radius: 4px;
+    color: #333;
 }
 
 /* Card Description */
 .card-description {
-    color: rgba(255, 255, 255, 0.9);
+    color: #444;
     font-size: 0.85rem;
     line-height: 1.3;
     flex: 1;

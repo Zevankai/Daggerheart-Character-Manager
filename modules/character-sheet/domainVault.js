@@ -86,7 +86,6 @@ function renderDomainVault() {
                 <div class="card-management-header">
                     <h3>Card Collection</h3>
                     <button class="button primary-btn" id="create-card-btn">Create New Card</button>
-                    <button class="button" onclick="window.testSimpleModal()" style="margin-left: 10px;">Test Modal</button>
                 </div>
                 <div class="cards-grid" id="cards-grid">
                     ${renderCards()}
@@ -439,49 +438,7 @@ function setupEventListeners() {
     }
 }
 
-// Test function to create a simple modal
-function testSimpleModal() {
-    console.log('Testing simple modal...');
-    
-    // Remove any existing test modal
-    const existingTest = document.getElementById('test-modal');
-    if (existingTest) existingTest.remove();
-    
-    // Create a simple test modal
-    const testModal = document.createElement('div');
-    testModal.id = 'test-modal';
-    testModal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.7);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10000;
-    `;
-    
-    const testContent = document.createElement('div');
-    testContent.style.cssText = `
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        color: black;
-        max-width: 400px;
-    `;
-    testContent.innerHTML = `
-        <h3>Test Modal</h3>
-        <p>If you can see this, basic modal functionality works!</p>
-        <button onclick="document.getElementById('test-modal').remove()">Close</button>
-    `;
-    
-    testModal.appendChild(testContent);
-    document.body.appendChild(testModal);
-    
-    console.log('Test modal created and added to body');
-}
+
 
 // Show create card modal
 function showCreateCardModal() {
@@ -794,7 +751,7 @@ window.deleteCard = deleteCard;
 window.quickEquipCard = quickEquipCard;
 window.unequipCard = unequipCard;
 window.initializeDomainVault = initializeDomainVault;
-window.testSimpleModal = testSimpleModal;
+
 window.expandCard = expandCard;
 
 // Domain Vault will be initialized by the main tab switching logic in script.js
