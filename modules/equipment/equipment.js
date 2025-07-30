@@ -1345,15 +1345,21 @@ function updateActiveWeaponsAndArmor() {
 function updateEncumbranceWarning() {
     const mainWarning = document.getElementById('encumbrance-warning-main');
     if (mainWarning) {
-        // Only show warning if we have actual items and are over capacity
         const encumbrance = calculateEncumbrance();
+        const maxCapacity = getMaxCapacity();
         const hasItems = Object.values(equipmentData.inventory).some(categoryItems => categoryItems.length > 0);
+        const isOverEncumbered = isEncumbered();
         
-        if (hasItems && isEncumbered()) {
+        console.log(`🎒 Encumbrance Check: ${encumbrance}/${maxCapacity}, HasItems: ${hasItems}, OverEncumbered: ${isOverEncumbered}`);
+        
+        if (hasItems && isOverEncumbered) {
             mainWarning.innerHTML = '⚠️ You are over-encumbered! -2 to strength & agility checks';
             mainWarning.style.display = 'block';
+            mainWarning.style.visibility = 'visible';
+            console.log('✅ Showing encumbrance warning');
         } else {
             mainWarning.style.display = 'none';
+            console.log('❌ Hiding encumbrance warning');
         }
     }
 }
@@ -1581,29 +1587,15 @@ function initializeEquipment() {
         // Update active weapons and armor
         updateActiveWeaponsAndArmor();
         
-        // Ensure encumbrance warning is hidden initially and stays hidden
+        // Initialize encumbrance warning properly
         const mainWarning = document.getElementById('encumbrance-warning-main');
         if (mainWarning) {
-            mainWarning.style.display = 'none !important';
-            mainWarning.style.visibility = 'hidden';
-            mainWarning.innerHTML = '';
-            console.log('Encumbrance warning forcibly hidden on initialization');
+            mainWarning.style.visibility = 'visible'; // Reset visibility
+            console.log('Encumbrance warning initialized');
         }
         
-        // Set up interval to keep forcing it hidden until we have items
-        const forceHideWarning = setInterval(() => {
-            const warning = document.getElementById('encumbrance-warning-main');
-            if (warning) {
-                const hasItems = Object.values(equipmentData.inventory).some(categoryItems => categoryItems.length > 0);
-                if (!hasItems) {
-                    warning.style.display = 'none';
-                    warning.style.visibility = 'hidden';
-                }
-            }
-        }, 1000);
-        
-        // Clear the interval after 10 seconds
-        setTimeout(() => clearInterval(forceHideWarning), 10000);
+        // Update encumbrance warning based on current state
+        updateEncumbranceWarning();
         
         console.log('Equipment initialization complete');
         
