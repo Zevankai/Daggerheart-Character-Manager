@@ -255,7 +255,7 @@ function renderCard(card, isEquipped = false) {
     return `
         <div class="domain-card ${isEquipped ? 'equipped' : ''}" 
              data-card-id="${card.id}" 
-             style="border-left: 4px solid ${card.color};">
+             style="background-color: ${card.color}; border: 2px solid rgba(255, 255, 255, 0.3);">
             <button class="card-expand-btn" onclick="expandCard('${card.id}')" title="Expand card">↗</button>
             ${imageHtml}
             <div class="card-content">
@@ -685,11 +685,8 @@ function expandCard(cardId) {
 
     const expandedCard = document.createElement('div');
     expandedCard.style.cssText = `
-        background: var(--glass-background-color);
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-left: 8px solid ${card.color};
+        background: ${card.color};
+        border: 3px solid rgba(255, 255, 255, 0.4);
         border-radius: 16px;
         padding: 30px;
         max-width: 500px;
@@ -699,26 +696,29 @@ function expandCard(cardId) {
         color: var(--text-color);
         cursor: pointer;
         transition: all 0.3s ease;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
     `;
 
     const imageHtml = card.image ? 
         `<div style="width: 100%; height: 200px; background-image: url('${card.image}'); background-size: cover; background-position: center; border-radius: 12px; margin-bottom: 20px;"></div>` : '';
 
     expandedCard.innerHTML = `
-        <div style="text-align: center; margin-bottom: 10px; color: rgba(255, 255, 255, 0.7); font-size: 0.9rem;">Click anywhere to close</div>
+        <div style="text-align: center; margin-bottom: 15px; color: rgba(255, 255, 255, 0.9); font-size: 0.9rem; font-weight: bold;">Click anywhere to close</div>
         ${imageHtml}
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; gap: 15px;">
-            <h2 style="margin: 0; color: var(--text-color); font-size: 1.8rem; flex: 1;">${card.name}</h2>
-            <div style="background: ${card.type === 'grimoire' ? '#9b59b6' : card.type === 'ability' ? '#3498db' : '#e74c3c'}; color: white; padding: 8px 16px; border-radius: 8px; font-size: 0.9rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">${card.type}</div>
-        </div>
-        <div style="margin-bottom: 20px;">
-            <div style="color: var(--accent-color); font-size: 1.1rem; font-weight: bold; margin-bottom: 10px;">${card.domain}</div>
-            <div style="display: flex; gap: 20px; font-size: 1rem;">
-                <span style="background: rgba(255, 255, 255, 0.1); padding: 6px 12px; border-radius: 6px;">Level ${card.level}</span>
-                <span style="background: rgba(255, 255, 255, 0.1); padding: 6px 12px; border-radius: 6px;">Cost: ${card.recallCost}</span>
+        <div style="background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 25px; box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; gap: 15px;">
+                <h2 style="margin: 0; color: #2c3e50; font-size: 1.8rem; flex: 1;">${card.name}</h2>
+                <div style="background: ${card.type === 'grimoire' ? '#9b59b6' : card.type === 'ability' ? '#3498db' : '#e74c3c'}; color: white; padding: 8px 16px; border-radius: 8px; font-size: 0.9rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">${card.type}</div>
             </div>
+            <div style="margin-bottom: 20px;">
+                <div style="color: #8e44ad; font-size: 1.1rem; font-weight: bold; margin-bottom: 10px;">${card.domain}</div>
+                <div style="display: flex; gap: 20px; font-size: 1rem;">
+                    <span style="background: rgba(0, 0, 0, 0.1); color: #333; padding: 6px 12px; border-radius: 6px;">Level ${card.level}</span>
+                    <span style="background: rgba(0, 0, 0, 0.1); color: #333; padding: 6px 12px; border-radius: 6px;">Cost: ${card.recallCost}</span>
+                </div>
+            </div>
+            <div style="color: #444; font-size: 1.1rem; line-height: 1.6;">${card.description}</div>
         </div>
-        <div style="color: rgba(255, 255, 255, 0.9); font-size: 1.1rem; line-height: 1.6;">${card.description}</div>
     `;
 
     expandedCard.addEventListener('click', () => {
