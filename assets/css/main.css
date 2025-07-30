@@ -5153,12 +5153,17 @@
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.7);
-    display: flex;
+    display: none; /* Hidden by default */
     align-items: center;
     justify-content: center;
     z-index: 10000;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
+}
+
+/* When modal is shown via JavaScript */
+.domain-vault-modal-overlay[style*="display: flex"] {
+    display: flex !important;
 }
 
 .modal {

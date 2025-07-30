@@ -446,21 +446,38 @@ function setupEventListeners() {
 
 // Show create card modal
 function showCreateCardModal() {
+    console.log('showCreateCardModal called');
     const modal = document.getElementById('create-card-modal');
+    console.log('Modal element found:', modal);
+    
     if (modal) {
         // Reset form
-        document.getElementById('card-name').value = '';
-        document.getElementById('card-description').value = '';
-        document.getElementById('card-level').value = '1';
-        document.getElementById('card-recall-cost').value = '1';
-        document.getElementById('card-type').value = 'ability';
+        const nameInput = document.getElementById('card-name');
+        const descInput = document.getElementById('card-description');
+        const levelInput = document.getElementById('card-level');
+        const costInput = document.getElementById('card-recall-cost');
+        const typeInput = document.getElementById('card-type');
+        
+        console.log('Form inputs found:', { nameInput, descInput, levelInput, costInput, typeInput });
+        
+        if (nameInput) nameInput.value = '';
+        if (descInput) descInput.value = '';
+        if (levelInput) levelInput.value = '1';
+        if (costInput) costInput.value = '1';
+        if (typeInput) typeInput.value = 'ability';
         
         // Reset color selection
-        document.querySelectorAll('#create-card-modal .color-option').forEach((btn, index) => {
+        const colorOptions = document.querySelectorAll('#create-card-modal .color-option');
+        console.log('Color options found:', colorOptions.length);
+        colorOptions.forEach((btn, index) => {
             btn.classList.toggle('selected', index === 0);
         });
         
+        console.log('Setting modal display to flex');
         modal.style.display = 'flex';
+        console.log('Modal display style set to:', modal.style.display);
+    } else {
+        console.error('Modal element not found!');
     }
 }
 
