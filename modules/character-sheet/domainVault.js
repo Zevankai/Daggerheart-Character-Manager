@@ -545,8 +545,7 @@ function showCreateCardModal() {
         console.log('Setting modal display to flex');
         modal.style.display = 'flex';
         
-        // Force modal content to be visible with inline styles
-        const modalContent = modal.querySelector('.modal');
+        // Force modal content to be visible with inline styles (reuse modalContent from above)
         if (modalContent) {
             modalContent.style.display = 'block';
             modalContent.style.background = 'rgba(255, 255, 255, 0.95)';

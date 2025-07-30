@@ -500,6 +500,29 @@
         <script src="modules/character-sheet/experiences.js"></script>
         <script src="modules/character-sheet/details.js"></script>
         <script src="modules/character-sheet/domainVault.js"></script>
+        <script>
+            // Simple test to verify domainVault.js loaded
+            setTimeout(() => {
+                if (typeof window.addDebugMessage !== 'function') {
+                    // Create a simple debug message if domainVault.js didn't load
+                    const debugDiv = document.createElement('div');
+                    debugDiv.style.cssText = `
+                        position: fixed;
+                        top: 10px;
+                        right: 10px;
+                        background: red;
+                        color: white;
+                        padding: 10px;
+                        border-radius: 5px;
+                        z-index: 9999;
+                    `;
+                    debugDiv.innerHTML = 'ERROR: domainVault.js failed to load!';
+                    document.body.appendChild(debugDiv);
+                } else {
+                    window.addDebugMessage('Script loading test: SUCCESS');
+                }
+            }, 100);
+        </script>
         <script src="modules/character-sheet/settings.js"></script>
         
         <!-- Equipment Modules -->
