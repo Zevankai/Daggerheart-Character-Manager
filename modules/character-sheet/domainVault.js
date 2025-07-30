@@ -130,7 +130,7 @@ function renderDomainVault() {
                 <!-- Delete Cards Section -->
                 <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
                     <button class="button danger-btn" id="delete-cards-btn" style="background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px;">
-                        🗑️ Delete Cards
+                        Delete Cards
                     </button>
                 </div>
             </div>
@@ -1227,8 +1227,10 @@ function confirmDeleteCards() {
         // Remove cards from collection
         domainVaultData.cards = domainVaultData.cards.filter(card => !selectedCardsForDeletion.has(card.id));
         
-        // Remove cards from equipped slots
-        domainVaultData.equippedCards = domainVaultData.equippedCards.filter(cardId => !selectedCardsForDeletion.has(cardId));
+        // Replace deleted equipped cards with null to preserve slot positions
+        domainVaultData.equippedCards = domainVaultData.equippedCards.map(cardId => 
+            selectedCardsForDeletion.has(cardId) ? null : cardId
+        );
         
         // Save changes
         saveDomainVaultData();
