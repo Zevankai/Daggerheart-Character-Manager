@@ -10,9 +10,9 @@
 <body>
  <div class="glass" data-color-target="main-glass">
   <header>
-   <div class="char-img-wrapper">
+   <div class="char-img-wrapper" onclick="document.getElementById('charUpload').click();">
     <div class="char-img-border" data-color-target="char-image-border"></div>
-    <img src="" alt="Character Portrait" id="charImage" onclick="document.getElementById('charUpload').click();">
+    <img src="" alt="Character Portrait" id="charImage">
     <div class="placeholder" id="charPlaceholder">Click to add character image</div>
     <input type="file" id="charUpload" accept="image/*" style="display:none;" onchange="uploadCharacterImage(event)">
    </div>

@@ -132,14 +132,16 @@
  }
  
  .char-img-wrapper {
-    position: relative;
-    width: 300px;
-    height: 300px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
- }
+   position: relative;
+   width: 300px;
+   height: 300px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   flex-shrink: 0;
+   cursor: pointer;
+   /* Make entire wrapper clickable */
+}
  
  .char-img-wrapper .char-img-border {
     position: absolute;
@@ -163,12 +165,22 @@
  }
  
  .char-img-wrapper .placeholder {
-    position: absolute;
-    color: var(--text-color);
-    font-size: 0.9rem;
-    text-align: center;
-    pointer-events: none;
- }
+   position: absolute;
+   color: var(--text-color);
+   font-size: 0.9rem;
+   text-align: center;
+   pointer-events: none;
+}
+
+.char-img-wrapper:hover {
+   transform: scale(1.02);
+   transition: transform 0.2s ease;
+}
+
+.char-img-wrapper:hover .char-img-border {
+   border-color: var(--accent-color);
+   transition: border-color 0.2s ease;
+}
  
  .name-box {
    background: rgba(255,255,255,0.12);
