@@ -42,8 +42,21 @@ function getDomainNames() {
 
 // Initialize Domain Vault tab
 function initializeDomainVault() {
-    renderDomainVault();
-    setupEventListeners();
+    console.log('Initializing Domain Vault...');
+    const domainVaultContent = document.getElementById('domain-vault-tab-content');
+    if (!domainVaultContent) {
+        console.warn('Domain Vault tab content not found');
+        return;
+    }
+    
+    // Only initialize if not already initialized
+    if (!domainVaultContent.querySelector('.domain-vault-container')) {
+        renderDomainVault();
+        setupEventListeners();
+        console.log('Domain Vault initialized successfully');
+    } else {
+        console.log('Domain Vault already initialized');
+    }
 }
 
 // Render the complete Domain Vault interface
@@ -410,20 +423,25 @@ function setupEventListeners() {
     // Create card button
     const createCardBtn = document.getElementById('create-card-btn');
     if (createCardBtn) {
+        // Remove any existing listeners to avoid duplicates
+        createCardBtn.removeEventListener('click', showCreateCardModal);
         createCardBtn.addEventListener('click', showCreateCardModal);
     }
 
-    // Color picker event listeners
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('color-option')) {
-            // Remove selected class from siblings
-            e.target.parentNode.querySelectorAll('.color-option').forEach(btn => {
-                btn.classList.remove('selected');
-            });
-            // Add selected class to clicked option
-            e.target.classList.add('selected');
-        }
-    });
+    // Color picker event listeners - use event delegation on the domain vault container
+    const domainVaultContainer = document.querySelector('.domain-vault-container');
+    if (domainVaultContainer) {
+        domainVaultContainer.addEventListener('click', function(e) {
+            if (e.target.classList.contains('color-option')) {
+                // Remove selected class from siblings
+                e.target.parentNode.querySelectorAll('.color-option').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+                // Add selected class to clicked option
+                e.target.classList.add('selected');
+            }
+        });
+    }
 }
 
 // Show create card modal
@@ -624,12 +642,4 @@ window.quickEquipCard = quickEquipCard;
 window.unequipCard = unequipCard;
 window.initializeDomainVault = initializeDomainVault;
 
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize when Domain Vault tab is first clicked
-    document.addEventListener('click', function(e) {
-        if (e.target.dataset.target === 'domain-vault-tab-content') {
-            setTimeout(initializeDomainVault, 50); // Small delay to ensure tab content is visible
-        }
-    });
-});
+// Domain Vault will be initialized by the main tab switching logic in script.js

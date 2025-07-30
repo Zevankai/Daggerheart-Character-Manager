@@ -342,6 +342,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.warn('renderExperiences function not found. Ensure experiences.js is loaded.');
                 }
             }
+            if (targetPanelId === 'domain-vault-tab-content') {
+                if (window.initializeDomainVault && typeof window.initializeDomainVault === 'function') {
+                    window.initializeDomainVault();
+                } else {
+                    console.warn('initializeDomainVault function not found. Ensure domainVault.js is loaded.');
+                }
+            }
             if (targetPanelId === 'characters-tab-content') {
                 if (window.charactersPageManager && typeof window.charactersPageManager.refreshCharactersList === 'function') {
                     console.log('Characters tab clicked - refreshing characters list');
