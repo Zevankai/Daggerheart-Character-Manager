@@ -6,6 +6,12 @@ let domainVaultData = JSON.parse(localStorage.getItem('zevi-domain-vault')) || {
     equippedCards: [null, null, null, null, null] // 5 equipped slots
 };
 
+// Ensure equipped cards array always has exactly 5 slots
+if (!domainVaultData.equippedCards || domainVaultData.equippedCards.length !== 5) {
+    domainVaultData.equippedCards = [null, null, null, null, null];
+    localStorage.setItem('zevi-domain-vault', JSON.stringify(domainVaultData));
+}
+
 // Card types available for selection
 const CARD_TYPES = ['grimoire', 'ability', 'spell'];
 
@@ -337,6 +343,12 @@ function handleCardEquip(evt) {
     const cardId = cardElement.querySelector('.domain-card').dataset.cardId;
     const slotIndex = parseInt(evt.to.dataset.slotIndex || evt.newIndex);
     
+    // Ensure slot index is valid (0-4 only)
+    if (slotIndex < 0 || slotIndex > 4) {
+        cardElement.remove();
+        return;
+    }
+    
     // Remove the dragged element (it's a clone)
     cardElement.remove();
     
@@ -380,6 +392,12 @@ function handleCardUnequip(evt) {
 
 // Equip card to specific slot
 function equipCardToSlot(cardId, slotIndex) {
+    // Validate slot index (must be 0-4)
+    if (slotIndex < 0 || slotIndex > 4) {
+        console.warn('Invalid slot index:', slotIndex);
+        return;
+    }
+    
     // Check if card is already equipped
     const currentEquippedIndex = domainVaultData.equippedCards.indexOf(cardId);
     if (currentEquippedIndex !== -1) {
