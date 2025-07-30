@@ -149,7 +149,14 @@ function renderDomainVault() {
                         </div>
                         <div>
                             <label for="card-image" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">Card Image</label>
-                            <input type="file" id="card-image" accept="image/*" style="width: 100%; padding: 8px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--text-color); backdrop-filter: blur(10px); font-size: 0.8rem;">
+                            <input type="file" id="card-image" accept="image/*" style="width: 100%; padding: 8px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--text-color); backdrop-filter: blur(10px); font-size: 0.8rem; margin-bottom: 8px;">
+                            <label for="card-image-crop" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color); font-size: 0.9rem;">Image Fit</label>
+                            <select id="card-image-crop" style="width: 100%; padding: 8px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--text-color); backdrop-filter: blur(10px);">
+                                <option value="cover">Cover (crop to fill)</option>
+                                <option value="contain">Contain (fit entire image)</option>
+                                <option value="fill">Fill (stretch to fit)</option>
+                                <option value="center">Center (actual size)</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -208,8 +215,15 @@ function renderDomainVault() {
                         </div>
                         <div>
                             <label for="edit-card-image" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">Card Image</label>
-                            <input type="file" id="edit-card-image" accept="image/*" style="width: 100%; padding: 8px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--text-color); backdrop-filter: blur(10px); font-size: 0.8rem;">
-                            <div id="edit-current-image" style="margin-top: 5px; font-size: 0.8rem; color: rgba(255, 255, 255, 0.7);"></div>
+                            <input type="file" id="edit-card-image" accept="image/*" style="width: 100%; padding: 8px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--text-color); backdrop-filter: blur(10px); font-size: 0.8rem; margin-bottom: 8px;">
+                            <div id="edit-current-image" style="margin-bottom: 8px; font-size: 0.8rem; color: rgba(255, 255, 255, 0.7);"></div>
+                            <label for="edit-card-image-crop" style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color); font-size: 0.9rem;">Image Fit</label>
+                            <select id="edit-card-image-crop" style="width: 100%; padding: 8px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--text-color); backdrop-filter: blur(10px);">
+                                <option value="cover">Cover (crop to fill)</option>
+                                <option value="contain">Contain (fit entire image)</option>
+                                <option value="fill">Fill (stretch to fit)</option>
+                                <option value="center">Center (actual size)</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -258,7 +272,8 @@ function renderCards() {
 
 // Render individual card
 function renderCard(card, isEquipped = false) {
-    const imageHtml = card.image ? `<div class="card-image" style="background-image: url('${card.image}');"></div>` : '';
+    const imageCrop = card.imageCrop || 'cover';
+    const imageHtml = card.image ? `<div class="card-image" style="background-image: url('${card.image}'); background-size: ${imageCrop}; background-repeat: no-repeat; background-position: center;"></div>` : '';
     
     return `
         <div class="domain-card ${isEquipped ? 'equipped' : ''}" 
@@ -519,6 +534,7 @@ async function saveNewCard() {
     const type = document.getElementById('card-type').value;
     const color = document.getElementById('card-color').value;
     const imageFile = document.getElementById('card-image').files[0];
+    const imageCrop = document.getElementById('card-image-crop').value;
 
     // Validation
     if (!name || !description) {
@@ -541,7 +557,8 @@ async function saveNewCard() {
         recallCost,
         type,
         color,
-        image
+        image,
+        imageCrop: imageCrop || 'cover'
     };
 
     domainVaultData.cards.push(newCard);
@@ -577,7 +594,7 @@ function editCard(cardId) {
     document.getElementById('edit-card-type').value = card.type;
     document.getElementById('edit-card-color').value = card.color;
     
-    // Show current image info
+    // Show current image info and set crop option
     const currentImageDiv = document.getElementById('edit-current-image');
     if (currentImageDiv) {
         if (card.image) {
@@ -585,6 +602,12 @@ function editCard(cardId) {
         } else {
             currentImageDiv.innerHTML = 'No image uploaded';
         }
+    }
+    
+    // Set current crop option
+    const cropSelect = document.getElementById('edit-card-image-crop');
+    if (cropSelect) {
+        cropSelect.value = card.imageCrop || 'cover';
     }
     
     // Show modal
@@ -612,6 +635,7 @@ async function saveEditedCard() {
     const type = document.getElementById('edit-card-type').value;
     const color = document.getElementById('edit-card-color').value;
     const imageFile = document.getElementById('edit-card-image').files[0];
+    const imageCrop = document.getElementById('edit-card-image-crop').value;
 
     // Validation
     if (!name || !description) {
@@ -635,7 +659,8 @@ async function saveEditedCard() {
         recallCost,
         type,
         color,
-        image
+        image,
+        imageCrop: imageCrop || 'cover'
     };
 
     saveDomainVaultData();
@@ -726,8 +751,9 @@ function expandCard(cardId) {
         hyphens: auto;
     `;
 
+    const imageCrop = card.imageCrop || 'cover';
     const imageHtml = card.image ? 
-        `<div style="width: 100%; height: 200px; background-image: url('${card.image}'); background-size: cover; background-position: center; border-radius: 12px; margin-bottom: 20px;"></div>` : '';
+        `<div style="width: 100%; height: 200px; background-image: url('${card.image}'); background-size: ${imageCrop}; background-repeat: no-repeat; background-position: center; border-radius: 12px; margin-bottom: 20px;"></div>` : '';
 
     expandedCard.innerHTML = `
         <div style="text-align: center; margin-bottom: 15px; color: rgba(255, 255, 255, 0.9); font-size: 0.9rem; font-weight: bold;">Click anywhere to close</div>
