@@ -133,13 +133,14 @@
  
  .char-img-wrapper {
    position: relative;
-   width: 300px;
-   height: 300px;
+   width: 350px;
+   height: 350px;
    display: flex;
    align-items: center;
    justify-content: center;
    flex-shrink: 0;
    cursor: pointer;
+   margin-left: -25px;
    /* Make entire wrapper clickable */
 }
  
@@ -190,7 +191,7 @@
    margin-bottom: 20px;
    text-align: center;
    width: 100%;
-   max-width: 350px;
+   max-width: 450px;
    display: flex;
    flex-direction: column;
    align-items: center;
@@ -3509,12 +3510,13 @@
      }
      
      .char-img-wrapper {
-         width: 250px;
-         height: 250px;
+         width: 280px;
+         height: 280px;
+         margin-left: -15px;
      }
      
      .name-box {
-         max-width: 300px;
+         max-width: 400px;
      }
      
      .right-info {
@@ -3555,9 +3557,10 @@
      }
      
      .char-img-wrapper {
-         width: 200px;
-         height: 200px;
+         width: 220px;
+         height: 220px;
          order: 1;
+         margin-left: 0;
      }
      
      .name-box {
