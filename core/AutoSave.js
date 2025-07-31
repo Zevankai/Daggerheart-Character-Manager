@@ -80,7 +80,7 @@ class AutoSave {
     collectCurrentCharacterData() {
         const data = {
             // Basic info from UI
-            name: this.uiManager.getUIValue('.name-box input[type="text"]') || 'New Character',
+            name: window.characterNameEditor ? window.characterNameEditor.getValue() : (this.uiManager.getUIValue('.character-name-editor', 'textContent') || 'New Character'),
             level: parseInt(this.uiManager.getUIValue('#charLevel', 'textContent')) || 5,
             subtitle: this.uiManager.getUIValue('.subtitle', 'textContent') || 'Community Ancestry Class (Subclass)',
             

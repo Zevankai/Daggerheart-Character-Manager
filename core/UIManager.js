@@ -17,7 +17,11 @@ class UIManager {
         console.log('=== APPLYING CHARACTER DATA TO UI ===');
         
         // Basic character info
-        this.setUIValue('.name-box input[type="text"]', data.name || 'New Character');
+        if (window.characterNameEditor) {
+            window.characterNameEditor.setValue(data.name || 'New Character');
+        } else {
+            this.setUIValue('.character-name-editor', data.name || 'New Character', 'textContent');
+        }
         this.setUIValue('.subtitle', data.subtitle || 'Community Ancestry Class (Subclass)');
         this.setUIValue('#charLevel', data.level || 5, 'textContent');
         
@@ -91,7 +95,11 @@ class UIManager {
         console.log('Clearing UI to defaults...');
         
         // Basic info
-        this.setUIValue('.name-box input[type="text"]', 'New Character');
+        if (window.characterNameEditor) {
+            window.characterNameEditor.setValue('New Character');
+        } else {
+            this.setUIValue('.character-name-editor', 'New Character', 'textContent');
+        }
         this.setUIValue('.subtitle', 'Community Ancestry Class (Subclass)');
         this.setUIValue('#charLevel', 5, 'textContent');
         

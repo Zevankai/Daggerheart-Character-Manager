@@ -287,7 +287,7 @@ function deleteCharacterData() {
 
 function resetCharacterSheet() {
   // Reset character name and details
-  document.querySelector('.name-box input[type="text"]').value = 'Character Name';
+  document.querySelector('.character-name-editor').textContent = 'Character Name';
   document.querySelector('.name-box .subtitle').textContent = 'Community Ancestry Class (Subclass)';
   document.querySelector('#charLevel').textContent = '5';
   
@@ -318,9 +318,7 @@ function resetCharacterSheet() {
   
   // Reset all input fields
   document.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach(input => {
-      if (input.closest('.name-box')) {
-          input.value = 'Character Name';
-      } else if (input.id === 'evasionValue') {
+      if (input.id === 'evasionValue') {
           input.value = '10'; // Reset evasion to default
       } else {
           input.value = '';
@@ -512,7 +510,7 @@ function setupCharacterChangeMonitoring() {
   };
   
   // Monitor name changes
-  const nameInput = document.querySelector('.name-box input[type="text"]');
+  const nameInput = document.querySelector('.character-name-editor');
   if (nameInput) {
       nameInput.addEventListener('blur', autoRegenCode);
   }
@@ -554,8 +552,8 @@ function gatherCharacterData() {
   const data = {};
   
   // Character basic info
-  const nameInput = document.querySelector('.name-box input[type="text"]');
-  if (nameInput) data.name = nameInput.value;
+  const nameInput = document.querySelector('.character-name-editor');
+  if (nameInput) data.name = nameInput.textContent;
   
   const subtitle = document.querySelector('.name-box .subtitle');
   if (subtitle) data.subtitle = subtitle.textContent;

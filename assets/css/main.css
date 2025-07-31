@@ -198,6 +198,94 @@
    justify-content: center;
 }
 
+.character-name-editor {
+   font-size: 2rem;
+   font-weight: bold;
+   color: var(--text-color);
+   background: transparent;
+   border: none;
+   outline: none;
+   text-align: center;
+   width: 100%;
+   min-height: 2.5rem;
+   padding: 0;
+   margin: 0;
+   cursor: text;
+   word-wrap: break-word;
+   overflow-wrap: break-word;
+   hyphens: auto;
+   line-height: 1.2;
+   transition: all 0.2s ease;
+}
+
+.character-name-editor:empty::before {
+   content: attr(data-placeholder);
+   color: rgba(255, 255, 255, 0.6);
+   font-style: italic;
+}
+
+.character-name-editor:focus {
+   outline: 2px solid var(--accent-color);
+   outline-offset: 2px;
+   border-radius: 4px;
+}
+
+.character-name-editor[contenteditable="true"]:hover {
+   background: rgba(255, 255, 255, 0.05);
+   border-radius: 4px;
+}
+
+.character-name-controls {
+   display: none;
+   position: absolute;
+   top: -40px;
+   left: 50%;
+   transform: translateX(-50%);
+   background: rgba(0, 0, 0, 0.8);
+   border: 1px solid rgba(255, 255, 255, 0.2);
+   border-radius: 6px;
+   padding: 8px 12px;
+   z-index: 1000;
+   backdrop-filter: blur(10px);
+   -webkit-backdrop-filter: blur(10px);
+}
+
+.font-size-controls {
+   display: flex;
+   align-items: center;
+   gap: 8px;
+}
+
+.font-size-btn {
+   background: var(--accent-color);
+   color: #000;
+   border: none;
+   border-radius: 4px;
+   padding: 4px 8px;
+   font-size: 0.8rem;
+   font-weight: bold;
+   cursor: pointer;
+   transition: all 0.2s ease;
+   min-width: 32px;
+}
+
+.font-size-btn:hover {
+   background: var(--accent-color-dark);
+   transform: scale(1.05);
+}
+
+.font-size-btn:active {
+   transform: scale(0.95);
+}
+
+.font-size-display {
+   color: var(--text-color);
+   font-size: 0.8rem;
+   font-weight: bold;
+   min-width: 40px;
+   text-align: center;
+}
+
 /* Character header row with save button */
 .character-header-row {
   display: flex;
@@ -3540,6 +3628,22 @@
  @media (max-width: 768px) {
      body {
          padding: 8px;
+     }
+     
+     .character-name-controls {
+         top: -35px;
+         padding: 6px 10px;
+     }
+     
+     .font-size-btn {
+         padding: 3px 6px;
+         font-size: 0.7rem;
+         min-width: 28px;
+     }
+     
+     .font-size-display {
+         font-size: 0.7rem;
+         min-width: 35px;
      }
      
      .glass {
