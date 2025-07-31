@@ -349,6 +349,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.warn('initializeDomainVault function not found. Ensure domainVault.js is loaded.');
                 }
             }
+            if (targetPanelId === 'effects-features-tab-content') {
+                if (window.initializeEffectsFeatures && typeof window.initializeEffectsFeatures === 'function') {
+                    window.initializeEffectsFeatures();
+                } else {
+                    console.warn('initializeEffectsFeatures function not found. Ensure effectsFeatures.js is loaded.');
+                }
+            }
             if (targetPanelId === 'characters-tab-content') {
                 if (window.charactersPageManager && typeof window.charactersPageManager.refreshCharactersList === 'function') {
                     console.log('Characters tab clicked - refreshing characters list');
