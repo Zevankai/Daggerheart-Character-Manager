@@ -545,12 +545,17 @@ function unequipCard(cardId) {
 
 // Setup event listeners
 function setupEventListeners() {
+    console.log('Setting up domain vault event listeners');
     // Create card button
     const createCardBtn = document.getElementById('create-card-btn');
+    console.log('Create card button:', createCardBtn);
     if (createCardBtn) {
         // Remove any existing listeners to avoid duplicates
         createCardBtn.removeEventListener('click', showCreateCardModal);
         createCardBtn.addEventListener('click', showCreateCardModal);
+        console.log('Event listener added to create card button');
+    } else {
+        console.error('Create card button not found!');
     }
     
     // Delete cards button
@@ -575,7 +580,9 @@ function setupEventListeners() {
 
 // Show create card modal
 function showCreateCardModal() {
+    console.log('showCreateCardModal called');
     const modal = document.getElementById('create-card-modal');
+    console.log('Modal element:', modal);
     if (modal) {
         // Reset form
         const nameInput = document.getElementById('card-name');
@@ -593,6 +600,9 @@ function showCreateCardModal() {
         if (colorInput) colorInput.value = DEFAULT_COLOR;
         
         modal.style.display = 'flex';
+        console.log('Modal should now be visible');
+    } else {
+        console.error('Create card modal not found!');
     }
 }
 
