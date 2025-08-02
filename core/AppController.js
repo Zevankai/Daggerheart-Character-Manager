@@ -347,7 +347,7 @@ class AppController {
         defaultData.createdAt = new Date().toISOString();
 
         // Save the new character
-        this.characterData.saveCharacterData(newId, defaultData);
+                        await this.characterData.saveCharacterData(newId, defaultData);
 
         // Update character directory for compatibility with old character manager
         this.updateCharacterDirectory();

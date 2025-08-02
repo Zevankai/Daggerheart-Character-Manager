@@ -117,16 +117,29 @@ class CharacterData {
     }
 
     // Save character data
-    saveCharacterData(characterId, data) {
-        const saveKey = `zevi-character-file-${characterId}`;
+    async saveCharacterData(characterId, data) {
         const characterData = {
             ...data,
             lastModified: new Date().toISOString()
         };
         
+        // Try to save to cloud first if user is logged in
+        if (window.zeviAPI && window.zeviAPI.isLoggedIn()) {
+            try {
+                await window.zeviAPI.autoSaveCharacter(characterId, characterData);
+                console.log('Character data saved to cloud:', characterId);
+                return true;
+            } catch (error) {
+                console.warn('Cloud save failed, falling back to localStorage:', error);
+                // Fall through to localStorage save
+            }
+        }
+        
+        // Fallback to localStorage
+        const saveKey = `zevi-character-file-${characterId}`;
         try {
             localStorage.setItem(saveKey, JSON.stringify(characterData));
-            console.log('Character data saved:', characterId);
+            console.log('Character data saved locally:', characterId);
             return true;
         } catch (error) {
             console.error('Failed to save character data:', error);

@@ -1,0 +1,163 @@
+import { requireAuth } from '../lib/auth.js';
+import { getDb } from '../lib/database.js';
+import { v4 as uuidv4 } from 'uuid';
+
+async function getCharacter(req, res) {
+  try {
+    const sql = getDb();
+    const { id } = req.query;
+    
+    const result = await sql`
+      SELECT id, name, character_data, is_shared, share_token, created_at, updated_at
+      FROM characters
+      WHERE id = ${id} AND user_id = ${req.user.id}
+    `;
+    
+    if (result.length === 0) {
+      return res.status(404).json({ error: 'Character not found' });
+    }
+    
+    res.status(200).json({ character: result[0] });
+  } catch (error) {
+    console.error('Error fetching character:', error);
+    res.status(500).json({ error: 'Failed to fetch character' });
+  }
+}
+
+async function updateCharacter(req, res) {
+  try {
+    const sql = getDb();
+    const { id } = req.query;
+    const { name, characterData } = req.body;
+    
+    // Check if character exists and belongs to user
+    const existingResult = await sql`
+      SELECT id FROM characters
+      WHERE id = ${id} AND user_id = ${req.user.id}
+    `;
+    
+    if (existingResult.length === 0) {
+      return res.status(404).json({ error: 'Character not found' });
+    }
+    
+    // Build update query dynamically based on provided fields
+    const updates = [];
+    const values = [];
+    
+    if (name !== undefined) {
+      updates.push('name = $' + (values.length + 1));
+      values.push(name.trim());
+    }
+    
+    if (characterData !== undefined) {
+      updates.push('character_data = $' + (values.length + 1));
+      values.push(JSON.stringify(characterData));
+    }
+    
+    if (updates.length === 0) {
+      return res.status(400).json({ error: 'No valid fields to update' });
+    }
+    
+    updates.push('updated_at = CURRENT_TIMESTAMP');
+    values.push(id, req.user.id);
+    
+    const result = await sql`
+      UPDATE characters 
+      SET ${sql(updates.join(', '))}
+      WHERE id = ${id} AND user_id = ${req.user.id}
+      RETURNING id, name, character_data, is_shared, share_token, created_at, updated_at
+    `;
+    
+    res.status(200).json({ character: result[0] });
+  } catch (error) {
+    console.error('Error updating character:', error);
+    res.status(500).json({ error: 'Failed to update character' });
+  }
+}
+
+async function deleteCharacter(req, res) {
+  try {
+    const sql = getDb();
+    const { id } = req.query;
+    
+    const result = await sql`
+      DELETE FROM characters
+      WHERE id = ${id} AND user_id = ${req.user.id}
+      RETURNING id
+    `;
+    
+    if (result.length === 0) {
+      return res.status(404).json({ error: 'Character not found' });
+    }
+    
+    res.status(200).json({ message: 'Character deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting character:', error);
+    res.status(500).json({ error: 'Failed to delete character' });
+  }
+}
+
+async function shareCharacter(req, res) {
+  try {
+    const sql = getDb();
+    const { id } = req.query;
+    const { isShared } = req.body;
+    
+    // Check if character exists and belongs to user
+    const existingResult = await sql`
+      SELECT id, is_shared, share_token FROM characters
+      WHERE id = ${id} AND user_id = ${req.user.id}
+    `;
+    
+    if (existingResult.length === 0) {
+      return res.status(404).json({ error: 'Character not found' });
+    }
+    
+    let shareToken = existingResult[0].share_token;
+    
+    // Generate share token if enabling sharing and none exists
+    if (isShared && !shareToken) {
+      shareToken = uuidv4();
+    }
+    
+    // Clear share token if disabling sharing
+    if (!isShared) {
+      shareToken = null;
+    }
+    
+    const result = await sql`
+      UPDATE characters 
+      SET is_shared = ${isShared}, share_token = ${shareToken}, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ${id} AND user_id = ${req.user.id}
+      RETURNING id, name, character_data, is_shared, share_token, created_at, updated_at
+    `;
+    
+    res.status(200).json({ character: result[0] });
+  } catch (error) {
+    console.error('Error updating character sharing:', error);
+    res.status(500).json({ error: 'Failed to update character sharing' });
+  }
+}
+
+const handler = async (req, res) => {
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  switch (req.method) {
+    case 'GET':
+      return getCharacter(req, res);
+    case 'PUT':
+      // Check if this is a sharing update
+      if (req.body && req.body.hasOwnProperty('isShared')) {
+        return shareCharacter(req, res);
+      }
+      return updateCharacter(req, res);
+    case 'DELETE':
+      return deleteCharacter(req, res);
+    default:
+      return res.status(405).json({ error: 'Method not allowed' });
+  }
+};
+
+export default requireAuth(handler);

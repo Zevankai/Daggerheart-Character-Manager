@@ -44,7 +44,7 @@ class AutoSave {
     }
 
     // Perform automatic save
-    performAutoSave() {
+    async performAutoSave() {
         if (!this.isEnabled) return;
         
         const currentCharacterId = this.characterData.getCurrentCharacterId();
@@ -60,7 +60,7 @@ class AutoSave {
             const characterData = this.collectCurrentCharacterData();
             
             // Save the data
-            const success = this.characterData.saveCharacterData(currentCharacterId, characterData);
+            const success = await this.characterData.saveCharacterData(currentCharacterId, characterData);
             
             if (success) {
                 console.log('AutoSave: Character saved successfully');
@@ -198,9 +198,9 @@ class AutoSave {
     }
 
     // Manual save trigger (for keyboard shortcuts, etc.)
-    triggerManualSave() {
+    async triggerManualSave() {
         console.log('Manual save triggered');
-        this.performAutoSave();
+        await this.performAutoSave();
     }
 }
 
