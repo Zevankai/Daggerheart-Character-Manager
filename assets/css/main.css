@@ -5801,21 +5801,13 @@
   color: var(--text-color);
 }
 
-/* Multi-Panel Layout - positioned around main content */
+/* Multi-Panel Layout - modular setup */
 .multi-panel-layout {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
+  display: none;
   gap: 15px;
-  pointer-events: none;
-  z-index: 1000;
-}
-
-.multi-panel-layout .panel-container {
-  pointer-events: auto;
+  width: 100%;
+  transition: all 0.4s ease;
+  margin: 20px 0;
 }
 
 .panel-container {
@@ -5826,43 +5818,32 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: all 0.3s ease;
-  position: absolute;
-  top: 20px;
-  bottom: 20px;
-  width: 300px;
-  opacity: 0;
-  transform: translateX(0);
   transition: all 0.4s ease;
+  min-height: 500px;
+  opacity: 0;
+  width: 0;
+  flex-shrink: 0;
 }
 
 .panel-container.visible {
   opacity: 1;
+  width: 300px;
 }
 
 .left-panel {
-  left: -320px;
   border-left: 3px solid #3498db;
 }
 
-.left-panel.visible {
-  transform: translateX(320px);
-}
-
 .center-panel {
-  left: 50%;
-  transform: translateX(-50%);
-  width: 400px;
+  flex: 1;
   border-left: 3px solid var(--accent-color);
+  min-width: 400px;
+  opacity: 1 !important;
+  width: auto !important;
 }
 
 .right-panel {
-  right: -320px;
   border-left: 3px solid #e74c3c;
-}
-
-.right-panel.visible {
-  transform: translateX(-320px);
 }
 
 .panel-container.empty {

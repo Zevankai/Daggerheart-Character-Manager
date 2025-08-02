@@ -38,6 +38,7 @@ class MultiPanelManager {
         // Create the multi-panel layout
         const multiPanelLayout = document.createElement('div');
         multiPanelLayout.className = 'multi-panel-layout';
+        multiPanelLayout.style.display = 'none'; // Hidden by default
         multiPanelLayout.innerHTML = `
             <div class="panel-container left-panel">
                 <div class="panel-header">
@@ -146,9 +147,10 @@ class MultiPanelManager {
             this.panels[position].id = panelId;
             this.panels[position].content = this.getPanelContent(panelId);
             
-            // If this is the first panel being set and we're not in multi-panel mode,
-            // automatically enable multi-panel mode and set the current active tab as center
-            if (!this.isMultiPanelMode) {
+            // If this is the first side panel being set, enable multi-panel mode
+            if (!this.isMultiPanelMode && (position === 'left' || position === 'right')) {
+                this.isMultiPanelMode = true;
+                // Ensure center panel has the current active tab
                 const activeTab = document.querySelector('nav.tabs button.active');
                 if (activeTab) {
                     const activePanelId = activeTab.dataset.target;
@@ -254,7 +256,13 @@ class MultiPanelManager {
                 } else {
                     panelElement.classList.add('empty');
                     panelElement.classList.remove('visible');
-                    container.innerHTML = '<p>No panel selected</p>';
+                    
+                    // For center panel, always show it but with empty content
+                    if (position === 'center') {
+                        container.innerHTML = '<p>Main content area</p>';
+                    } else {
+                        container.innerHTML = '<p>No panel selected</p>';
+                    }
                     
                     // Reset panel title
                     const titleElement = panelElement.querySelector('.panel-title');
@@ -310,12 +318,24 @@ class MultiPanelManager {
         document.body.classList.add('multi-panel-active');
         document.body.classList.remove('single-panel-active');
         this.isMultiPanelMode = true;
+        
+        // Show the multi-panel layout
+        const multiPanelLayout = document.querySelector('.multi-panel-layout');
+        if (multiPanelLayout) {
+            multiPanelLayout.style.display = 'flex';
+        }
     }
 
     enableSinglePanelMode() {
         document.body.classList.add('single-panel-active');
         document.body.classList.remove('multi-panel-active');
         this.isMultiPanelMode = false;
+        
+        // Hide the multi-panel layout
+        const multiPanelLayout = document.querySelector('.multi-panel-layout');
+        if (multiPanelLayout) {
+            multiPanelLayout.style.display = 'none';
+        }
     }
 
     resetToSinglePanel() {
@@ -338,6 +358,12 @@ class MultiPanelManager {
             
             downtimeTab.classList.add('active');
             document.getElementById('downtime-tab-content').classList.add('active');
+        }
+        
+        // Hide multi-panel layout
+        const multiPanelLayout = document.querySelector('.multi-panel-layout');
+        if (multiPanelLayout) {
+            multiPanelLayout.style.display = 'none';
         }
         
         this.updateLayout();
@@ -443,7 +469,7 @@ class MultiPanelManager {
             center: { id: 'downtime-tab-content', content: null },
             right: { id: null, content: null }
         };
-        this.isMultiPanelMode = true;
+        this.isMultiPanelMode = false; // Start in single panel mode
     }
 
     // Public method to check if we're in multi-panel mode
