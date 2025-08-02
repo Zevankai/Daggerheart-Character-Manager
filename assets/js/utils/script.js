@@ -343,7 +343,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             if (targetPanelId === 'domain-vault-tab-content') {
+                console.log('Domain Vault tab clicked - initializing...');
                 if (window.initializeDomainVault && typeof window.initializeDomainVault === 'function') {
+                    console.log('Calling initializeDomainVault...');
                     window.initializeDomainVault();
                 } else {
                     console.warn('initializeDomainVault function not found. Ensure domainVault.js is loaded.');
