@@ -1,23 +1,23 @@
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { getDb } from './database.js';
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { getDb } = require('./database.js');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 const SALT_ROUNDS = 12;
 
-export async function hashPassword(password) {
+async function hashPassword(password) {
   return await bcrypt.hash(password, SALT_ROUNDS);
 }
 
-export async function verifyPassword(password, hash) {
+async function verifyPassword(password, hash) {
   return await bcrypt.compare(password, hash);
 }
 
-export function generateToken(userId) {
+function generateToken(userId) {
   return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' });
 }
 
-export function verifyToken(token) {
+function verifyToken(token) {
   try {
     return jwt.verify(token, JWT_SECRET);
   } catch (error) {
@@ -25,7 +25,7 @@ export function verifyToken(token) {
   }
 }
 
-export async function createUser(email, password, username) {
+async function createUser(email, password, username) {
   const sql = getDb();
   
   try {
@@ -51,7 +51,7 @@ export async function createUser(email, password, username) {
   }
 }
 
-export async function authenticateUser(email, password) {
+async function authenticateUser(email, password) {
   const sql = getDb();
   
   try {
@@ -87,7 +87,7 @@ export async function authenticateUser(email, password) {
   }
 }
 
-export async function getUserFromToken(token) {
+async function getUserFromToken(token) {
   try {
     const decoded = verifyToken(token);
     if (!decoded) {
@@ -107,7 +107,7 @@ export async function getUserFromToken(token) {
   }
 }
 
-export function requireAuth(handler) {
+function requireAuth(handler) {
   return async (req, res) => {
     try {
       const authHeader = req.headers.authorization;
@@ -129,3 +129,14 @@ export function requireAuth(handler) {
     }
   };
 }
+
+module.exports = {
+  hashPassword,
+  verifyPassword,
+  generateToken,
+  verifyToken,
+  createUser,
+  authenticateUser,
+  getUserFromToken,
+  requireAuth
+};

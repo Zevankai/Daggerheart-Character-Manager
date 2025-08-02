@@ -1,7 +1,7 @@
 {
   "name": "zevi-character-sheet",
   "version": "1.0.0",
-  "type": "module",
+
   "description": "Daggerheart Character Sheet with Cloud Storage",
   "scripts": {
     "start": "servor --reload",

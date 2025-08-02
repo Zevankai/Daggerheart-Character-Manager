@@ -1,8 +1,8 @@
-import { neon } from '@neondatabase/serverless';
+const { neon } = require('@neondatabase/serverless');
 
 let sql;
 
-export function getDb() {
+function getDb() {
   if (!sql) {
     if (!process.env.DATABASE_URL) {
       throw new Error('DATABASE_URL environment variable is not set');
@@ -12,7 +12,7 @@ export function getDb() {
   return sql;
 }
 
-export async function initializeDatabase() {
+async function initializeDatabase() {
   const sql = getDb();
   
   try {
@@ -66,3 +66,5 @@ export async function initializeDatabase() {
     throw error;
   }
 }
+
+module.exports = { getDb, initializeDatabase };

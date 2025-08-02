@@ -1,6 +1,6 @@
-import { requireAuth } from '../lib/auth.js';
-import { getDb } from '../lib/database.js';
-import { v4 as uuidv4 } from 'uuid';
+const { requireAuth } = require('../lib/auth.js');
+const { getDb } = require('../lib/database.js');
+const { v4: uuidv4 } = require('uuid');
 
 async function getCharacters(req, res) {
   try {
@@ -56,4 +56,4 @@ const handler = async (req, res) => {
   }
 };
 
-export default requireAuth(handler);
+module.exports = requireAuth(handler);

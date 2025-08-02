@@ -1,7 +1,7 @@
-import { createUser } from '../lib/auth.js';
-import { initializeDatabase } from '../lib/database.js';
+const { createUser } = require('../lib/auth.js');
+const { initializeDatabase } = require('../lib/database.js');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }

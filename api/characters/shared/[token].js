@@ -1,6 +1,6 @@
-import { getDb } from '../../lib/database.js';
+const { getDb } = require('../../lib/database.js');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }

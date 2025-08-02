@@ -1,4 +1,4 @@
-export default function handler(req, res) {
+module.exports = function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
