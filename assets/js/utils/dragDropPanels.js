@@ -20,21 +20,29 @@ class DragDropPanelManager {
     }
 
     createDropZones() {
+        // Find the main content container (the glassmorphic container)
+        const mainContainer = document.querySelector('.glass');
+        
+        if (!mainContainer) {
+            console.error('Main container not found');
+            return;
+        }
+
         // Create left drop zone
         const leftDropZone = document.createElement('div');
         leftDropZone.id = 'left-drop-zone';
         leftDropZone.className = 'drop-zone left-drop-zone';
-        leftDropZone.innerHTML = '<div class="drop-zone-content"><span class="drop-zone-text">Drop tab here for left panel</span></div>';
+        leftDropZone.innerHTML = '<div class="drop-zone-content"><span class="drop-zone-text">Drop for left panel</span></div>';
         
         // Create right drop zone
         const rightDropZone = document.createElement('div');
         rightDropZone.id = 'right-drop-zone';
         rightDropZone.className = 'drop-zone right-drop-zone';
-        rightDropZone.innerHTML = '<div class="drop-zone-content"><span class="drop-zone-text">Drop tab here for right panel</span></div>';
+        rightDropZone.innerHTML = '<div class="drop-zone-content"><span class="drop-zone-text">Drop for right panel</span></div>';
 
-        // Add drop zones to the page
-        document.body.appendChild(leftDropZone);
-        document.body.appendChild(rightDropZone);
+        // Add drop zones to the main container
+        mainContainer.appendChild(leftDropZone);
+        mainContainer.appendChild(rightDropZone);
 
         this.dropZones.left = leftDropZone;
         this.dropZones.right = rightDropZone;

@@ -104,21 +104,22 @@
  }
  
  .glass {
-    /* UPDATED: Now uses a CSS variable for its background color */
-    background: var(--glass-background-color);
-    /* Ensure content is accessible even if background image fails to load */
-    background-blend-mode: overlay;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 20px;
-    margin-bottom: 20px;
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    width: 90%;
-    max-width: 1100px;
-    position: relative;
-    color: var(--text-color);
- }
+  /* UPDATED: Now uses a CSS variable for its background color */
+  background: var(--glass-background-color);
+  /* Ensure content is accessible even if background image fails to load */
+  background-blend-mode: overlay;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 20px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  width: 90%;
+  max-width: 1100px;
+  position: relative;
+  overflow: visible;
+  color: var(--text-color);
+}
  
  header {
     display: flex;
@@ -5800,13 +5801,21 @@
   color: var(--text-color);
 }
 
-/* Multi-Panel Layout */
+/* Multi-Panel Layout - positioned around main content */
 .multi-panel-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
   gap: 15px;
-  min-height: 500px;
-  margin: 20px 0;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.multi-panel-layout .panel-container {
+  pointer-events: auto;
 }
 
 .panel-container {
@@ -5818,6 +5827,42 @@
   flex-direction: column;
   overflow: hidden;
   transition: all 0.3s ease;
+  position: absolute;
+  top: 20px;
+  bottom: 20px;
+  width: 300px;
+  opacity: 0;
+  transform: translateX(0);
+  transition: all 0.4s ease;
+}
+
+.panel-container.visible {
+  opacity: 1;
+}
+
+.left-panel {
+  left: -320px;
+  border-left: 3px solid #3498db;
+}
+
+.left-panel.visible {
+  transform: translateX(320px);
+}
+
+.center-panel {
+  left: 50%;
+  transform: translateX(-50%);
+  width: 400px;
+  border-left: 3px solid var(--accent-color);
+}
+
+.right-panel {
+  right: -320px;
+  border-left: 3px solid #e74c3c;
+}
+
+.right-panel.visible {
+  transform: translateX(-320px);
 }
 
 .panel-container.empty {
@@ -6033,12 +6078,12 @@
 
 /* ===== DRAG & DROP DROP ZONES ===== */
 
-/* Drop Zones */
+/* Drop Zones - positioned relative to main content */
 .drop-zone {
-  position: fixed;
+  position: absolute;
   top: 0;
   bottom: 0;
-  width: 200px;
+  width: 150px;
   background: rgba(255, 215, 0, 0.1);
   border: 3px dashed rgba(255, 215, 0, 0.3);
   display: flex;
@@ -6049,11 +6094,13 @@
   visibility: hidden;
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
+  pointer-events: none;
 }
 
 .drop-zone.visible {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
 }
 
 .drop-zone.drag-over {
@@ -6064,29 +6111,29 @@
 }
 
 .left-drop-zone {
-  left: 0;
+  left: -160px;
   border-right: none;
-  border-radius: 0 8px 8px 0;
+  border-radius: 8px 0 0 8px;
 }
 
 .right-drop-zone {
-  right: 0;
+  right: -160px;
   border-left: none;
-  border-radius: 8px 0 0 8px;
+  border-radius: 0 8px 8px 0;
 }
 
 .drop-zone-content {
   text-align: center;
   color: var(--text-color);
-  padding: 20px;
+  padding: 15px;
 }
 
 .drop-zone-text {
-  font-size: 1.1em;
+  font-size: 0.9em;
   font-weight: 600;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .drop-zone::before {
@@ -6095,15 +6142,15 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 60px;
-  height: 60px;
+  width: 40px;
+  height: 40px;
   background: rgba(255, 215, 0, 0.2);
   border-radius: 50%;
   border: 2px dashed rgba(255, 215, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 16px;
   color: var(--accent-color);
 }
 

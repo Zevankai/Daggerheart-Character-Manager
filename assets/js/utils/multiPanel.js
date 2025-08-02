@@ -15,6 +15,7 @@ class MultiPanelManager {
 
     init() {
         try {
+            this.createPanelLayout();
             this.loadPanelState();
             this.setupEventListeners();
             this.updateLayout();
@@ -24,6 +25,53 @@ class MultiPanelManager {
             this.setDefaultState();
             this.updateLayout();
         }
+    }
+
+    createPanelLayout() {
+        // Find the main glass container
+        const glassContainer = document.querySelector('.glass');
+        if (!glassContainer) {
+            console.error('Glass container not found');
+            return;
+        }
+
+        // Create the multi-panel layout
+        const multiPanelLayout = document.createElement('div');
+        multiPanelLayout.className = 'multi-panel-layout';
+        multiPanelLayout.innerHTML = `
+            <div class="panel-container left-panel">
+                <div class="panel-header">
+                    <span class="panel-title">Left Panel</span>
+                    <button class="close-panel-btn" data-panel="left">×</button>
+                </div>
+                <div class="panel-content">
+                    <!-- Left panel content will be dynamically populated -->
+                </div>
+            </div>
+            
+            <div class="panel-container center-panel">
+                <div class="panel-header">
+                    <span class="panel-title">Center Panel</span>
+                    <button class="close-panel-btn" data-panel="center">×</button>
+                </div>
+                <div class="panel-content">
+                    <!-- Center panel content will be dynamically populated -->
+                </div>
+            </div>
+            
+            <div class="panel-container right-panel">
+                <div class="panel-header">
+                    <span class="panel-title">Right Panel</span>
+                    <button class="close-panel-btn" data-panel="right">×</button>
+                </div>
+                <div class="panel-content">
+                    <!-- Right panel content will be dynamically populated -->
+                </div>
+            </div>
+        `;
+
+        // Add the layout to the glass container
+        glassContainer.appendChild(multiPanelLayout);
     }
 
     setupEventListeners() {
@@ -190,12 +238,13 @@ class MultiPanelManager {
             const container = document.querySelector(`.${position}-panel .panel-content`);
             const panelElement = document.querySelector(`.${position}-panel`);
             
-            if (container) {
+            if (container && panelElement) {
                 container.innerHTML = '';
                 
                 if (panel.id && panel.content) {
                     container.appendChild(panel.content);
                     panelElement.classList.remove('empty');
+                    panelElement.classList.add('visible');
                     
                     // Update panel title
                     const titleElement = panelElement.querySelector('.panel-title');
@@ -204,6 +253,7 @@ class MultiPanelManager {
                     }
                 } else {
                     panelElement.classList.add('empty');
+                    panelElement.classList.remove('visible');
                     container.innerHTML = '<p>No panel selected</p>';
                     
                     // Reset panel title
