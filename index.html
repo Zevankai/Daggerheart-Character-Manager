@@ -156,7 +156,108 @@
 
   <div class="divider"></div>
 
-  <div class="tab-content-area">
+  <!-- Multi-panel layout controls -->
+  <div class="panel-controls">
+   <div class="panel-control-group">
+    <label>Left Panel:</label>
+    <select id="left-panel-select" class="panel-select">
+     <option value="">None</option>
+     <option value="domain-vault-tab-content">Domain Vault</option>
+     <option value="effects-features-tab-content">Effects & Features</option>
+     <option value="equipment-tab-content">Equipment</option>
+     <option value="details-tab-content">Details</option>
+     <option value="experiences-tab-content">Experiences</option>
+     <option value="journal-tab-content">Journal</option>
+     <option value="downtime-tab-content">Downtime</option>
+     <option value="characters-tab-content">Characters</option>
+     <option value="settings-tab-content">Settings</option>
+    </select>
+   </div>
+        <div class="panel-control-group">
+      <label>Center Panel:</label>
+      <select id="center-panel-select" class="panel-select">
+       <option value="">None</option>
+       <option value="domain-vault-tab-content">Domain Vault</option>
+       <option value="effects-features-tab-content">Effects & Features</option>
+       <option value="equipment-tab-content">Equipment</option>
+       <option value="details-tab-content">Details</option>
+       <option value="experiences-tab-content">Experiences</option>
+       <option value="journal-tab-content">Journal</option>
+       <option value="downtime-tab-content" selected>Downtime</option>
+       <option value="characters-tab-content">Characters</option>
+       <option value="settings-tab-content">Settings</option>
+      </select>
+     </div>
+     <div class="panel-control-group">
+      <label>Center Panel:</label>
+      <select id="center-panel-select" class="panel-select">
+       <option value="">None</option>
+       <option value="domain-vault-tab-content">Domain Vault</option>
+       <option value="effects-features-tab-content">Effects & Features</option>
+       <option value="equipment-tab-content">Equipment</option>
+       <option value="details-tab-content">Details</option>
+       <option value="experiences-tab-content">Experiences</option>
+       <option value="journal-tab-content">Journal</option>
+       <option value="downtime-tab-content" selected>Downtime</option>
+       <option value="characters-tab-content">Characters</option>
+       <option value="settings-tab-content">Settings</option>
+      </select>
+     </div>
+     <div class="panel-control-group">
+      <label>Right Panel:</label>
+    <select id="right-panel-select" class="panel-select">
+     <option value="">None</option>
+     <option value="domain-vault-tab-content">Domain Vault</option>
+     <option value="effects-features-tab-content">Effects & Features</option>
+     <option value="equipment-tab-content">Equipment</option>
+     <option value="details-tab-content">Details</option>
+     <option value="experiences-tab-content">Experiences</option>
+     <option value="journal-tab-content">Journal</option>
+     <option value="downtime-tab-content">Downtime</option>
+     <option value="characters-tab-content">Characters</option>
+     <option value="settings-tab-content">Settings</option>
+    </select>
+   </div>
+   <button id="reset-panels-btn" class="button">Reset to Single Panel</button>
+   <button id="toggle-panel-mode-btn" class="button">Switch to Multi-Panel</button>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="multi-panel-layout">
+   <div class="panel-container left-panel">
+    <div class="panel-header">
+     <span class="panel-title">Left Panel</span>
+     <button class="close-panel-btn" data-panel="left">×</button>
+    </div>
+    <div class="panel-content">
+     <!-- Left panel content will be dynamically populated -->
+    </div>
+   </div>
+   
+   <div class="panel-container center-panel">
+    <div class="panel-header">
+     <span class="panel-title">Center Panel</span>
+     <button class="close-panel-btn" data-panel="center">×</button>
+    </div>
+    <div class="panel-content">
+     <!-- Center panel content will be dynamically populated -->
+    </div>
+   </div>
+   
+   <div class="panel-container right-panel">
+    <div class="panel-header">
+     <span class="panel-title">Right Panel</span>
+     <button class="close-panel-btn" data-panel="right">×</button>
+    </div>
+    <div class="panel-content">
+     <!-- Right panel content will be dynamically populated -->
+    </div>
+   </div>
+  </div>
+
+  <!-- Original single panel layout (hidden by default) -->
+  <div class="tab-content-area" style="display: none;">
    <div id="domain-vault-tab-content" class="tab-panel">
     <p style="text-align: center;">Content for Domain Vault will go here.</p>
    </div>
@@ -509,6 +610,7 @@
         
         <!-- Utilities -->
         <script src="assets/js/utils/script.js"></script>
+        <script src="assets/js/utils/multiPanel.js"></script>
  <script>
   // Character selection removed - single character mode
   
