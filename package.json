@@ -1,4 +1,8 @@
 {
+  "name": "zevi-character-sheet",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Daggerheart Character Sheet with Cloud Storage",
   "scripts": {
     "start": "servor --reload",
     "dev": "vercel dev",
@@ -13,5 +17,8 @@
   },
   "devDependencies": {
     "vercel": "^33.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
