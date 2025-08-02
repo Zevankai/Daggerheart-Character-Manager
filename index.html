@@ -152,11 +152,75 @@
    <button data-target="downtime-tab-content" class="active">Downtime</button>
    <button data-target="characters-tab-content">Characters</button>
    <button data-target="settings-tab-content">Settings</button>
+   <button id="multi-panel-menu-btn" class="multi-panel-menu-btn" title="Multi-Panel Layout">⊞</button>
   </nav>
+  <div class="drag-instruction">
+   <span class="drag-hint">💡 Drag any tab to the left or right edge to create multi-panel layout</span>
+  </div>
 
   <div class="divider"></div>
 
-  <div class="tab-content-area">
+  <!-- Multi-panel layout controls -->
+  <div id="multi-panel-menu" class="multi-panel-menu">
+   <div class="panel-controls">
+    <div class="panel-control-group">
+     <label>Left Panel:</label>
+     <select id="left-panel-select" class="panel-select">
+      <option value="">None</option>
+      <option value="domain-vault-tab-content">Domain Vault</option>
+      <option value="effects-features-tab-content">Effects & Features</option>
+      <option value="equipment-tab-content">Equipment</option>
+      <option value="details-tab-content">Details</option>
+      <option value="experiences-tab-content">Experiences</option>
+      <option value="journal-tab-content">Journal</option>
+      <option value="downtime-tab-content">Downtime</option>
+      <option value="characters-tab-content">Characters</option>
+      <option value="settings-tab-content">Settings</option>
+     </select>
+    </div>
+    <div class="panel-control-group">
+     <label>Center Panel:</label>
+     <select id="center-panel-select" class="panel-select">
+      <option value="">None</option>
+      <option value="domain-vault-tab-content">Domain Vault</option>
+      <option value="effects-features-tab-content">Effects & Features</option>
+      <option value="equipment-tab-content">Equipment</option>
+      <option value="details-tab-content">Details</option>
+      <option value="experiences-tab-content">Experiences</option>
+      <option value="journal-tab-content">Journal</option>
+      <option value="downtime-tab-content" selected>Downtime</option>
+      <option value="characters-tab-content">Characters</option>
+      <option value="settings-tab-content">Settings</option>
+     </select>
+    </div>
+    <div class="panel-control-group">
+     <label>Right Panel:</label>
+     <select id="right-panel-select" class="panel-select">
+      <option value="">None</option>
+      <option value="domain-vault-tab-content">Domain Vault</option>
+      <option value="effects-features-tab-content">Effects & Features</option>
+      <option value="equipment-tab-content">Equipment</option>
+      <option value="details-tab-content">Details</option>
+      <option value="experiences-tab-content">Experiences</option>
+      <option value="journal-tab-content">Journal</option>
+      <option value="downtime-tab-content">Downtime</option>
+      <option value="characters-tab-content">Characters</option>
+      <option value="settings-tab-content">Settings</option>
+     </select>
+    </div>
+    <div class="panel-actions">
+     <button id="reset-panels-btn" class="button">Reset to Single Panel</button>
+     <button id="toggle-panel-mode-btn" class="button">Switch to Multi-Panel</button>
+    </div>
+   </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Multi-panel layout will be moved to the glass container by JavaScript -->
+
+  <!-- Original single panel layout (hidden by default) -->
+  <div class="tab-content-area" style="display: none;">
    <div id="domain-vault-tab-content" class="tab-panel">
     <p style="text-align: center;">Content for Domain Vault will go here.</p>
    </div>
@@ -509,6 +573,8 @@
         
         <!-- Utilities -->
         <script src="assets/js/utils/script.js"></script>
+        <script src="assets/js/utils/multiPanel.js"></script>
+        <script src="assets/js/utils/dragDropPanels.js"></script>
  <script>
   // Character selection removed - single character mode
   

@@ -304,9 +304,18 @@ document.addEventListener('DOMContentLoaded', () => {
         },
     });
 
-    // Tab switching logic
+    // Tab switching logic - updated to work with multi-panel system
     document.querySelectorAll('nav.tabs button').forEach(button => {
         button.addEventListener('click', function() {
+            // Check if we're in multi-panel mode
+            if (window.multiPanelManager && window.multiPanelManager.isInMultiPanelMode()) {
+                // In multi-panel mode, clicking a tab button will add it to the center panel
+                const targetPanelId = this.dataset.target;
+                window.multiPanelManager.setPanel('center', targetPanelId);
+                return;
+            }
+
+            // Original single panel logic
             document.querySelectorAll('nav.tabs button').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
 

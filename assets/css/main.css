@@ -104,21 +104,22 @@
  }
  
  .glass {
-    /* UPDATED: Now uses a CSS variable for its background color */
-    background: var(--glass-background-color);
-    /* Ensure content is accessible even if background image fails to load */
-    background-blend-mode: overlay;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 20px;
-    margin-bottom: 20px;
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    width: 90%;
-    max-width: 1100px;
-    position: relative;
-    color: var(--text-color);
- }
+  /* UPDATED: Now uses a CSS variable for its background color */
+  background: var(--glass-background-color);
+  /* Ensure content is accessible even if background image fails to load */
+  background-blend-mode: overlay;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 20px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  width: 90%;
+  max-width: 1100px;
+  position: relative;
+  overflow: visible;
+  color: var(--text-color);
+}
  
  header {
     display: flex;
@@ -588,12 +589,13 @@
  .circle.gold.active { background: #ffd700; }
  
  nav.tabs {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    margin-top: 2rem;
-    flex-wrap: wrap;
- }
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+  position: relative;
+}
  
  nav.tabs button {
     background: rgba(255,255,255,0.2);
@@ -5655,4 +5657,605 @@
     .card-action-btn {
         width: 100%;
     }
+}
+
+/* ===== MULTI-PANEL LAYOUT STYLES ===== */
+
+/* Multi-Panel Menu Button */
+.multi-panel-menu-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-color);
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 8px 12px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  margin-left: 10px;
+  display: none; /* Hidden by default since we now have drag & drop */
+}
+
+.multi-panel-menu-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.multi-panel-menu-btn.active {
+  background: rgba(255, 215, 0, 0.2);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+/* Multi-Panel Menu Dropdown */
+.multi-panel-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--glass-background-color);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  min-width: 300px;
+  display: none;
+  margin-top: 5px;
+}
+
+.multi-panel-menu.show {
+  display: block;
+}
+
+/* Panel Controls */
+.panel-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 20px;
+  background: transparent;
+  border-radius: 8px;
+  margin: 0;
+  backdrop-filter: none;
+  border: none;
+}
+
+.panel-control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 150px;
+}
+
+.panel-control-group label {
+  font-size: 0.9em;
+  font-weight: 600;
+  color: var(--text-color);
+  text-align: center;
+}
+
+.panel-select {
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-color);
+  font-size: 0.9em;
+  backdrop-filter: blur(5px);
+  transition: all 0.3s ease;
+}
+
+.panel-select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.2);
+}
+
+.panel-select option {
+  background: #2c3e50;
+  color: var(--text-color);
+}
+
+#reset-panels-btn {
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9em;
+}
+
+#reset-panels-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: var(--accent-color);
+}
+
+#toggle-panel-mode-btn {
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9em;
+}
+
+#toggle-panel-mode-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: var(--accent-color);
+}
+
+/* Mode indicator styles */
+.multi-panel-active #toggle-panel-mode-btn {
+  background: rgba(255, 215, 0, 0.2);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.single-panel-active #toggle-panel-mode-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--text-color);
+}
+
+/* Multi-Panel Layout - modular setup */
+.multi-panel-layout {
+  display: none;
+  gap: 15px;
+  width: 100%;
+  transition: all 0.4s ease;
+  margin: 20px 0;
+}
+
+.panel-container {
+  background: var(--glass-background-color);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: all 0.4s ease;
+  min-height: 500px;
+  opacity: 0;
+  width: 0;
+  flex-shrink: 0;
+}
+
+.panel-container.visible {
+  opacity: 1;
+  width: 300px;
+}
+
+.left-panel {
+  border-left: 3px solid #3498db;
+}
+
+.center-panel {
+  flex: 1;
+  border-left: 3px solid var(--accent-color);
+  min-width: 400px;
+  opacity: 1 !important;
+  width: auto !important;
+}
+
+.right-panel {
+  border-left: 3px solid #e74c3c;
+}
+
+.panel-container.empty {
+  opacity: 0.5;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.panel-container.empty .panel-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.panel-title {
+  font-weight: 600;
+  color: var(--text-color);
+  font-size: 0.95em;
+}
+
+.close-panel-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.close-panel-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-color);
+}
+
+.panel-content {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+  max-height: calc(100vh - 400px);
+}
+
+.panel-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.panel-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.panel-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.panel-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Panel-specific styles */
+.left-panel {
+  border-left: 3px solid #3498db;
+}
+
+.center-panel {
+  border-left: 3px solid var(--accent-color);
+}
+
+.right-panel {
+  border-left: 3px solid #e74c3c;
+}
+
+/* Responsive design for multi-panel layout */
+@media (max-width: 1200px) {
+  .multi-panel-layout {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+  }
+  
+  .right-panel {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .panel-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .panel-control-group {
+    min-width: 200px;
+  }
+  
+  .multi-panel-layout {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .panel-container {
+    min-height: 300px;
+  }
+  
+  .panel-content {
+    max-height: 250px;
+  }
+}
+
+/* Hide original tab content area when using multi-panel */
+.multi-panel-active .tab-content-area {
+  display: none !important;
+}
+
+.multi-panel-active nav.tabs {
+  display: none;
+}
+
+/* Show multi-panel controls when in multi-panel mode */
+.multi-panel-active .panel-controls {
+  display: flex;
+}
+
+/* Hide multi-panel controls when in single panel mode */
+.single-panel-active .panel-controls {
+  display: none;
+}
+
+.single-panel-active .multi-panel-layout {
+  display: none;
+}
+
+.single-panel-active .tab-content-area {
+  display: block !important;
+}
+
+.single-panel-active nav.tabs {
+  display: flex;
+}
+
+/* Panel Actions */
+.panel-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 10px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.panel-actions .button {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 0.85em;
+}
+
+/* Ensure cloned content inherits proper styles */
+.panel-content .tab-panel {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.panel-content .tab-panel.active {
+  display: block !important;
+}
+
+/* Improve panel content scrolling */
+.panel-content {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+}
+
+/* Ensure buttons and interactive elements work in panels */
+.panel-content .button,
+.panel-content button {
+  cursor: pointer;
+}
+
+.panel-content input,
+.panel-content select,
+.panel-content textarea {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-color);
+}
+
+.panel-content input:focus,
+.panel-content select:focus,
+.panel-content textarea:focus {
+  border-color: var(--accent-color);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.2);
+}
+
+/* ===== DRAG & DROP DROP ZONES ===== */
+
+/* Drop Zones - positioned relative to main content */
+.drop-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 150px;
+  background: rgba(255, 215, 0, 0.1);
+  border: 3px dashed rgba(255, 215, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+}
+
+.drop-zone.visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.drop-zone.drag-over {
+  background: rgba(255, 215, 0, 0.2);
+  border-color: var(--accent-color);
+  border-width: 4px;
+  transform: scale(1.02);
+}
+
+.left-drop-zone {
+  left: -160px;
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+}
+
+.right-drop-zone {
+  right: -160px;
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+}
+
+.drop-zone-content {
+  text-align: center;
+  color: var(--text-color);
+  padding: 15px;
+}
+
+.drop-zone-text {
+  font-size: 0.9em;
+  font-weight: 600;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.drop-zone::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 215, 0, 0.2);
+  border-radius: 50%;
+  border: 2px dashed rgba(255, 215, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: var(--accent-color);
+}
+
+.left-drop-zone::before {
+  content: '←';
+}
+
+.right-drop-zone::before {
+  content: '→';
+}
+
+.drop-zone.drag-over::before {
+  background: rgba(255, 215, 0, 0.3);
+  border-color: var(--accent-color);
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+/* Make tab buttons show drag cursor */
+nav.tabs button[draggable="true"] {
+  cursor: grab;
+  position: relative;
+}
+
+nav.tabs button[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+/* Add drag handle indicator */
+nav.tabs button[draggable="true"]::after {
+  content: '⋮⋮';
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 8px;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1;
+  pointer-events: none;
+}
+
+nav.tabs button[draggable="true"]:hover::after {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Drag instruction */
+.drag-instruction {
+  text-align: center;
+  margin: 10px 0;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.drag-instruction:hover {
+  opacity: 1;
+}
+
+.drag-hint {
+  font-size: 0.9em;
+  color: var(--text-color);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 8px 16px;
+  border-radius: 20px;
+  display: inline-block;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Hide instruction when in multi-panel mode */
+.multi-panel-active .drag-instruction {
+  display: none;
+}
+
+/* Drop notification animations */
+@keyframes slideInDown {
+  from {
+    transform: translateX(-50%) translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutUp {
+  from {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-50%) translateY(-100%);
+    opacity: 0;
+  }
+}
+
+/* Responsive drop zones */
+@media (max-width: 768px) {
+  .drop-zone {
+    width: 120px;
+  }
+  
+  .drop-zone-text {
+    font-size: 0.9em;
+  }
+  
+  .drop-zone::before {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .drop-zone {
+    width: 80px;
+  }
+  
+  .drop-zone-text {
+    font-size: 0.8em;
+  }
+  
+  .drop-zone::before {
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
+  }
 }
