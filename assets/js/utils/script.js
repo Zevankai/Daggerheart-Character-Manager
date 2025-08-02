@@ -1,5 +1,7 @@
 // --- GLOBAL HELPER FUNCTIONS ---
 
+console.log('🔧 Script.js loaded successfully!');
+
 // Legacy functions for compatibility (now handled by core system)
 function updateSaveStatus(type, message) {
     console.log('Legacy save status:', type, message);

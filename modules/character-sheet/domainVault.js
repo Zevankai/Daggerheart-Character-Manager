@@ -1,5 +1,7 @@
 // domainVault.js - Domain Vault tab functionality
 
+console.log('🎴 DomainVault.js loaded successfully!');
+
 // Retrieve domain vault data from localStorage or initialize with defaults
 let domainVaultData;
 try {
