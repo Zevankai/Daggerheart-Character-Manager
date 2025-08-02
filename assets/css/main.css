@@ -588,12 +588,13 @@
  .circle.gold.active { background: #ffd700; }
  
  nav.tabs {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    margin-top: 2rem;
-    flex-wrap: wrap;
- }
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+  position: relative;
+}
  
  nav.tabs button {
     background: rgba(255,255,255,0.2);
@@ -5659,19 +5660,62 @@
 
 /* ===== MULTI-PANEL LAYOUT STYLES ===== */
 
+/* Multi-Panel Menu Button */
+.multi-panel-menu-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-color);
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 8px 12px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  margin-left: 10px;
+}
+
+.multi-panel-menu-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.multi-panel-menu-btn.active {
+  background: rgba(255, 215, 0, 0.2);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+/* Multi-Panel Menu Dropdown */
+.multi-panel-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--glass-background-color);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  min-width: 300px;
+  display: none;
+  margin-top: 5px;
+}
+
+.multi-panel-menu.show {
+  display: block;
+}
+
 /* Panel Controls */
 .panel-controls {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 15px;
-  align-items: center;
-  justify-content: center;
-  padding: 15px;
-  background: var(--glass-background-color);
+  padding: 20px;
+  background: transparent;
   border-radius: 8px;
-  margin: 10px 0;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 0;
+  backdrop-filter: none;
+  border: none;
 }
 
 .panel-control-group {
@@ -5928,6 +5972,22 @@
 
 .single-panel-active nav.tabs {
   display: flex;
+}
+
+/* Panel Actions */
+.panel-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 10px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.panel-actions .button {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 0.85em;
 }
 
 /* Ensure cloned content inherits proper styles */

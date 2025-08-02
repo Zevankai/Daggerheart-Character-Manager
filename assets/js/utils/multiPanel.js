@@ -27,6 +27,26 @@ class MultiPanelManager {
     }
 
     setupEventListeners() {
+        // Multi-panel menu button
+        const menuBtn = document.getElementById('multi-panel-menu-btn');
+        const menu = document.getElementById('multi-panel-menu');
+        
+        if (menuBtn && menu) {
+            menuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                menu.classList.toggle('show');
+                menuBtn.classList.toggle('active');
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!menu.contains(e.target) && !menuBtn.contains(e.target)) {
+                    menu.classList.remove('show');
+                    menuBtn.classList.remove('active');
+                }
+            });
+        }
+
         // Panel selection controls
         document.getElementById('left-panel-select').addEventListener('change', (e) => {
             this.setPanel('left', e.target.value);
