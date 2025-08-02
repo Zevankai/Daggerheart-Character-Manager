@@ -131,7 +131,7 @@ function renderDomainVault() {
             <div class="card-management-section">
                 <div class="card-management-header">
                     <h3>Card Collection</h3>
-                    <button class="button primary-btn" id="create-card-btn">Create New Card</button>
+                    <button class="button primary-btn" id="create-card-btn" onclick="console.log('Button clicked!'); console.log('showCreateCardModal function:', typeof showCreateCardModal); if(typeof showCreateCardModal === 'function') { showCreateCardModal(); } else { console.error('showCreateCardModal is not a function!'); }">Create New Card</button>
                 </div>
                 
 
