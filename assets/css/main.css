@@ -5671,6 +5671,7 @@
   font-size: 16px;
   transition: all 0.3s ease;
   margin-left: 10px;
+  display: none; /* Hidden by default since we now have drag & drop */
 }
 
 .multi-panel-menu-btn:hover {
@@ -6028,4 +6029,205 @@
   border-color: var(--accent-color);
   outline: none;
   box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.2);
+}
+
+/* ===== DRAG & DROP DROP ZONES ===== */
+
+/* Drop Zones */
+.drop-zone {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 200px;
+  background: rgba(255, 215, 0, 0.1);
+  border: 3px dashed rgba(255, 215, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.drop-zone.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.drop-zone.drag-over {
+  background: rgba(255, 215, 0, 0.2);
+  border-color: var(--accent-color);
+  border-width: 4px;
+  transform: scale(1.02);
+}
+
+.left-drop-zone {
+  left: 0;
+  border-right: none;
+  border-radius: 0 8px 8px 0;
+}
+
+.right-drop-zone {
+  right: 0;
+  border-left: none;
+  border-radius: 8px 0 0 8px;
+}
+
+.drop-zone-content {
+  text-align: center;
+  color: var(--text-color);
+  padding: 20px;
+}
+
+.drop-zone-text {
+  font-size: 1.1em;
+  font-weight: 600;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  display: block;
+  margin-bottom: 10px;
+}
+
+.drop-zone::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 215, 0, 0.2);
+  border-radius: 50%;
+  border: 2px dashed rgba(255, 215, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: var(--accent-color);
+}
+
+.left-drop-zone::before {
+  content: '←';
+}
+
+.right-drop-zone::before {
+  content: '→';
+}
+
+.drop-zone.drag-over::before {
+  background: rgba(255, 215, 0, 0.3);
+  border-color: var(--accent-color);
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+/* Make tab buttons show drag cursor */
+nav.tabs button[draggable="true"] {
+  cursor: grab;
+  position: relative;
+}
+
+nav.tabs button[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+/* Add drag handle indicator */
+nav.tabs button[draggable="true"]::after {
+  content: '⋮⋮';
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 8px;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1;
+  pointer-events: none;
+}
+
+nav.tabs button[draggable="true"]:hover::after {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Drag instruction */
+.drag-instruction {
+  text-align: center;
+  margin: 10px 0;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.drag-instruction:hover {
+  opacity: 1;
+}
+
+.drag-hint {
+  font-size: 0.9em;
+  color: var(--text-color);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 8px 16px;
+  border-radius: 20px;
+  display: inline-block;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Hide instruction when in multi-panel mode */
+.multi-panel-active .drag-instruction {
+  display: none;
+}
+
+/* Drop notification animations */
+@keyframes slideInDown {
+  from {
+    transform: translateX(-50%) translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutUp {
+  from {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-50%) translateY(-100%);
+    opacity: 0;
+  }
+}
+
+/* Responsive drop zones */
+@media (max-width: 768px) {
+  .drop-zone {
+    width: 120px;
+  }
+  
+  .drop-zone-text {
+    font-size: 0.9em;
+  }
+  
+  .drop-zone::before {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .drop-zone {
+    width: 80px;
+  }
+  
+  .drop-zone-text {
+    font-size: 0.8em;
+  }
+  
+  .drop-zone::before {
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
+  }
 }

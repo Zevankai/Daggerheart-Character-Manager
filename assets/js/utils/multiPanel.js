@@ -98,6 +98,18 @@ class MultiPanelManager {
             this.panels[position].id = panelId;
             this.panels[position].content = this.getPanelContent(panelId);
             
+            // If this is the first panel being set and we're not in multi-panel mode,
+            // automatically enable multi-panel mode and set the current active tab as center
+            if (!this.isMultiPanelMode) {
+                const activeTab = document.querySelector('nav.tabs button.active');
+                if (activeTab) {
+                    const activePanelId = activeTab.dataset.target;
+                    if (activePanelId !== panelId) {
+                        this.panels.center = { id: activePanelId, content: this.getPanelContent(activePanelId) };
+                    }
+                }
+            }
+            
             this.updateLayout();
             this.savePanelState();
             this.initializePanelContent(panelId);
@@ -208,6 +220,15 @@ class MultiPanelManager {
         
         // Update toggle button text
         this.updateToggleButtonText();
+        
+        // Update drag & drop system
+        this.updateDragDropSystem();
+    }
+
+    updateDragDropSystem() {
+        if (window.dragDropPanelManager) {
+            window.dragDropPanelManager.updateDropZoneVisibility();
+        }
     }
 
     updateSelectDropdowns() {
