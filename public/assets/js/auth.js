@@ -960,33 +960,46 @@ class ZeviAuth {
   }
 
   async saveCurrentCharacterData() {
-    console.log('💾 saveCurrentCharacterData called');
-    
-    // Get the current character ID
-    let currentCharacterId = window.app?.characterData?.getCurrentCharacterId();
-    if (!currentCharacterId) {
-      currentCharacterId = localStorage.getItem('zevi-current-character-id');
-    }
-    
-    console.log('📋 Current character ID:', currentCharacterId);
-    
-    if (!currentCharacterId) {
-      console.log('❌ No current character ID found');
-      return; // No current character to save
-    }
-    
     const debugInfo = document.getElementById('debug-info');
     
     try {
-      if (debugInfo) debugInfo.textContent = `Status: Saving character ${currentCharacterId}...`;
-      console.log('🔄 Starting save process...');
+      console.log('💾 saveCurrentCharacterData called');
+      if (debugInfo) {
+        debugInfo.textContent = `Status: SAVE FUNCTION CALLED`;
+        debugInfo.style.backgroundColor = 'rgba(255, 255, 0, 0.2)';
+        debugInfo.style.color = '#FFFF00';
+      }
+      
+      // Get the current character ID
+      let currentCharacterId = window.app?.characterData?.getCurrentCharacterId();
+      if (!currentCharacterId) {
+        currentCharacterId = localStorage.getItem('zevi-current-character-id');
+      }
+      
+      console.log('📋 Current character ID:', currentCharacterId);
+      
+      if (!currentCharacterId) {
+        console.log('❌ No current character ID found');
+        if (debugInfo) {
+          debugInfo.textContent = `Status: ❌ No character ID found`;
+          debugInfo.style.backgroundColor = 'rgba(255, 0, 0, 0.2)';
+          debugInfo.style.color = '#FF6666';
+        }
+        return;
+      }
+      
+      if (debugInfo) {
+        debugInfo.textContent = `Status: Found character ID ${currentCharacterId}, collecting data...`;
+        debugInfo.style.backgroundColor = 'rgba(0, 0, 255, 0.2)';
+        debugInfo.style.color = '#6666FF';
+      }
       
       // Get the character name from the UI
       const nameElement = document.querySelector('.character-name-editor');
       const characterName = nameElement?.textContent;
       console.log('📝 Character name from UI:', characterName);
       
-      // Try to collect character data manually first
+      // Collect character data
       let characterData = null;
       if (window.app?.autoSave?.collectCurrentCharacterData) {
         characterData = window.app.autoSave.collectCurrentCharacterData();
@@ -997,37 +1010,56 @@ class ZeviAuth {
           characterData.name = nameElement.textContent;
           console.log('📝 Updated character name to:', characterData.name);
         }
+        
+        if (debugInfo) {
+          debugInfo.textContent = `Status: Data collected for "${characterData.name || 'Unnamed'}", saving to server...`;
+          debugInfo.style.backgroundColor = 'rgba(255, 165, 0, 0.2)';
+          debugInfo.style.color = '#FFA500';
+        }
       } else {
         console.log('❌ Cannot collect character data - collectCurrentCharacterData not available');
+        if (debugInfo) {
+          debugInfo.textContent = `Status: ❌ Cannot collect character data`;
+          debugInfo.style.backgroundColor = 'rgba(255, 0, 0, 0.2)';
+          debugInfo.style.color = '#FF6666';
+        }
         return;
       }
       
       // Try to save using the character data system
       if (window.app?.characterData?.saveCharacterData && characterData) {
-        console.log('💾 Attempting to save character data...');
-        await window.app.characterData.saveCharacterData(currentCharacterId, characterData);
-        console.log('✅ Character data saved successfully');
+        console.log('💾 Attempting to save character data to server...');
         
-        // Show success message and KEEP it visible
+        // Call the save function
+        const result = await window.app.characterData.saveCharacterData(currentCharacterId, characterData);
+        console.log('✅ Save result:', result);
+        
+        // Show success message
         if (debugInfo) {
-          debugInfo.textContent = `Status: ✅ Character "${characterData.name || 'Unnamed'}" saved successfully!`;
+          debugInfo.textContent = `Status: ✅ "${characterData.name || 'Unnamed'}" SAVED TO SERVER!`;
           debugInfo.style.backgroundColor = 'rgba(0, 255, 0, 0.2)';
           debugInfo.style.color = '#00FF00';
         }
         
-        // Don't refresh the display immediately - let the user see the success message
-        console.log('✅ Save completed - NOT refreshing display to preserve success message');
-        return; // Exit here to prevent the refresh
+        console.log('✅ Save completed successfully');
+        return;
         
       } else {
         console.log('❌ Cannot save - saveCharacterData not available or no data collected');
-        if (debugInfo) debugInfo.textContent = `Status: Save failed - missing save system`;
+        console.log('- saveCharacterData available:', !!window.app?.characterData?.saveCharacterData);
+        console.log('- characterData available:', !!characterData);
+        
+        if (debugInfo) {
+          debugInfo.textContent = `Status: ❌ Save system not available`;
+          debugInfo.style.backgroundColor = 'rgba(255, 0, 0, 0.2)';
+          debugInfo.style.color = '#FF6666';
+        }
       }
       
     } catch (error) {
       console.error('❌ Failed to save current character data:', error);
       if (debugInfo) {
-        debugInfo.textContent = `Status: Save failed - ${error.message}`;
+        debugInfo.textContent = `Status: ❌ Save error: ${error.message}`;
         debugInfo.style.backgroundColor = 'rgba(255, 0, 0, 0.2)';
         debugInfo.style.color = '#FF6666';
       }
