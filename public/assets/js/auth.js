@@ -292,7 +292,11 @@ class ZeviAuth {
       // Initialize characters tab when clicked
       if (e.target.dataset?.target === 'characters-tab-content') {
         if (this.api.isLoggedIn()) {
-          setTimeout(() => this.initializeCharactersTab(), 100);
+          setTimeout(async () => {
+            await this.initializeCharactersTab();
+            // Always update current character display when opening characters tab
+            await this.updateCurrentCharacterDisplay();
+          }, 100);
         }
       }
     });
@@ -662,8 +666,14 @@ class ZeviAuth {
       // Reload the characters list
       await this.loadCharactersList();
       
-      // Switch to the new character if manual creation
+      // Set as current character and switch to it if manual creation
       if (isManual) {
+        // Make sure we set this as the current character
+        localStorage.setItem('zevi-current-character-id', response.character.id.toString());
+        if (window.app?.characterData?.setCurrentCharacterId) {
+          window.app.characterData.setCurrentCharacterId(response.character.id.toString());
+        }
+        
         await this.loadCharacter(response.character.id);
       }
       
@@ -726,7 +736,6 @@ class ZeviAuth {
         this.renderCharacterGrid(characters);
         
         // Also update current character display when we load the list
-        console.log('🔄 Characters loaded, updating current character display...');
         await this.updateCurrentCharacterDisplay();
       }
       
@@ -741,21 +750,17 @@ class ZeviAuth {
 
   renderCharacterGrid(characters) {
     const grid = document.getElementById('character-grid');
-    const currentCharacterId = window.app?.characterData?.getCurrentCharacterId();
-    
-    console.log('🎨 Rendering character grid');
-    console.log('📍 Current character ID for highlighting:', currentCharacterId);
-    console.log('📍 Characters to render:', characters);
+    // Try both methods to get current character ID
+    let currentCharacterId = window.app?.characterData?.getCurrentCharacterId();
+    if (!currentCharacterId) {
+      currentCharacterId = localStorage.getItem('zevi-current-character-id');
+    }
     
     grid.innerHTML = characters.map(char => {
       const isCurrentChar = char.id.toString() === currentCharacterId;
       const charData = char.character_data || {};
       const avatar = charData.name ? charData.name.charAt(0).toUpperCase() : '?';
       const subtitle = [charData.ancestry, charData.class, charData.subclass].filter(Boolean).join(' ');
-      
-      if (isCurrentChar) {
-        console.log('⭐ Current character found:', char.id, charData.name);
-      }
       
       return `
         <div class="character-card ${isCurrentChar ? 'current' : ''}" data-character-id="${char.id}">
@@ -793,23 +798,20 @@ class ZeviAuth {
 
   async loadCharacter(characterId) {
     try {
-      console.log('🔄 Loading character:', characterId);
-      
       // Fetch character data from API
       const response = await this.api.getCharacter(characterId);
       const character = response.character;
-      console.log('📦 Fetched character data:', character);
       
       // Load character data into the application
       if (window.app && window.app.characterData) {
-        console.log('🎯 Switching to character in app...');
+        // Make sure we set this as the current character first
+        localStorage.setItem('zevi-current-character-id', characterId.toString());
+        if (window.app.characterData.setCurrentCharacterId) {
+          window.app.characterData.setCurrentCharacterId(characterId.toString());
+        }
+        
         // Use the app controller's switch to character method
         await window.app.switchToCharacter(characterId.toString());
-        console.log('✅ Character loaded successfully');
-        
-        // Verify the current character ID was set
-        const newCurrentId = window.app.characterData.getCurrentCharacterId();
-        console.log('🔍 New current character ID:', newCurrentId);
         
         // Switch back to main character sheet view (away from characters tab)
         const downtimeTab = document.querySelector('[data-target="downtime-tab-content"]');
@@ -818,7 +820,6 @@ class ZeviAuth {
         }
         
         // Update the current character display
-        console.log('🔄 Updating current character display...');
         await this.updateCurrentCharacterDisplay();
       }
       
@@ -876,55 +877,72 @@ class ZeviAuth {
   }
 
   async updateCurrentCharacterDisplay() {
-    const currentCharacterId = window.app?.characterData?.getCurrentCharacterId();
     const currentCharacterSection = document.getElementById('current-character-section');
-    
-    console.log('🔍 updateCurrentCharacterDisplay called');
-    console.log('📍 currentCharacterId:', currentCharacterId);
-    console.log('📍 currentCharacterSection:', currentCharacterSection);
+    const debugInfo = document.getElementById('debug-info');
     
     if (!currentCharacterSection) {
-      console.log('❌ No current character section found');
       return;
     }
     
+    // Show status
+    if (debugInfo) debugInfo.textContent = 'Status: Getting current character ID...';
+    
+    // Try multiple ways to get current character ID
+    let currentCharacterId = null;
+    
+    // Method 1: From app.characterData
+    if (window.app?.characterData?.getCurrentCharacterId) {
+      currentCharacterId = window.app.characterData.getCurrentCharacterId();
+    }
+    
+    // Method 2: From localStorage directly
     if (!currentCharacterId) {
-      console.log('❌ No current character ID');
-      currentCharacterSection.style.display = 'none';
+      currentCharacterId = localStorage.getItem('zevi-current-character-id');
+    }
+    
+    if (debugInfo) debugInfo.textContent = `Status: Current ID = ${currentCharacterId || 'none'}`;
+    
+    if (!currentCharacterId) {
+      // Show "no character" state
+      document.getElementById('current-character-name').textContent = 'No Character Loaded';
+      document.getElementById('current-character-details').textContent = 'Create a character to get started';
+      document.getElementById('current-character-avatar').textContent = '?';
+      document.getElementById('current-character-level').textContent = 'Level -';
+      document.getElementById('current-character-last-saved').textContent = 'Not saved';
+      if (debugInfo) debugInfo.textContent = 'Status: No current character set';
       return;
     }
     
     try {
+      if (debugInfo) debugInfo.textContent = `Status: Fetching character ${currentCharacterId}...`;
+      
       // Try to get current character from server
-      console.log('🌐 Fetching character from server:', currentCharacterId);
       const response = await this.api.getCharacter(currentCharacterId);
       const character = response.character;
       const characterData = character.character_data || {};
-      console.log('📦 Server response:', { character, characterData });
       
-      // Show current character section
-      currentCharacterSection.style.display = 'block';
+      if (debugInfo) debugInfo.textContent = `Status: Loaded ${characterData.name || 'Unnamed'}`;
       
-      // Update avatar
+      // Update display
       const avatar = characterData.name ? characterData.name.charAt(0).toUpperCase() : '?';
       document.getElementById('current-character-avatar').textContent = avatar;
-      
-      // Update name and details
       document.getElementById('current-character-name').textContent = characterData.name || 'Unnamed Character';
       
       const subtitle = [characterData.ancestry, characterData.class, characterData.subclass].filter(Boolean).join(' ');
       document.getElementById('current-character-details').textContent = subtitle || 'No class info';
-      
-      // Update level
       document.getElementById('current-character-level').textContent = `Level ${characterData.level || 1}`;
       
-      // Update last saved
-      document.getElementById('current-character-last-saved').textContent = character.updated_at ? 
-        `Last saved: ${new Date(character.updated_at).toLocaleDateString()}` : 'Not saved';
+      const lastSaved = character.updated_at ? 
+        new Date(character.updated_at).toLocaleDateString() : 'Never';
+      document.getElementById('current-character-last-saved').textContent = `Last saved: ${lastSaved}`;
       
     } catch (error) {
-      console.warn('Could not load current character data:', error);
-      currentCharacterSection.style.display = 'none';
+      if (debugInfo) debugInfo.textContent = `Status: Error loading character - ${error.message}`;
+      
+      // Show error state but keep the character ID info
+      document.getElementById('current-character-name').textContent = 'Character Load Error';
+      document.getElementById('current-character-details').textContent = 'Could not load character data';
+      document.getElementById('current-character-avatar').textContent = '⚠️';
     }
   }
 
