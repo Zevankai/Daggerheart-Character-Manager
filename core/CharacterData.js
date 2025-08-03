@@ -163,6 +163,11 @@ class CharacterData {
 
     // Save character data
     async saveCharacterData(characterId, data) {
+        // Show saving status if available
+        if (window.saveStatus) {
+            window.saveStatus.showSaving();
+        }
+        
         const characterData = {
             ...data,
             // Capture current appearance settings
@@ -184,9 +189,21 @@ class CharacterData {
             try {
                 await window.zeviAPI.autoSaveCharacter(characterId, characterData);
                 console.log('Character data saved to cloud:', characterId);
+                
+                // Show success status
+                if (window.saveStatus) {
+                    window.saveStatus.showSuccess();
+                }
+                
                 return true;
             } catch (error) {
                 console.warn('Cloud save failed, falling back to localStorage:', error);
+                
+                // Show warning about fallback
+                if (window.saveStatus) {
+                    window.saveStatus.showWarning('Cloud save failed, using local storage');
+                }
+                
                 // Fall through to localStorage save
             }
         }
@@ -196,9 +213,21 @@ class CharacterData {
         try {
             localStorage.setItem(saveKey, JSON.stringify(characterData));
             console.log('Character data saved locally:', characterId);
+            
+            // Show success status for local save
+            if (window.saveStatus) {
+                window.saveStatus.showSuccess();
+            }
+            
             return true;
         } catch (error) {
             console.error('Failed to save character data:', error);
+            
+            // Show error status
+            if (window.saveStatus) {
+                window.saveStatus.showError('Save failed');
+            }
+            
             return false;
         }
     }

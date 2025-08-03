@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Save Function Test - Mobile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .test-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .test-button:hover {
+            background: #0056b3;
+        }
+        
+        .test-button.success {
+            background: #28a745;
+        }
+        
+        .test-button.error {
+            background: #dc3545;
+        }
+        
+        .status-display {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        
+        .log-success { background: #d4edda; color: #155724; }
+        .log-error { background: #f8d7da; color: #721c24; }
+        .log-warning { background: #fff3cd; color: #856404; }
+        .log-info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Save Function Test</h1>
+        <p>This page helps you test the save function on mobile without needing console access.</p>
+        
+        <div class="test-section">
+            <h3>🔧 Environment Check</h3>
+            <button class="test-button" onclick="checkEnvironment()">Check Environment</button>
+            <div id="env-status" class="status-display">Click to check environment...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔐 Authentication Test</h3>
+            <button class="test-button" onclick="testAuth()">Test Authentication</button>
+            <div id="auth-status" class="status-display">Click to test authentication...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>💾 Save Function Test</h3>
+            <button class="test-button" onclick="testSave()">Test Save</button>
+            <button class="test-button" onclick="testAutoSave()">Test Auto-Save</button>
+            <div id="save-status" class="status-display">Click to test save function...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📋 Character Data Test</h3>
+            <button class="test-button" onclick="testCharacterData()">Test Character Data</button>
+            <div id="character-status" class="status-display">Click to test character data...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📝 Test Logs</h3>
+            <button class="test-button" onclick="clearLogs()">Clear Logs</button>
+            <div id="test-logs" class="status-display">No logs yet...</div>
+        </div>
+    </div>
+
+    <script>
+        // Test logging function
+        function addLog(message, type = 'info') {
+            const logsContainer = document.getElementById('test-logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logsContainer.appendChild(logEntry);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('test-logs').innerHTML = 'Logs cleared...';
+        }
+
+        // Environment check
+        function checkEnvironment() {
+            const status = document.getElementById('env-status');
+            status.innerHTML = 'Checking environment...';
+            
+            const checks = [];
+            
+            // Check if API is available
+            if (window.zeviAPI) {
+                checks.push('✅ ZeviAPI available');
+            } else {
+                checks.push('❌ ZeviAPI not available');
+            }
+            
+            // Check if app is available
+            if (window.app) {
+                checks.push('✅ App controller available');
+            } else {
+                checks.push('❌ App controller not available');
+            }
+            
+            // Check if character data is available
+            if (window.app?.characterData) {
+                checks.push('✅ Character data available');
+            } else {
+                checks.push('❌ Character data not available');
+            }
+            
+            // Check if auto save is available
+            if (window.app?.autoSave) {
+                checks.push('✅ Auto save available');
+            } else {
+                checks.push('❌ Auto save not available');
+            }
+            
+            status.innerHTML = checks.join('<br>');
+            addLog('Environment check completed', 'info');
+        }
+
+        // Authentication test
+        function testAuth() {
+            const status = document.getElementById('auth-status');
+            status.innerHTML = 'Testing authentication...';
+            
+            if (!window.zeviAPI) {
+                status.innerHTML = '❌ ZeviAPI not available';
+                addLog('Authentication test failed: ZeviAPI not available', 'error');
+                return;
+            }
+            
+            const isLoggedIn = window.zeviAPI.isLoggedIn();
+            if (isLoggedIn) {
+                status.innerHTML = '✅ User is logged in';
+                addLog('Authentication test passed: User is logged in', 'success');
+            } else {
+                status.innerHTML = '❌ User is not logged in';
+                addLog('Authentication test failed: User is not logged in', 'error');
+            }
+        }
+
+        // Save function test
+        function testSave() {
+            const status = document.getElementById('save-status');
+            status.innerHTML = 'Testing save function...';
+            
+            if (!window.app?.characterData?.saveCharacterData) {
+                status.innerHTML = '❌ Save function not available';
+                addLog('Save test failed: Save function not available', 'error');
+                return;
+            }
+            
+            // Get current character ID
+            const currentCharacterId = window.app.characterData.getCurrentCharacterId();
+            if (!currentCharacterId) {
+                status.innerHTML = '❌ No current character ID';
+                addLog('Save test failed: No current character ID', 'error');
+                return;
+            }
+            
+            // Create test data
+            const testData = {
+                name: 'Test Character',
+                testField: 'This is a test save',
+                timestamp: new Date().toISOString()
+            };
+            
+            addLog(`Testing save with character ID: ${currentCharacterId}`, 'info');
+            
+            // Try to save
+            window.app.characterData.saveCharacterData(currentCharacterId, testData)
+                .then(result => {
+                    if (result) {
+                        status.innerHTML = '✅ Save successful!';
+                        addLog('Save test passed: Save successful', 'success');
+                    } else {
+                        status.innerHTML = '❌ Save returned false';
+                        addLog('Save test failed: Save returned false', 'error');
+                    }
+                })
+                .catch(error => {
+                    status.innerHTML = `❌ Save error: ${error.message}`;
+                    addLog(`Save test failed: ${error.message}`, 'error');
+                });
+        }
+
+        // Auto-save test
+        function testAutoSave() {
+            const status = document.getElementById('save-status');
+            status.innerHTML = 'Testing auto-save...';
+            
+            if (!window.app?.autoSave?.collectCurrentCharacterData) {
+                status.innerHTML = '❌ Auto-save not available';
+                addLog('Auto-save test failed: Auto-save not available', 'error');
+                return;
+            }
+            
+            try {
+                const characterData = window.app.autoSave.collectCurrentCharacterData();
+                status.innerHTML = '✅ Auto-save data collection successful';
+                addLog('Auto-save test passed: Data collected successfully', 'success');
+                addLog(`Collected data keys: ${Object.keys(characterData).join(', ')}`, 'info');
+            } catch (error) {
+                status.innerHTML = `❌ Auto-save error: ${error.message}`;
+                addLog(`Auto-save test failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Character data test
+        function testCharacterData() {
+            const status = document.getElementById('character-status');
+            status.innerHTML = 'Testing character data...';
+            
+            if (!window.app?.characterData) {
+                status.innerHTML = '❌ Character data not available';
+                addLog('Character data test failed: Character data not available', 'error');
+                return;
+            }
+            
+            const checks = [];
+            
+            // Check current character ID
+            const currentId = window.app.characterData.getCurrentCharacterId();
+            if (currentId) {
+                checks.push(`✅ Current character ID: ${currentId}`);
+                addLog(`Current character ID: ${currentId}`, 'info');
+            } else {
+                checks.push('❌ No current character ID');
+                addLog('No current character ID found', 'warning');
+            }
+            
+            // Check if we can get character data
+            if (currentId) {
+                try {
+                    const data = window.app.characterData.getCharacterData(currentId);
+                    checks.push('✅ Character data retrieval successful');
+                    addLog(`Character data keys: ${Object.keys(data).join(', ')}`, 'info');
+                } catch (error) {
+                    checks.push(`❌ Character data retrieval failed: ${error.message}`);
+                    addLog(`Character data retrieval failed: ${error.message}`, 'error');
+                }
+            }
+            
+            status.innerHTML = checks.join('<br>');
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            addLog('Test page loaded', 'info');
+            
+            // Wait a bit for the main app to initialize
+            setTimeout(() => {
+                addLog('Running initial environment check...', 'info');
+                checkEnvironment();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
