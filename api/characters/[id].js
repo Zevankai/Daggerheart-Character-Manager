@@ -26,6 +26,12 @@ async function getCharacter(req, res) {
 
 async function updateCharacter(req, res) {
   try {
+    console.log('🔄 updateCharacter called with:', { 
+      id: req.query.id, 
+      body: req.body, 
+      user: req.user.id 
+    });
+    
     const sql = getDb();
     const { id } = req.query;
     const { name, characterData } = req.body;
@@ -40,38 +46,47 @@ async function updateCharacter(req, res) {
       return res.status(404).json({ error: 'Character not found' });
     }
     
-    // Build update query dynamically based on provided fields
-    const updates = [];
-    const values = [];
+    // Build update query using proper Neon serverless syntax
+    let updateQuery;
+    let updateParams = [];
     
-    if (name !== undefined) {
-      updates.push('name = $' + (values.length + 1));
-      values.push(name.trim());
-    }
-    
-    if (characterData !== undefined) {
-      updates.push('character_data = $' + (values.length + 1));
-      values.push(JSON.stringify(characterData));
-    }
-    
-    if (updates.length === 0) {
+    if (name !== undefined && characterData !== undefined) {
+      updateQuery = sql`
+        UPDATE characters 
+        SET name = ${name.trim()}, character_data = ${JSON.stringify(characterData)}, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ${id} AND user_id = ${req.user.id}
+        RETURNING id, name, character_data, is_shared, share_token, created_at, updated_at
+      `;
+    } else if (name !== undefined) {
+      updateQuery = sql`
+        UPDATE characters 
+        SET name = ${name.trim()}, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ${id} AND user_id = ${req.user.id}
+        RETURNING id, name, character_data, is_shared, share_token, created_at, updated_at
+      `;
+    } else if (characterData !== undefined) {
+      updateQuery = sql`
+        UPDATE characters 
+        SET character_data = ${JSON.stringify(characterData)}, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ${id} AND user_id = ${req.user.id}
+        RETURNING id, name, character_data, is_shared, share_token, created_at, updated_at
+      `;
+    } else {
       return res.status(400).json({ error: 'No valid fields to update' });
     }
     
-    updates.push('updated_at = CURRENT_TIMESTAMP');
-    values.push(id, req.user.id);
+    const result = await updateQuery;
     
-    const result = await sql`
-      UPDATE characters 
-      SET ${sql(updates.join(', '))}
-      WHERE id = ${id} AND user_id = ${req.user.id}
-      RETURNING id, name, character_data, is_shared, share_token, created_at, updated_at
-    `;
-    
+    console.log('✅ Character updated successfully:', result[0]);
     res.status(200).json({ character: result[0] });
   } catch (error) {
-    console.error('Error updating character:', error);
-    res.status(500).json({ error: 'Failed to update character' });
+    console.error('❌ Error updating character:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code
+    });
+    res.status(500).json({ error: 'Failed to update character', details: error.message });
   }
 }
 

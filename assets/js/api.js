@@ -46,9 +46,22 @@ class ZeviAPI {
       },
     };
 
+    console.log('🌐 API Request:', {
+      url,
+      method: config.method || 'GET',
+      headers: config.headers,
+      body: config.body ? JSON.parse(config.body) : undefined
+    });
+
     try {
       const response = await fetch(url, config);
       const data = await response.json();
+      
+      console.log('📡 API Response:', {
+        status: response.status,
+        ok: response.ok,
+        data
+      });
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -131,10 +144,18 @@ class ZeviAPI {
   }
 
   async updateCharacter(id, updates) {
-    return await this.makeRequest(`/characters/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(updates),
-    });
+    console.log('🔄 API updateCharacter called with:', { id, updates });
+    try {
+      const result = await this.makeRequest(`/characters/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(updates),
+      });
+      console.log('✅ API updateCharacter success:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ API updateCharacter failed:', error);
+      throw error;
+    }
   }
 
   async deleteCharacter(id) {
