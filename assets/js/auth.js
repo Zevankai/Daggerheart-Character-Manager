@@ -8,6 +8,7 @@ class ZeviAuth {
 
   init() {
     this.createAuthUI();
+    this.createUserMenu();
     this.bindEvents();
     this.checkAuthStatus();
   }
@@ -98,17 +99,7 @@ class ZeviAuth {
         </div>
       </div>
 
-      <!-- User menu for logged-in users -->
-      <div id="user-menu" class="user-menu" style="display: none;">
-        <div class="user-info">
-          <span id="username-display"></span>
-          <button id="logout-btn" class="logout-btn">Logout</button>
-        </div>
-        <div class="character-management">
-          <button id="character-list-btn" class="char-mgmt-btn">My Characters</button>
-          <button id="migration-btn" class="char-mgmt-btn">Import Local Data</button>
-        </div>
-      </div>
+
     `;
 
     // Add to body
@@ -238,39 +229,7 @@ class ZeviAuth {
           border: 1px solid #28a745;
         }
 
-        .user-menu {
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          background: rgba(0, 0, 0, 0.8);
-          padding: 1rem;
-          border-radius: 10px;
-          z-index: 1000;
-          color: white;
-        }
 
-        .user-info {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          margin-bottom: 1rem;
-        }
-
-        .logout-btn, .char-mgmt-btn {
-          background: var(--accent-color);
-          color: white;
-          border: none;
-          padding: 0.5rem 1rem;
-          border-radius: 5px;
-          cursor: pointer;
-          margin: 0.25rem;
-        }
-
-        .char-mgmt-btn {
-          display: block;
-          width: 100%;
-          margin-bottom: 0.5rem;
-        }
 
         .auth-links {
           text-align: center;
@@ -290,6 +249,76 @@ class ZeviAuth {
     `;
 
     document.head.insertAdjacentHTML('beforeend', authStyles);
+  }
+
+  createUserMenu() {
+    // Create user menu HTML and inject it into the header
+    const userMenuHTML = `
+      <div id="user-menu" class="user-menu" style="display: none;">
+        <span id="username-display">User</span>
+        <div class="user-menu-dropdown">
+          <button onclick="window.zeviAuth.showCharacterList()">My Characters</button>
+          <button onclick="window.zeviAuth.logout()">Logout</button>
+        </div>
+      </div>
+    `;
+    
+    // Add user menu styles if not already added
+    if (!document.getElementById('user-menu-styles')) {
+      const userMenuStyles = `
+        <style id="user-menu-styles">
+          .user-menu {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            color: var(--text-color);
+            font-size: 14px;
+            margin-top: 10px;
+          }
+          
+          .user-menu:hover .user-menu-dropdown {
+            display: block;
+          }
+          
+          .user-menu-dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 5px;
+            padding: 10px;
+            min-width: 150px;
+            z-index: 1000;
+          }
+          
+          .user-menu-dropdown button {
+            display: block;
+            width: 100%;
+            padding: 8px 12px;
+            margin: 2px 0;
+            background: none;
+            border: 1px solid var(--glass-border);
+            color: var(--text-color);
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 12px;
+          }
+          
+          .user-menu-dropdown button:hover {
+            background: var(--glass-border);
+          }
+        </style>
+      `;
+      document.head.insertAdjacentHTML('beforeend', userMenuStyles);
+    }
+    
+    // Inject user menu into header container
+    const userMenuContainer = document.getElementById('user-menu-container');
+    if (userMenuContainer) {
+      userMenuContainer.innerHTML = userMenuHTML;
+    }
   }
 
   bindEvents() {
@@ -317,10 +346,7 @@ class ZeviAuth {
       this.switchTab('login');
     });
 
-    // User menu
-    document.getElementById('logout-btn').addEventListener('click', () => this.logout());
-    document.getElementById('character-list-btn').addEventListener('click', () => this.showCharacterList());
-    document.getElementById('migration-btn').addEventListener('click', () => this.migrateLocalData());
+    // User menu events are handled via inline onclick handlers
 
     // Show auth on character save attempt if not logged in
     document.addEventListener('click', (e) => {
@@ -381,6 +407,14 @@ class ZeviAuth {
         this.hideAuthModal();
         this.updateUIForLoggedInUser();
         this.checkForMigration();
+        // Show character sheet after login
+        if (document.querySelector('.glass')) {
+          document.querySelector('.glass').style.display = 'block';
+        }
+        // Initialize the character sheet if not already done
+        if (typeof initializeIndexPage === 'function') {
+          initializeIndexPage();
+        }
       }, 1000);
       
     } catch (error) {
@@ -418,6 +452,11 @@ class ZeviAuth {
     this.currentUser = null;
     localStorage.removeItem('zevi-current-user');
     this.updateUIForLoggedOutUser();
+    // Hide character sheet and show login modal
+    if (document.querySelector('.glass')) {
+      document.querySelector('.glass').style.display = 'none';
+    }
+    this.showAuthModal();
   }
 
   checkAuthStatus() {

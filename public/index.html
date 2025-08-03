@@ -45,6 +45,8 @@
 
    <div class="right-info">
     <span id="toggleTheme" style="cursor: pointer;">🌙</span><br />
+    <!-- User menu will be injected here by auth system -->
+    <div id="user-menu-container"></div>
    </div>
    
    <div class="header-bottom-center">
@@ -563,8 +565,23 @@
   
   // Check if user has a current character loaded
   document.addEventListener('DOMContentLoaded', () => {
-    // Short delay to ensure character manager is loaded
-    setTimeout(initializeIndexPage, 50);
+    // Wait for auth system to initialize first
+    setTimeout(() => {
+      // Check if auth system is available and handle authentication flow
+      if (window.zeviAuth) {
+        // If user is logged in, proceed with character sheet
+        if (window.zeviAuth.api.isLoggedIn()) {
+          initializeIndexPage();
+        } else {
+          // Hide character sheet and show login
+          document.querySelector('.glass').style.display = 'none';
+          window.zeviAuth.showAuthModal();
+        }
+      } else {
+        // Fallback: initialize normally if auth system not available
+        initializeIndexPage();
+      }
+    }, 100); // Slightly longer delay to ensure auth is ready
   });
  </script>
 </html>
