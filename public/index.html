@@ -297,26 +297,35 @@
         💡 Ready to save your character progress
       </div>
       
+      <!-- DEBUG: Test visibility -->
+      <div style="background: purple; color: white; padding: 20px; text-align: center; font-size: 24px; margin: 20px 0; border: 5px solid yellow;">
+        🚨 DEBUG: CAN YOU SEE THIS PURPLE BOX? 🚨
+      </div>
+      
       <!-- Action Buttons -->
-      <div style="display: flex; gap: 20px; justify-content: center; margin-bottom: 40px; flex-wrap: wrap;">
+      <div style="display: flex; gap: 20px; justify-content: center; margin-bottom: 40px; flex-wrap: wrap; background: rgba(0,255,0,0.2); padding: 20px; border: 3px solid lime;">
         
         <!-- Save Current Character -->
         <button id="new-save-btn" style="
-          background: linear-gradient(135deg, #4CAF50, #45a049);
-          color: white;
-          border: none;
-          padding: 18px 30px;
-          border-radius: 12px;
-          font-size: 18px;
-          font-weight: bold;
-          cursor: pointer;
-          box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
-          transition: all 0.3s ease;
-          min-width: 250px;
-          position: relative;
-          overflow: hidden;
+          background: #FF0000 !important;
+          color: white !important;
+          border: 5px solid #FFFF00 !important;
+          padding: 25px 40px !important;
+          border-radius: 12px !important;
+          font-size: 24px !important;
+          font-weight: bold !important;
+          cursor: pointer !important;
+          box-shadow: 0 10px 30px rgba(255, 0, 0, 0.8) !important;
+          transition: all 0.3s ease !important;
+          min-width: 300px !important;
+          position: relative !important;
+          overflow: hidden !important;
+          z-index: 99999 !important;
+          display: block !important;
+          visibility: visible !important;
+          opacity: 1 !important;
         ">
-          💾 Save Current Character
+          💾 SAVE CHARACTER - RED BUTTON
         </button>
         
         <!-- Create New Character -->
