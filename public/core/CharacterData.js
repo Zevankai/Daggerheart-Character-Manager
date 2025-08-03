@@ -28,6 +28,18 @@ class CharacterData {
                 class: '',
                 subclass: ''
             },
+
+            // Appearance Settings (character-specific)
+            appearanceSettings: {
+                theme: 'auto', // 'light', 'dark', 'auto'
+                accentColor: '#ffd700',
+                accentColorLight: null,
+                accentColorDark: null,
+                glassColor: '#ffffff',
+                glassOpacity: 10,
+                backgroundImage: null,
+                customColors: {}
+            },
             
             // Trackers
             hope: { current: 0, max: 6 },
@@ -116,10 +128,54 @@ class CharacterData {
         localStorage.setItem('zevi-current-character-id', id);
     }
 
+    // Get current custom colors from localStorage
+    getCurrentCustomColors() {
+        const customColors = {};
+        const colorKeys = [
+            'main-glass', 'ability-scores', 'name-box', 'char-image-border',
+            'auth-modal', 'downtime-glass', 'equipment-glass', 'journal-glass',
+            'experiences-glass', 'effects-features-glass', 'domain-vault-glass',
+            'details-glass'
+        ];
+        
+        colorKeys.forEach(key => {
+            const color = localStorage.getItem(`zevi-color-${key}`);
+            if (color) {
+                customColors[key] = color;
+            }
+        });
+        
+        return customColors;
+    }
+
+    // Get all current character data (for display in characters tab)
+    getCharacterData(characterId) {
+        if (!characterId) return null;
+        
+        // Try to get from current app state first
+        if (window.app && window.app.collectCharacterData) {
+            return window.app.collectCharacterData();
+        }
+        
+        // Fallback to stored data
+        return this.getStoredCharacterData(characterId);
+    }
+
     // Save character data
     async saveCharacterData(characterId, data) {
         const characterData = {
             ...data,
+            // Capture current appearance settings
+            appearanceSettings: {
+                theme: document.body.getAttribute('data-theme') || 'auto',
+                accentColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() || '#ffd700',
+                accentColorLight: localStorage.getItem('zevi-custom-accent-light'),
+                accentColorDark: localStorage.getItem('zevi-custom-accent-dark'),
+                glassColor: localStorage.getItem('zevi-glass-color') || '#ffffff',
+                glassOpacity: parseInt(localStorage.getItem('zevi-glass-opacity')) || 10,
+                backgroundImage: localStorage.getItem('zevi-background-image'),
+                customColors: this.getCurrentCustomColors()
+            },
             lastModified: new Date().toISOString()
         };
         
@@ -148,7 +204,25 @@ class CharacterData {
     }
 
     // Load character data
-    loadCharacterData(characterId) {
+    async loadCharacterData(characterData, characterId) {
+        // Set the current character ID
+        this.setCurrentCharacterId(characterId);
+        
+        // Apply appearance settings if they exist
+        if (characterData && characterData.appearanceSettings) {
+            await this.applyAppearanceSettings(characterData.appearanceSettings);
+        }
+        
+        // Load the character data into the app
+        if (window.app && window.app.loadCharacterFromData) {
+            await window.app.loadCharacterFromData(characterData);
+        }
+        
+        return characterData;
+    }
+
+    // Load character data from storage (legacy method)
+    getStoredCharacterData(characterId) {
         const saveKey = `zevi-character-file-${characterId}`;
         const savedData = localStorage.getItem(saveKey);
         
@@ -162,6 +236,61 @@ class CharacterData {
         }
         
         return this.defaultCharacterState;
+    }
+
+    // Apply appearance settings to the current page
+    async applyAppearanceSettings(settings) {
+        const root = document.documentElement;
+        
+        // Apply theme
+        if (settings.theme) {
+            document.body.setAttribute('data-theme', settings.theme);
+            localStorage.setItem('zevi-theme', settings.theme);
+        }
+        
+        // Apply accent color
+        if (settings.accentColor) {
+            root.style.setProperty('--accent-color', settings.accentColor);
+            localStorage.setItem('zevi-custom-accent-base', settings.accentColor);
+        }
+        
+        // Apply accent color variations
+        if (settings.accentColorLight) {
+            localStorage.setItem('zevi-custom-accent-light', settings.accentColorLight);
+        }
+        if (settings.accentColorDark) {
+            localStorage.setItem('zevi-custom-accent-dark', settings.accentColorDark);
+        }
+        
+        // Apply glass color and opacity
+        if (settings.glassColor) {
+            localStorage.setItem('zevi-glass-color', settings.glassColor);
+        }
+        if (settings.glassOpacity !== undefined) {
+            localStorage.setItem('zevi-glass-opacity', settings.glassOpacity.toString());
+        }
+        
+        // Apply background image
+        if (settings.backgroundImage) {
+            localStorage.setItem('zevi-background-image', settings.backgroundImage);
+        }
+        
+        // Apply custom colors
+        if (settings.customColors) {
+            Object.entries(settings.customColors).forEach(([key, color]) => {
+                localStorage.setItem(`zevi-color-${key}`, color);
+            });
+        }
+        
+        // Trigger any existing appearance update functions
+        if (window.updateGlassColor) {
+            window.updateGlassColor();
+        }
+        if (window.loadSavedColors) {
+            window.loadSavedColors();
+        }
+        
+        console.log('Applied character-specific appearance settings');
     }
 
     // Delete character data

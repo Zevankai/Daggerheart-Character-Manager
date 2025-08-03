@@ -8,7 +8,6 @@ class ZeviAuth {
 
   init() {
     this.createAuthUI();
-    this.createUserMenu();
     this.bindEvents();
     this.setupCharactersTab();
     this.setupSettingsTab();
@@ -253,74 +252,7 @@ class ZeviAuth {
     document.head.insertAdjacentHTML('beforeend', authStyles);
   }
 
-  createUserMenu() {
-    // Create user menu HTML and inject it into the header
-    const userMenuHTML = `
-      <div id="user-menu" class="user-menu" style="display: none;">
-        <span id="username-display">User</span>
-        <div class="user-menu-dropdown">
-          <button onclick="window.zeviAuth.switchToCharactersTab()">Characters</button>
-        </div>
-      </div>
-    `;
-    
-    // Add user menu styles if not already added
-    if (!document.getElementById('user-menu-styles')) {
-      const userMenuStyles = `
-        <style id="user-menu-styles">
-          .user-menu {
-            position: relative;
-            display: inline-block;
-            cursor: pointer;
-            color: var(--text-color);
-            font-size: 14px;
-            margin-top: 10px;
-          }
-          
-          .user-menu:hover .user-menu-dropdown {
-            display: block;
-          }
-          
-          .user-menu-dropdown {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: 100%;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 5px;
-            padding: 10px;
-            min-width: 150px;
-            z-index: 1000;
-          }
-          
-          .user-menu-dropdown button {
-            display: block;
-            width: 100%;
-            padding: 8px 12px;
-            margin: 2px 0;
-            background: none;
-            border: 1px solid var(--glass-border);
-            color: var(--text-color);
-            cursor: pointer;
-            border-radius: 3px;
-            font-size: 12px;
-          }
-          
-          .user-menu-dropdown button:hover {
-            background: var(--glass-border);
-          }
-        </style>
-      `;
-      document.head.insertAdjacentHTML('beforeend', userMenuStyles);
-    }
-    
-    // Inject user menu into header container
-    const userMenuContainer = document.getElementById('user-menu-container');
-    if (userMenuContainer) {
-      userMenuContainer.innerHTML = userMenuHTML;
-    }
-  }
+
 
   bindEvents() {
     // Modal controls
@@ -518,8 +450,6 @@ class ZeviAuth {
   }
 
   updateUIForLoggedOutUser() {
-    document.getElementById('user-menu').style.display = 'none';
-    
     // Update save buttons to indicate local saving
     document.querySelectorAll('button').forEach(btn => {
       if (btn.textContent.includes('☁️💾')) {
@@ -675,6 +605,9 @@ class ZeviAuth {
       this.migrateLocalData();
     });
     
+    // Update current character display
+    this.updateCurrentCharacterDisplay();
+    
     // Load characters
     await this.loadCharactersList();
   }
@@ -682,12 +615,9 @@ class ZeviAuth {
   async createNewCharacter() {
     try {
       // Create new character via API
-      const newCharacter = {
-        name: 'New Character',
-        character_data: this.getDefaultCharacterData()
-      };
+      const characterData = this.getDefaultCharacterData();
       
-      const response = await this.api.createCharacter(newCharacter);
+      const response = await this.api.createCharacter('New Character', characterData);
       console.log('New character created:', response);
       
       // Reload the characters list
@@ -697,6 +627,7 @@ class ZeviAuth {
       await this.loadCharacter(response.character.id);
       
     } catch (error) {
+      console.error('Create character error:', error);
       alert(`Failed to create character: ${error.message}`);
     }
   }
@@ -896,10 +827,45 @@ class ZeviAuth {
     }
   }
 
-  updateUIForLoggedInUser() {
-    document.getElementById('user-menu').style.display = 'block';
-    document.getElementById('username-display').textContent = this.currentUser?.username || 'User';
+  updateCurrentCharacterDisplay() {
+    const currentCharacterId = window.app?.characterData?.getCurrentCharacterId();
+    const currentCharacterSection = document.getElementById('current-character-section');
     
+    if (!currentCharacterSection) return;
+    
+    if (!currentCharacterId) {
+      currentCharacterSection.style.display = 'none';
+      return;
+    }
+    
+    // Get current character data from the application
+    const characterData = window.app?.characterData?.getCharacterData(currentCharacterId);
+    
+    if (characterData) {
+      // Show current character section
+      currentCharacterSection.style.display = 'block';
+      
+      // Update avatar
+      const avatar = characterData.name ? characterData.name.charAt(0).toUpperCase() : '?';
+      document.getElementById('current-character-avatar').textContent = avatar;
+      
+      // Update name and details
+      document.getElementById('current-character-name').textContent = characterData.name || 'Unnamed Character';
+      
+      const subtitle = [characterData.ancestry, characterData.class, characterData.subclass].filter(Boolean).join(' ');
+      document.getElementById('current-character-details').textContent = subtitle || 'No class info';
+      
+      // Update level
+      document.getElementById('current-character-level').textContent = `Level ${characterData.level || 1}`;
+      
+      // Update last saved (you could enhance this with actual save timestamps)
+      document.getElementById('current-character-last-saved').textContent = 'Auto-saved';
+    } else {
+      currentCharacterSection.style.display = 'none';
+    }
+  }
+
+  updateUIForLoggedInUser() {
     // Update account info in settings
     const accountInfo = document.getElementById('account-info');
     if (accountInfo) {

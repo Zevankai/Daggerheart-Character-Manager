@@ -45,8 +45,6 @@
 
    <div class="right-info">
     <span id="toggleTheme" style="cursor: pointer;">🌙</span><br />
-    <!-- User menu will be injected here by auth system -->
-    <div id="user-menu-container"></div>
    </div>
    
    <div class="header-bottom-center">
@@ -273,6 +271,24 @@
    <div id="characters-tab-content" class="tab-panel">
     <div class="characters-page">
       <h2>My Characters</h2>
+      
+      <!-- Current Character Display -->
+      <div class="current-character-section" id="current-character-section" style="display: none;">
+        <div class="current-character-card">
+          <div class="current-character-header">
+            <div class="current-character-avatar" id="current-character-avatar">?</div>
+            <div class="current-character-info">
+              <h3 id="current-character-name">No Character Loaded</h3>
+              <p id="current-character-details">Select a character to start playing</p>
+            </div>
+            <div class="current-character-badge">Currently Playing</div>
+          </div>
+          <div class="current-character-meta">
+            <span id="current-character-level">Level -</span>
+            <span id="current-character-last-saved">Not saved</span>
+          </div>
+        </div>
+      </div>
       
       <div class="characters-actions">
         <button type="button" id="createNewCharacterBtn" class="primary-btn">
