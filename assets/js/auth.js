@@ -723,6 +723,85 @@ class ZeviAuth {
     await this.loadCharactersList();
   }
 
+  renderNewCharacterGrid(characters) {
+    console.log('🎨 Rendering character grid with', characters.length, 'characters');
+    const gridElement = document.getElementById('new-characters-grid');
+    
+    if (!gridElement) {
+      console.log('❌ new-characters-grid not found for rendering');
+      return;
+    }
+    
+    const characterCards = characters.map(char => {
+      const lastModified = char.last_modified ? new Date(char.last_modified).toLocaleDateString() : 'Unknown';
+      
+      return `
+        <div style="
+          background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+          border: 2px solid rgba(255,255,255,0.1);
+          border-radius: 12px;
+          padding: 20px;
+          transition: all 0.3s ease;
+          cursor: pointer;
+          position: relative;
+          overflow: hidden;
+        " onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+          
+          <div style="text-align: center; margin-bottom: 15px;">
+            <div style="font-size: 3rem; margin-bottom: 10px;">👤</div>
+            <h4 style="color: var(--text-color); margin: 0 0 5px 0; font-size: 1.3rem;">${char.name || 'Unnamed Character'}</h4>
+            <p style="color: rgba(255,255,255,0.7); margin: 0; font-size: 0.9rem;">Level ${char.character_data?.level || 5}</p>
+          </div>
+          
+          <div style="margin-bottom: 15px; text-align: center;">
+            <p style="color: rgba(255,255,255,0.6); margin: 0; font-size: 0.8rem;">Last saved: ${lastModified}</p>
+          </div>
+          
+          <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+            <button onclick="loadCharacterById(${char.id})" style="
+              background: linear-gradient(135deg, #4CAF50, #45a049);
+              color: white;
+              border: none;
+              padding: 8px 15px;
+              border-radius: 6px;
+              font-size: 12px;
+              font-weight: bold;
+              cursor: pointer;
+              transition: all 0.2s ease;
+            ">Load</button>
+            
+            <button onclick="duplicateCharacterById(${char.id})" style="
+              background: linear-gradient(135deg, #2196F3, #1976D2);
+              color: white;
+              border: none;
+              padding: 8px 15px;
+              border-radius: 6px;
+              font-size: 12px;
+              font-weight: bold;
+              cursor: pointer;
+              transition: all 0.2s ease;
+            ">Copy</button>
+            
+            <button onclick="deleteCharacterById(${char.id})" style="
+              background: linear-gradient(135deg, #f44336, #d32f2f);
+              color: white;
+              border: none;
+              padding: 8px 15px;
+              border-radius: 6px;
+              font-size: 12px;
+              font-weight: bold;
+              cursor: pointer;
+              transition: all 0.2s ease;
+            ">Delete</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+    
+    gridElement.innerHTML = characterCards;
+    console.log('✅ Character grid rendered');
+  }
+
   async createNewCharacter(isManual = true) {
     try {
       if (isManual) {
@@ -791,38 +870,51 @@ class ZeviAuth {
   }
 
   async loadCharactersList() {
-    const loadingElement = document.getElementById('characters-loading');
-    const emptyElement = document.getElementById('characters-empty');
-    const gridElement = document.getElementById('character-grid');
-    const importBtn = document.getElementById('importLocalDataBtn');
+    console.log('📋 loadCharactersList called');
     
-    // Show loading
-    loadingElement.style.display = 'flex';
-    emptyElement.style.display = 'none';
-    gridElement.style.display = 'none';
+    // Use the new DOM elements from rebuilt tab
+    const gridElement = document.getElementById('new-characters-grid');
+    
+    if (!gridElement) {
+      console.log('❌ new-characters-grid not found');
+      return;
+    }
+    
+    // Show loading in the new grid
+    gridElement.innerHTML = `
+      <div style="text-align: center; color: rgba(255,255,255,0.7); padding: 40px; grid-column: 1 / -1;">
+        <div style="font-size: 3rem; margin-bottom: 10px;">⏳</div>
+        <div style="font-size: 1.2rem;">Loading your characters...</div>
+      </div>
+    `;
     
     try {
+      console.log('🔄 Fetching characters from API...');
       const response = await this.api.getCharacters();
       const characters = response.characters || [];
-      
-
-      
-      loadingElement.style.display = 'none';
+      console.log('✅ Characters loaded:', characters.length);
       
       if (characters.length === 0) {
-        emptyElement.style.display = 'flex';
+        gridElement.innerHTML = `
+          <div style="text-align: center; color: rgba(255,255,255,0.7); padding: 40px; grid-column: 1 / -1;">
+            <div style="font-size: 3rem; margin-bottom: 10px;">📋</div>
+            <div style="font-size: 1.2rem; margin-bottom: 10px;">No Characters Yet</div>
+            <div style="font-size: 1rem;">Create your first character to get started!</div>
+          </div>
+        `;
       } else {
-        gridElement.style.display = 'grid';
-        this.renderCharacterGrid(characters);
-        
-        // Also update current character display when we load the list
-        await this.updateCurrentCharacterDisplay();
+        this.renderNewCharacterGrid(characters);
       }
       
     } catch (error) {
-      loadingElement.style.display = 'none';
-      emptyElement.style.display = 'flex';
-      console.error('Failed to load characters:', error);
+      console.error('❌ Failed to load characters:', error);
+      gridElement.innerHTML = `
+        <div style="text-align: center; color: rgba(255,100,100,0.8); padding: 40px; grid-column: 1 / -1;">
+          <div style="font-size: 3rem; margin-bottom: 10px;">❌</div>
+          <div style="font-size: 1.2rem; margin-bottom: 10px;">Failed to Load Characters</div>
+          <div style="font-size: 1rem;">${error.message}</div>
+        </div>
+      `;
     }
   }
 

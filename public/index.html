@@ -472,9 +472,33 @@
         if (charactersTab) {
           observer.observe(charactersTab, { attributes: true, attributeFilter: ['style', 'class'] });
         }
-      });
-    </script>
-  </div>
+             });
+       
+       // Global functions for character card buttons
+       window.loadCharacterById = function(characterId) {
+         console.log('🔄 Loading character:', characterId);
+         if (window.zeviAuth && typeof window.zeviAuth.loadCharacter === 'function') {
+           window.zeviAuth.loadCharacter(characterId);
+         }
+       };
+       
+       window.duplicateCharacterById = function(characterId) {
+         console.log('📋 Duplicating character:', characterId);
+         if (window.zeviAuth && typeof window.zeviAuth.duplicateCharacter === 'function') {
+           window.zeviAuth.duplicateCharacter(characterId);
+         }
+       };
+       
+       window.deleteCharacterById = function(characterId) {
+         console.log('🗑️ Deleting character:', characterId);
+         if (confirm('Are you sure you want to delete this character? This action cannot be undone.')) {
+           if (window.zeviAuth && typeof window.zeviAuth.deleteCharacter === 'function') {
+             window.zeviAuth.deleteCharacter(characterId);
+           }
+         }
+       };
+     </script>
+   </div>
    <div id="settings-tab-content" class="tab-panel">
     <div class="settings-container">
      <h2>Settings</h2>
