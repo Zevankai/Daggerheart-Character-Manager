@@ -626,25 +626,48 @@ class ZeviAuth {
   }
 
   async initializeCharactersTab() {
-    if (this.charactersTabInitialized) return;
+    console.log('🚀 initializeCharactersTab called');
+    if (this.charactersTabInitialized) {
+      console.log('⚠️ Characters tab already initialized');
+      return;
+    }
     
     this.charactersTabInitialized = true;
+    console.log('✅ Setting charactersTabInitialized = true');
     
     // Set up event listeners
-    document.getElementById('createNewCharacterBtn')?.addEventListener('click', () => {
+    console.log('🔧 Setting up event listeners...');
+    
+    const createBtn = document.getElementById('createNewCharacterBtn');
+    console.log('📝 Create button found:', !!createBtn);
+    createBtn?.addEventListener('click', () => {
+      console.log('Create button clicked');
       this.createNewCharacter();
     });
     
-    // Set up save button with more robust event handling
+    // Set up save button with detailed logging
+    console.log('🔍 Looking for save button...');
     const saveButton = document.getElementById('saveCurrentCharacterBtn');
+    console.log('💾 Save button element:', saveButton);
+    console.log('💾 Save button found:', !!saveButton);
+    
     if (saveButton) {
       console.log('✅ Save button found, attaching event listener');
+      
+      // Test if we can modify the button
+      try {
+        saveButton.style.border = '3px solid lime';
+        console.log('✅ Successfully modified save button style');
+      } catch (error) {
+        console.log('❌ Cannot modify save button:', error);
+      }
+      
       saveButton.addEventListener('click', async (e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log('🔥 Save button clicked!');
+        console.log('🔥 JavaScript event listener triggered!');
         const debugInfo = document.getElementById('debug-info');
-        if (debugInfo) debugInfo.textContent = 'Status: Save button clicked...';
+        if (debugInfo) debugInfo.textContent = 'Status: JavaScript listener activated!';
         
         try {
           await this.saveCurrentCharacterData();
@@ -659,6 +682,8 @@ class ZeviAuth {
           if (debugInfo) debugInfo.textContent = `Status: Save failed - ${error.message}`;
         }
       });
+      
+      console.log('✅ Event listener attached to save button');
     } else {
       console.log('❌ Save button not found when trying to attach event listener');
     }
