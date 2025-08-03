@@ -272,8 +272,35 @@
 
    <div id="characters-tab-content" class="tab-panel">
     <div class="characters-page">
-      <h2>Characters</h2>
-      <p>Character management functionality has been simplified.</p>
+      <h2>My Characters</h2>
+      
+      <div class="characters-actions">
+        <button type="button" id="createNewCharacterBtn" class="primary-btn">
+          <span class="btn-icon">➕</span>
+          Create New Character
+        </button>
+        <button type="button" id="importLocalDataBtn" class="secondary-btn" style="display: none;">
+          <span class="btn-icon">📥</span>
+          Import Local Data
+        </button>
+      </div>
+
+      <div class="characters-list" id="characters-list">
+        <div class="loading-message" id="characters-loading">
+          <span class="loading-spinner">⏳</span>
+          Loading your characters...
+        </div>
+        
+        <div class="empty-state" id="characters-empty" style="display: none;">
+          <div class="empty-icon">📋</div>
+          <h3>No Characters Yet</h3>
+          <p>Create your first character to get started!</p>
+        </div>
+        
+        <div class="character-grid" id="character-grid" style="display: none;">
+          <!-- Character cards will be populated here -->
+        </div>
+      </div>
     </div>
    </div>
    <div id="settings-tab-content" class="tab-panel">
@@ -371,6 +398,16 @@
       <button type="button" id="deleteCharacterBtn" class="danger-btn">Delete Character</button>
      </div>
      
+     <!-- Account Section -->
+     <div class="settings-section">
+      <h3>Account</h3>
+      <p>Manage your account settings and session.</p>
+      <div id="account-info" style="margin: 15px 0;">
+        <!-- Account info will be populated by auth system -->
+      </div>
+      <button type="button" id="logoutBtn" class="logout-btn">Logout</button>
+     </div>
+
      <!-- Account Deletion Section -->
      <div class="settings-section danger-section">
       <h3>Account Data</h3>

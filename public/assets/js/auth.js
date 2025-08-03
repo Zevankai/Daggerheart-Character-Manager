@@ -10,6 +10,8 @@ class ZeviAuth {
     this.createAuthUI();
     this.createUserMenu();
     this.bindEvents();
+    this.setupCharactersTab();
+    this.setupSettingsTab();
     this.checkAuthStatus();
   }
 
@@ -257,8 +259,7 @@ class ZeviAuth {
       <div id="user-menu" class="user-menu" style="display: none;">
         <span id="username-display">User</span>
         <div class="user-menu-dropdown">
-          <button onclick="window.zeviAuth.showCharacterList()">My Characters</button>
-          <button onclick="window.zeviAuth.logout()">Logout</button>
+          <button onclick="window.zeviAuth.switchToCharactersTab()">Characters</button>
         </div>
       </div>
     `;
@@ -353,6 +354,13 @@ class ZeviAuth {
       if (e.target.textContent?.includes('💾') || e.target.closest('[onclick*="save"]')) {
         if (!this.api.isLoggedIn()) {
           this.showAuthModal();
+        }
+      }
+      
+      // Initialize characters tab when clicked
+      if (e.target.dataset?.target === 'characters-tab-content') {
+        if (this.api.isLoggedIn()) {
+          setTimeout(() => this.initializeCharactersTab(), 100);
         }
       }
     });
@@ -628,6 +636,287 @@ class ZeviAuth {
     } catch (error) {
       alert(`Failed to load characters: ${error.message}`);
     }
+  }
+
+  setupCharactersTab() {
+    // Characters tab functionality will be set up when needed
+    this.charactersTabInitialized = false;
+  }
+
+  setupSettingsTab() {
+    // Add logout button event listener
+    document.addEventListener('click', (e) => {
+      if (e.target.id === 'logoutBtn') {
+        this.logout();
+      }
+    });
+  }
+
+  switchToCharactersTab() {
+    // Switch to characters tab
+    const charactersTab = document.querySelector('[data-target="characters-tab-content"]');
+    if (charactersTab) {
+      charactersTab.click();
+      this.initializeCharactersTab();
+    }
+  }
+
+  async initializeCharactersTab() {
+    if (this.charactersTabInitialized) return;
+    
+    this.charactersTabInitialized = true;
+    
+    // Set up event listeners
+    document.getElementById('createNewCharacterBtn')?.addEventListener('click', () => {
+      this.createNewCharacter();
+    });
+    
+    document.getElementById('importLocalDataBtn')?.addEventListener('click', () => {
+      this.migrateLocalData();
+    });
+    
+    // Load characters
+    await this.loadCharactersList();
+  }
+
+  async createNewCharacter() {
+    try {
+      // Create new character via API
+      const newCharacter = {
+        name: 'New Character',
+        character_data: this.getDefaultCharacterData()
+      };
+      
+      const response = await this.api.createCharacter(newCharacter);
+      console.log('New character created:', response);
+      
+      // Reload the characters list
+      await this.loadCharactersList();
+      
+      // Switch to the new character
+      await this.loadCharacter(response.character.id);
+      
+    } catch (error) {
+      alert(`Failed to create character: ${error.message}`);
+    }
+  }
+
+  getDefaultCharacterData() {
+    return {
+      name: 'New Character',
+      level: 1,
+      ancestry: '',
+      class: '',
+      subclass: '',
+      domains: ['', ''],
+      attributes: {
+        agility: 0,
+        strength: 0,
+        finesse: 0,
+        instinct: 0,
+        presence: 0,
+        knowledge: 0
+      },
+      hope: 5,
+      armor: 10,
+      hitPoints: { current: 15, max: 15 },
+      stress: { current: 0, max: 10 },
+      evasion: 10,
+      createdAt: new Date().toISOString()
+    };
+  }
+
+  async loadCharactersList() {
+    const loadingElement = document.getElementById('characters-loading');
+    const emptyElement = document.getElementById('characters-empty');
+    const gridElement = document.getElementById('character-grid');
+    const importBtn = document.getElementById('importLocalDataBtn');
+    
+    // Show loading
+    loadingElement.style.display = 'flex';
+    emptyElement.style.display = 'none';
+    gridElement.style.display = 'none';
+    
+    try {
+      const response = await this.api.getCharacters();
+      const characters = response.characters || [];
+      
+      // Check for local data
+      const localCharacters = this.getLocalCharacters();
+      if (localCharacters.length > 0 && importBtn) {
+        importBtn.style.display = 'inline-flex';
+      }
+      
+      loadingElement.style.display = 'none';
+      
+      if (characters.length === 0) {
+        emptyElement.style.display = 'flex';
+      } else {
+        gridElement.style.display = 'grid';
+        this.renderCharacterGrid(characters);
+      }
+      
+    } catch (error) {
+      loadingElement.style.display = 'none';
+      emptyElement.style.display = 'flex';
+      console.error('Failed to load characters:', error);
+    }
+  }
+
+  getLocalCharacters() {
+    const localChars = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('zevi-character-file-')) {
+        try {
+          const data = JSON.parse(localStorage.getItem(key));
+          localChars.push({ id: key.replace('zevi-character-file-', ''), ...data });
+        } catch (e) {
+          console.warn('Invalid character data in localStorage:', key);
+        }
+      }
+    }
+    return localChars;
+  }
+
+  renderCharacterGrid(characters) {
+    const grid = document.getElementById('character-grid');
+    const currentCharacterId = window.app?.characterData?.getCurrentCharacterId();
+    
+    grid.innerHTML = characters.map(char => {
+      const isCurrentChar = char.id.toString() === currentCharacterId;
+      const charData = char.character_data || {};
+      const avatar = charData.name ? charData.name.charAt(0).toUpperCase() : '?';
+      const subtitle = [charData.ancestry, charData.class, charData.subclass].filter(Boolean).join(' ');
+      
+      return `
+        <div class="character-card ${isCurrentChar ? 'current' : ''}" data-character-id="${char.id}">
+          <div class="character-header">
+            <div class="character-avatar">${avatar}</div>
+            <div class="character-info">
+              <h3>${charData.name || 'Unnamed Character'}</h3>
+              <p>${subtitle || 'No class info'}</p>
+            </div>
+          </div>
+          
+          <div class="character-meta">
+            <span>Level ${charData.level || 1}</span>
+            <span>${new Date(char.created_at).toLocaleDateString()}</span>
+          </div>
+          
+          <div class="character-actions">
+            <button class="character-action-btn load" onclick="window.zeviAuth.loadCharacter(${char.id})">
+              📂 Load
+            </button>
+            <button class="character-action-btn" onclick="window.zeviAuth.duplicateCharacter(${char.id})">
+              📋 Copy
+            </button>
+            <button class="character-action-btn" onclick="window.zeviAuth.shareCharacter(${char.id})">
+              🔗 Share
+            </button>
+            <button class="character-action-btn delete" onclick="window.zeviAuth.deleteCharacter(${char.id})">
+              🗑️ Delete
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async loadCharacter(characterId) {
+    try {
+      console.log('Loading character:', characterId);
+      
+      // Fetch character data from API
+      const response = await this.api.getCharacter(characterId);
+      const character = response.character;
+      
+      // Load character data into the application
+      if (window.app && window.app.characterData) {
+        await window.app.characterData.loadCharacterData(character.character_data, characterId.toString());
+        console.log('Character loaded successfully');
+        
+        // Switch back to main character sheet view (away from characters tab)
+        const downtimeTab = document.querySelector('[data-target="downtime-tab-content"]');
+        if (downtimeTab) {
+          downtimeTab.click();
+        }
+      }
+      
+    } catch (error) {
+      alert(`Failed to load character: ${error.message}`);
+    }
+  }
+
+  async duplicateCharacter(characterId) {
+    try {
+      const response = await this.api.getCharacter(characterId);
+      const originalChar = response.character;
+      
+      const duplicatedChar = {
+        name: `${originalChar.character_data.name || 'Character'} (Copy)`,
+        character_data: { ...originalChar.character_data, createdAt: new Date().toISOString() }
+      };
+      
+      await this.api.createCharacter(duplicatedChar);
+      await this.loadCharactersList();
+      
+    } catch (error) {
+      alert(`Failed to duplicate character: ${error.message}`);
+    }
+  }
+
+  async shareCharacter(characterId) {
+    try {
+      const response = await this.api.shareCharacter(characterId);
+      const shareUrl = `${window.location.origin}?share=${response.shareToken}`;
+      
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        alert(`Share link copied to clipboard!\n\n${shareUrl}`);
+      }).catch(() => {
+        alert(`Share link:\n\n${shareUrl}`);
+      });
+      
+    } catch (error) {
+      alert(`Failed to create share link: ${error.message}`);
+    }
+  }
+
+  async deleteCharacter(characterId) {
+    if (!confirm('Are you sure you want to delete this character? This action cannot be undone.')) {
+      return;
+    }
+    
+    try {
+      await this.api.deleteCharacter(characterId);
+      await this.loadCharactersList();
+      
+    } catch (error) {
+      alert(`Failed to delete character: ${error.message}`);
+    }
+  }
+
+  updateUIForLoggedInUser() {
+    document.getElementById('user-menu').style.display = 'block';
+    document.getElementById('username-display').textContent = this.currentUser?.username || 'User';
+    
+    // Update account info in settings
+    const accountInfo = document.getElementById('account-info');
+    if (accountInfo) {
+      accountInfo.innerHTML = `
+        <p><strong>Username:</strong> <span>${this.currentUser?.username || 'Unknown'}</span></p>
+        <p><strong>Email:</strong> <span>${this.currentUser?.email || 'Unknown'}</span></p>
+        <p><strong>Member since:</strong> <span>${this.currentUser?.created_at ? new Date(this.currentUser.created_at).toLocaleDateString() : 'Unknown'}</span></p>
+      `;
+    }
+    
+    // Update save buttons to indicate cloud saving
+    document.querySelectorAll('button').forEach(btn => {
+      if (btn.textContent.includes('💾')) {
+        btn.textContent = btn.textContent.replace('💾', '☁️💾');
+        btn.title = 'Save to Cloud';
+      }
+    });
   }
 }
 
