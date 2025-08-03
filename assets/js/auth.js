@@ -352,7 +352,6 @@ class ZeviAuth {
       setTimeout(() => {
         this.hideAuthModal();
         this.updateUIForLoggedInUser();
-        this.checkForMigration();
         // Show character sheet after login
         if (document.querySelector('.glass')) {
           document.querySelector('.glass').style.display = 'block';
@@ -407,12 +406,14 @@ class ZeviAuth {
   }
 
   checkAuthStatus() {
+    // Always clear local character data on startup
+    this.clearAllLocalCharacterData();
+    
     if (this.api.isLoggedIn()) {
       const userData = localStorage.getItem('zevi-current-user');
       if (userData) {
         this.currentUser = JSON.parse(userData);
         this.updateUIForLoggedInUser();
-        this.checkForMigration();
       }
     } else {
       this.updateUIForLoggedOutUser();
@@ -460,49 +461,9 @@ class ZeviAuth {
     });
   }
 
-  async checkForMigration() {
-    // Check if there's local data that could be migrated
-    const localKeys = Object.keys(localStorage).filter(key => 
-      key.startsWith('zevi-') && 
-      !key.includes('auth-token') && 
-      !key.includes('current-user') &&
-      !key.includes('character-backup')
-    );
 
-    console.log('🔍 Migration check - found local keys:', localKeys);
 
-    if (localKeys.length > 0) {
-      console.log('⚠️ Local data found, prompting user for migration');
-      const migrate = confirm('We found local character data. Would you like to import it to your cloud account?');
-      if (migrate) {
-        console.log('⬆️ User chose to migrate, starting migration...');
-        await this.migrateLocalData();
-      } else {
-        console.log('🚫 User declined migration');
-        // Clear the local data to prevent repeated prompts
-        this.clearAllLocalCharacterData();
-      }
-    } else {
-      console.log('✅ No local data found for migration');
-    }
-  }
 
-  async migrateLocalData() {
-    try {
-      console.log('🔄 Starting local data migration...');
-      const result = await this.api.migrateLocalStorageData();
-      console.log('✅ Migration result:', result);
-      alert(result.message);
-      if (result.migrated > 0) {
-        console.log('🔄 Migration successful, reloading page...');
-        // Refresh the page to load the migrated character
-        window.location.reload();
-      }
-    } catch (error) {
-      console.error('❌ Migration failed:', error);
-      alert(`Migration failed: ${error.message}`);
-    }
-  }
 
   async handleForgotPassword(e) {
     e.preventDefault();
@@ -596,48 +557,60 @@ class ZeviAuth {
       }
     });
     
-    // Clear all local character data to prevent import prompts
-    this.clearAllLocalCharacterData();
-    
     // Set a flag to track manual vs automatic character creation
     this.preventAutoCharacterCreation = true;
   }
 
   clearAllLocalCharacterData() {
+    console.log('🧹 Starting aggressive local data cleanup...');
+    
     const keysToRemove = [];
+    const protectedKeys = [
+      'zevi-auth-token',
+      'zevi-current-user', 
+      'zevi-theme',
+      'zevi-custom-accent-base',
+      'zevi-custom-accent-light', 
+      'zevi-custom-accent-dark',
+      'zevi-glass-color',
+      'zevi-glass-opacity',
+      'zevi-background-image'
+    ];
+    
+    // Get all localStorage keys
+    const allKeys = Object.keys(localStorage);
+    console.log('📋 All localStorage keys:', allKeys);
     
     // Find all character-related localStorage keys
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && (
-        key.startsWith('zevi-character-file-') ||
-        key.startsWith('zevi-equipment') ||
-        key.startsWith('zevi-journal') ||
-        key.startsWith('zevi-experiences') ||
-        key.startsWith('zevi-character-details') ||
-        key.startsWith('zevi-hope') ||
-        key.startsWith('zevi-stress') ||
-        key.startsWith('zevi-hp') ||
-        key.startsWith('zevi-armor') ||
-        key.startsWith('zevi-domain') ||
-        key.startsWith('zevi-features') ||
-        key.startsWith('zevi-conditions') ||
-        key.startsWith('zevi-projects') ||
-        key.includes('char_') ||
-        (key.startsWith('zevi-') && !key.includes('auth-token') && !key.includes('current-user') && !key.includes('theme') && !key.includes('color') && !key.includes('glass'))
-      )) {
+    allKeys.forEach(key => {
+      if (key.startsWith('zevi-')) {
+        // Keep only protected keys
+        if (!protectedKeys.includes(key) && !key.startsWith('zevi-color-')) {
+          keysToRemove.push(key);
+        }
+      }
+      
+      // Also remove any keys that contain character identifiers
+      if (key.includes('char_') || key.includes('character-') || key.includes('backup-')) {
         keysToRemove.push(key);
       }
-    }
+    });
     
     // Remove the keys
     keysToRemove.forEach(key => {
-      localStorage.removeItem(key);
+      try {
+        localStorage.removeItem(key);
+      } catch (e) {
+        console.warn('Failed to remove key:', key, e);
+      }
     });
     
-    if (keysToRemove.length > 0) {
-      console.log('Cleared local character data keys:', keysToRemove);
-    }
+    console.log('🗑️ Cleared local character data keys:', keysToRemove);
+    
+    // Also clear any migration flags or temporary data
+    sessionStorage.clear();
+    
+    console.log('✅ Aggressive cleanup complete');
   }
 
   switchToCharactersTab() {
@@ -659,9 +632,7 @@ class ZeviAuth {
       this.createNewCharacter();
     });
     
-    document.getElementById('importLocalDataBtn')?.addEventListener('click', () => {
-      this.migrateLocalData();
-    });
+
     
     // Update current character display
     await this.updateCurrentCharacterDisplay();
@@ -744,11 +715,7 @@ class ZeviAuth {
       const response = await this.api.getCharacters();
       const characters = response.characters || [];
       
-      // Check for local data
-      const localCharacters = this.getLocalCharacters();
-      if (localCharacters.length > 0 && importBtn) {
-        importBtn.style.display = 'inline-flex';
-      }
+
       
       loadingElement.style.display = 'none';
       
@@ -766,21 +733,7 @@ class ZeviAuth {
     }
   }
 
-  getLocalCharacters() {
-    const localChars = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('zevi-character-file-')) {
-        try {
-          const data = JSON.parse(localStorage.getItem(key));
-          localChars.push({ id: key.replace('zevi-character-file-', ''), ...data });
-        } catch (e) {
-          console.warn('Invalid character data in localStorage:', key);
-        }
-      }
-    }
-    return localChars;
-  }
+
 
   renderCharacterGrid(characters) {
     const grid = document.getElementById('character-grid');
@@ -836,7 +789,8 @@ class ZeviAuth {
       
       // Load character data into the application
       if (window.app && window.app.characterData) {
-        await window.app.characterData.loadCharacterData(character.character_data, characterId.toString());
+        // Use the app controller's switch to character method
+        await window.app.switchToCharacter(characterId.toString());
         console.log('Character loaded successfully');
         
         // Switch back to main character sheet view (away from characters tab)
@@ -844,6 +798,9 @@ class ZeviAuth {
         if (downtimeTab) {
           downtimeTab.click();
         }
+        
+        // Update the current character display
+        await this.updateCurrentCharacterDisplay();
       }
       
     } catch (error) {
