@@ -635,6 +635,13 @@ class ZeviAuth {
       this.createNewCharacter();
     });
     
+    document.getElementById('saveCurrentCharacterBtn')?.addEventListener('click', async () => {
+      await this.saveCurrentCharacterData();
+      // Refresh the current character display and characters list
+      await this.updateCurrentCharacterDisplay();
+      await this.loadCharactersList();
+    });
+    
 
     
     // Update current character display
@@ -648,6 +655,8 @@ class ZeviAuth {
     try {
       if (isManual) {
         console.log('🚀 Manually creating new character...');
+        // Save current character data before creating new one
+        await this.saveCurrentCharacterData();
       } else {
         console.log('🤖 Automatically creating new character...');
         if (this.preventAutoCharacterCreation) {
@@ -797,6 +806,9 @@ class ZeviAuth {
 
   async loadCharacter(characterId) {
     try {
+      // Save current character data before switching
+      await this.saveCurrentCharacterData();
+      
       // Fetch character data from API
       const response = await this.api.getCharacter(characterId);
       const character = response.character;
@@ -872,6 +884,48 @@ class ZeviAuth {
       
     } catch (error) {
       alert(`Failed to delete character: ${error.message}`);
+    }
+  }
+
+  async saveCurrentCharacterData() {
+    // Get the current character ID
+    let currentCharacterId = window.app?.characterData?.getCurrentCharacterId();
+    if (!currentCharacterId) {
+      currentCharacterId = localStorage.getItem('zevi-current-character-id');
+    }
+    
+    if (!currentCharacterId) {
+      return; // No current character to save
+    }
+    
+    const debugInfo = document.getElementById('debug-info');
+    
+    try {
+      if (debugInfo) debugInfo.textContent = `Status: Saving current character...`;
+      
+      // Trigger the app's auto-save system first
+      if (window.app?.autoSave?.triggerManualSave) {
+        await window.app.autoSave.triggerManualSave();
+      }
+      
+      // Also manually collect and save data to ensure it's captured
+      if (window.app?.autoSave?.collectCurrentCharacterData && window.app?.characterData?.saveCharacterData) {
+        const characterData = window.app.autoSave.collectCurrentCharacterData();
+        
+        // Get the character name from the UI
+        const nameElement = document.querySelector('.character-name-editor');
+        if (nameElement && nameElement.textContent && nameElement.textContent !== 'Character Name') {
+          characterData.name = nameElement.textContent;
+        }
+        
+        await window.app.characterData.saveCharacterData(currentCharacterId, characterData);
+        
+        if (debugInfo) debugInfo.textContent = `Status: Character saved (${characterData.name || 'Unnamed'})`;
+      }
+      
+    } catch (error) {
+      console.warn('Failed to save current character data:', error);
+      if (debugInfo) debugInfo.textContent = `Status: Save failed - ${error.message}`;
     }
   }
 
