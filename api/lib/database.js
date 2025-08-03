@@ -53,11 +53,25 @@ async function initializeDatabase() {
       )
     `;
 
+    // Create password_resets table
+    await sql`
+      CREATE TABLE IF NOT EXISTS password_resets (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        token VARCHAR(255) UNIQUE NOT NULL,
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id)
+      )
+    `;
+
     // Create indexes
     await sql`CREATE INDEX IF NOT EXISTS idx_characters_user_id ON characters(user_id)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_characters_share_token ON characters(share_token)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_password_resets_user_id ON password_resets(user_id)`;
 
     console.log('Database tables initialized successfully');
     return true;

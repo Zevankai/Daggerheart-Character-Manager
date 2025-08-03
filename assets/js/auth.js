@@ -38,6 +38,36 @@ class ZeviAuth {
                 <input type="password" id="login-password" required>
               </div>
               <button type="submit" class="auth-btn">Login</button>
+              <div class="auth-links">
+                <a href="#" id="forgot-password-link">Forgot Password?</a>
+              </div>
+            </form>
+          </div>
+
+          <div id="auth-forgot" class="auth-form">
+            <form id="forgot-form">
+              <div class="auth-field">
+                <label for="forgot-email">Email:</label>
+                <input type="email" id="forgot-email" required>
+              </div>
+              <button type="submit" class="auth-btn">Send Reset Link</button>
+              <div class="auth-links">
+                <a href="#" id="back-to-login-link">Back to Login</a>
+              </div>
+            </form>
+          </div>
+
+          <div id="auth-reset" class="auth-form">
+            <form id="reset-form">
+              <div class="auth-field">
+                <label for="reset-password">New Password:</label>
+                <input type="password" id="reset-password" required minlength="6">
+              </div>
+              <div class="auth-field">
+                <label for="reset-confirm">Confirm Password:</label>
+                <input type="password" id="reset-confirm" required minlength="6">
+              </div>
+              <button type="submit" class="auth-btn">Reset Password</button>
             </form>
           </div>
 
@@ -241,6 +271,21 @@ class ZeviAuth {
           width: 100%;
           margin-bottom: 0.5rem;
         }
+
+        .auth-links {
+          text-align: center;
+          margin-top: 1rem;
+        }
+
+        .auth-links a {
+          color: var(--accent-color);
+          text-decoration: none;
+          font-size: 0.9rem;
+        }
+
+        .auth-links a:hover {
+          text-decoration: underline;
+        }
       </style>
     `;
 
@@ -259,6 +304,18 @@ class ZeviAuth {
     // Form submissions
     document.getElementById('login-form').addEventListener('submit', (e) => this.handleLogin(e));
     document.getElementById('register-form').addEventListener('submit', (e) => this.handleRegister(e));
+    document.getElementById('forgot-form').addEventListener('submit', (e) => this.handleForgotPassword(e));
+    document.getElementById('reset-form').addEventListener('submit', (e) => this.handleResetPassword(e));
+
+    // Auth links
+    document.getElementById('forgot-password-link').addEventListener('click', (e) => {
+      e.preventDefault();
+      this.switchTab('forgot');
+    });
+    document.getElementById('back-to-login-link').addEventListener('click', (e) => {
+      e.preventDefault();
+      this.switchTab('login');
+    });
 
     // User menu
     document.getElementById('logout-btn').addEventListener('click', () => this.logout());
@@ -374,6 +431,24 @@ class ZeviAuth {
     } else {
       this.updateUIForLoggedOutUser();
     }
+    
+    // Check for password reset token in URL
+    this.checkForPasswordReset();
+  }
+
+  checkForPasswordReset() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const resetToken = urlParams.get('reset');
+    
+    if (resetToken) {
+      // Store token and show reset form
+      this.resetToken = resetToken;
+      this.showAuthModal();
+      this.switchTab('reset');
+      
+      // Remove token from URL for security
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
   }
 
   updateUIForLoggedInUser() {
@@ -428,6 +503,58 @@ class ZeviAuth {
       }
     } catch (error) {
       alert(`Migration failed: ${error.message}`);
+    }
+  }
+
+  async handleForgotPassword(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('forgot-email').value;
+
+    try {
+      const response = await this.api.forgotPassword(email);
+      this.showMessage(response.message, 'success');
+      
+      // In development, show the reset token
+      if (response.resetToken) {
+        setTimeout(() => {
+          this.showMessage(`Reset link: ${response.resetUrl}`, 'success');
+        }, 2000);
+      }
+      
+    } catch (error) {
+      this.showMessage(error.message);
+    }
+  }
+
+  async handleResetPassword(e) {
+    e.preventDefault();
+    
+    const password = document.getElementById('reset-password').value;
+    const confirm = document.getElementById('reset-confirm').value;
+
+    if (password !== confirm) {
+      this.showMessage('Passwords do not match');
+      return;
+    }
+
+    if (!this.resetToken) {
+      this.showMessage('Invalid reset token');
+      return;
+    }
+
+    try {
+      const response = await this.api.resetPassword(this.resetToken, password);
+      this.showMessage(response.message, 'success');
+      
+      // Clear the token and switch to login
+      this.resetToken = null;
+      setTimeout(() => {
+        this.switchTab('login');
+      }, 2000);
+      
+    } catch (error) {
+      this.showMessage(error.message);
     }
   }
 

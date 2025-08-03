@@ -87,6 +87,20 @@ class ZeviAPI {
     return response;
   }
 
+  async forgotPassword(email) {
+    return await this.makeRequest('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  async resetPassword(token, password) {
+    return await this.makeRequest('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, password }),
+    });
+  }
+
   logout() {
     this.setToken(null);
     // Clear any cached user data
