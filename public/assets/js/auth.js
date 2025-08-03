@@ -662,12 +662,15 @@ class ZeviAuth {
         console.log('❌ Cannot modify save button:', error);
       }
       
-      // Try direct onclick assignment instead of addEventListener
-      const originalOnclick = saveButton.onclick;
-      saveButton.onclick = async (e) => {
-        console.log('🔥 Direct onclick handler triggered!');
+      // Test what's happening with the button
+      console.log('🧪 Testing button handlers...');
+      console.log('Current onclick:', saveButton.onclick);
+      
+      // Set up multiple handlers to test
+      const saveHandler = async () => {
+        console.log('🔥 Save handler triggered!');
         const debugInfo = document.getElementById('debug-info');
-        if (debugInfo) debugInfo.textContent = 'Status: Direct onclick activated!';
+        if (debugInfo) debugInfo.textContent = 'Status: Save handler activated!';
         
         try {
           await this.saveCurrentCharacterData();
@@ -683,10 +686,28 @@ class ZeviAuth {
         }
       };
       
-      // Also try addEventListener as backup
-      saveButton.addEventListener('click', async (e) => {
-        console.log('🔥 addEventListener backup triggered!');
+      // Try multiple approaches
+      saveButton.onclick = saveHandler;
+      saveButton.addEventListener('click', saveHandler);
+      saveButton.addEventListener('mousedown', () => console.log('🖱️ Mousedown detected'));
+      saveButton.addEventListener('mouseup', () => console.log('🖱️ Mouseup detected'));
+      
+      // Also set up with delegation
+      document.addEventListener('click', (e) => {
+        if (e.target.id === 'saveCurrentCharacterBtn' || e.target.closest('#saveCurrentCharacterBtn')) {
+          console.log('🎯 Event delegation caught save button click');
+          e.stopPropagation();
+          saveHandler();
+        }
       });
+      
+      // Test if the button is being replaced
+      setTimeout(() => {
+        const checkButton = document.getElementById('saveCurrentCharacterBtn');
+        console.log('🔍 Button check after 1 second:');
+        console.log('Same element?', checkButton === saveButton);
+        console.log('onclick still set?', !!checkButton?.onclick);
+      }, 1000);
       
       console.log('✅ Event listener attached to save button');
     } else {
