@@ -635,24 +635,33 @@ class ZeviAuth {
       this.createNewCharacter();
     });
     
-    document.getElementById('saveCurrentCharacterBtn')?.addEventListener('click', async () => {
-      console.log('🔥 Save button clicked!');
-      const debugInfo = document.getElementById('debug-info');
-      if (debugInfo) debugInfo.textContent = 'Status: Save button clicked...';
-      
-      try {
-        await this.saveCurrentCharacterData();
-        console.log('✅ Save completed');
+    // Set up save button with more robust event handling
+    const saveButton = document.getElementById('saveCurrentCharacterBtn');
+    if (saveButton) {
+      console.log('✅ Save button found, attaching event listener');
+      saveButton.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('🔥 Save button clicked!');
+        const debugInfo = document.getElementById('debug-info');
+        if (debugInfo) debugInfo.textContent = 'Status: Save button clicked...';
         
-        // Refresh the current character display and characters list
-        await this.updateCurrentCharacterDisplay();
-        await this.loadCharactersList();
-        console.log('✅ UI refreshed');
-      } catch (error) {
-        console.error('❌ Save failed:', error);
-        if (debugInfo) debugInfo.textContent = `Status: Save failed - ${error.message}`;
-      }
-    });
+        try {
+          await this.saveCurrentCharacterData();
+          console.log('✅ Save completed');
+          
+          // Refresh the current character display and characters list
+          await this.updateCurrentCharacterDisplay();
+          await this.loadCharactersList();
+          console.log('✅ UI refreshed');
+        } catch (error) {
+          console.error('❌ Save failed:', error);
+          if (debugInfo) debugInfo.textContent = `Status: Save failed - ${error.message}`;
+        }
+      });
+    } else {
+      console.log('❌ Save button not found when trying to attach event listener');
+    }
     
 
     
