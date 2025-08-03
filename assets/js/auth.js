@@ -566,8 +566,6 @@ class ZeviAuth {
   }
 
   clearAllLocalCharacterData() {
-    console.log('🧹 Starting aggressive local data cleanup...');
-    
     const keysToRemove = [];
     const protectedKeys = [
       'zevi-auth-token',
@@ -583,7 +581,6 @@ class ZeviAuth {
     
     // Get all localStorage keys
     const allKeys = Object.keys(localStorage);
-    console.log('📋 All localStorage keys:', allKeys);
     
     // Find all character-related localStorage keys
     allKeys.forEach(key => {
@@ -609,12 +606,14 @@ class ZeviAuth {
       }
     });
     
-    console.log('🗑️ Cleared local character data keys:', keysToRemove);
-    
     // Also clear any migration flags or temporary data
     sessionStorage.clear();
     
-    console.log('✅ Aggressive cleanup complete');
+    // Clear any invalid current character ID
+    localStorage.removeItem('zevi-current-character-id');
+    if (window.app?.characterData?.setCurrentCharacterId) {
+      window.app.characterData.setCurrentCharacterId(null);
+    }
   }
 
   switchToCharactersTab() {
@@ -876,6 +875,48 @@ class ZeviAuth {
     }
   }
 
+  async autoSelectFirstCharacter(debugInfo) {
+    try {
+      if (debugInfo) debugInfo.textContent = `Status: Looking for available characters...`;
+      
+      // Get list of characters from server
+      const response = await this.api.getCharacters();
+      const characters = response.characters || [];
+      
+      if (characters.length > 0) {
+        // Set the first character as current
+        const firstChar = characters[0];
+        localStorage.setItem('zevi-current-character-id', firstChar.id.toString());
+        if (window.app?.characterData?.setCurrentCharacterId) {
+          window.app.characterData.setCurrentCharacterId(firstChar.id.toString());
+        }
+        
+        if (debugInfo) debugInfo.textContent = `Status: Auto-selected first character`;
+        
+        // Now update the display with this character
+        await this.updateCurrentCharacterDisplay();
+      } else {
+        if (debugInfo) debugInfo.textContent = `Status: No characters found`;
+        
+        // Show "no character" state
+        document.getElementById('current-character-name').textContent = 'No Characters';
+        document.getElementById('current-character-details').textContent = 'Create your first character to get started';
+        document.getElementById('current-character-avatar').textContent = '➕';
+        document.getElementById('current-character-level').textContent = 'Level -';
+        document.getElementById('current-character-last-saved').textContent = 'Not saved';
+      }
+    } catch (error) {
+      if (debugInfo) debugInfo.textContent = `Status: Error checking characters`;
+      
+      // Show error state
+      document.getElementById('current-character-name').textContent = 'Connection Error';
+      document.getElementById('current-character-details').textContent = 'Could not load character list';
+      document.getElementById('current-character-avatar').textContent = '⚠️';
+      document.getElementById('current-character-level').textContent = 'Level -';
+      document.getElementById('current-character-last-saved').textContent = 'Error';
+    }
+  }
+
   async updateCurrentCharacterDisplay() {
     const currentCharacterSection = document.getElementById('current-character-section');
     const debugInfo = document.getElementById('debug-info');
@@ -937,12 +978,16 @@ class ZeviAuth {
       document.getElementById('current-character-last-saved').textContent = `Last saved: ${lastSaved}`;
       
     } catch (error) {
-      if (debugInfo) debugInfo.textContent = `Status: Error loading character - ${error.message}`;
+      if (debugInfo) debugInfo.textContent = `Status: Character not found, clearing invalid ID`;
       
-      // Show error state but keep the character ID info
-      document.getElementById('current-character-name').textContent = 'Character Load Error';
-      document.getElementById('current-character-details').textContent = 'Could not load character data';
-      document.getElementById('current-character-avatar').textContent = '⚠️';
+      // Character doesn't exist on server, clear the invalid ID
+      localStorage.removeItem('zevi-current-character-id');
+      if (window.app?.characterData?.setCurrentCharacterId) {
+        window.app.characterData.setCurrentCharacterId(null);
+      }
+      
+      // Check if we have any characters and set the first one as current
+      await this.autoSelectFirstCharacter(debugInfo);
     }
   }
 
