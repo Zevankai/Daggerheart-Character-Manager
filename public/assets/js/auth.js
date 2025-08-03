@@ -636,10 +636,22 @@ class ZeviAuth {
     });
     
     document.getElementById('saveCurrentCharacterBtn')?.addEventListener('click', async () => {
-      await this.saveCurrentCharacterData();
-      // Refresh the current character display and characters list
-      await this.updateCurrentCharacterDisplay();
-      await this.loadCharactersList();
+      console.log('🔥 Save button clicked!');
+      const debugInfo = document.getElementById('debug-info');
+      if (debugInfo) debugInfo.textContent = 'Status: Save button clicked...';
+      
+      try {
+        await this.saveCurrentCharacterData();
+        console.log('✅ Save completed');
+        
+        // Refresh the current character display and characters list
+        await this.updateCurrentCharacterDisplay();
+        await this.loadCharactersList();
+        console.log('✅ UI refreshed');
+      } catch (error) {
+        console.error('❌ Save failed:', error);
+        if (debugInfo) debugInfo.textContent = `Status: Save failed - ${error.message}`;
+      }
     });
     
 
@@ -888,43 +900,78 @@ class ZeviAuth {
   }
 
   async saveCurrentCharacterData() {
+    console.log('💾 saveCurrentCharacterData called');
+    
     // Get the current character ID
     let currentCharacterId = window.app?.characterData?.getCurrentCharacterId();
     if (!currentCharacterId) {
       currentCharacterId = localStorage.getItem('zevi-current-character-id');
     }
     
+    console.log('📋 Current character ID:', currentCharacterId);
+    
     if (!currentCharacterId) {
+      console.log('❌ No current character ID found');
       return; // No current character to save
     }
     
     const debugInfo = document.getElementById('debug-info');
     
     try {
-      if (debugInfo) debugInfo.textContent = `Status: Saving current character...`;
+      if (debugInfo) debugInfo.textContent = `Status: Saving character ${currentCharacterId}...`;
+      console.log('🔄 Starting save process...');
       
-      // Trigger the app's auto-save system first
-      if (window.app?.autoSave?.triggerManualSave) {
-        await window.app.autoSave.triggerManualSave();
-      }
+      // Check if app systems are available
+      console.log('🔍 Checking app systems:');
+      console.log('- window.app:', !!window.app);
+      console.log('- window.app.autoSave:', !!window.app?.autoSave);
+      console.log('- triggerManualSave:', !!window.app?.autoSave?.triggerManualSave);
+      console.log('- collectCurrentCharacterData:', !!window.app?.autoSave?.collectCurrentCharacterData);
+      console.log('- saveCharacterData:', !!window.app?.characterData?.saveCharacterData);
       
-      // Also manually collect and save data to ensure it's captured
-      if (window.app?.autoSave?.collectCurrentCharacterData && window.app?.characterData?.saveCharacterData) {
-        const characterData = window.app.autoSave.collectCurrentCharacterData();
+      // Get the character name from the UI
+      const nameElement = document.querySelector('.character-name-editor');
+      const characterName = nameElement?.textContent;
+      console.log('📝 Character name from UI:', characterName);
+      
+      // Try to collect character data manually first
+      let characterData = null;
+      if (window.app?.autoSave?.collectCurrentCharacterData) {
+        characterData = window.app.autoSave.collectCurrentCharacterData();
+        console.log('📊 Collected character data:', characterData);
         
-        // Get the character name from the UI
-        const nameElement = document.querySelector('.character-name-editor');
+        // Override name if we got it from UI
         if (nameElement && nameElement.textContent && nameElement.textContent !== 'Character Name') {
           characterData.name = nameElement.textContent;
+          console.log('📝 Updated character name to:', characterData.name);
         }
-        
+      } else {
+        console.log('❌ Cannot collect character data - collectCurrentCharacterData not available');
+      }
+      
+      // Try to save using the character data system
+      if (window.app?.characterData?.saveCharacterData && characterData) {
+        console.log('💾 Attempting to save character data...');
         await window.app.characterData.saveCharacterData(currentCharacterId, characterData);
+        console.log('✅ Character data saved successfully');
         
         if (debugInfo) debugInfo.textContent = `Status: Character saved (${characterData.name || 'Unnamed'})`;
+      } else {
+        console.log('❌ Cannot save - saveCharacterData not available or no data collected');
+        if (debugInfo) debugInfo.textContent = `Status: Save failed - missing save system`;
+      }
+      
+      // Also trigger the app's auto-save system as backup
+      if (window.app?.autoSave?.triggerManualSave) {
+        console.log('🔄 Triggering manual save as backup...');
+        await window.app.autoSave.triggerManualSave();
+        console.log('✅ Manual save triggered');
+      } else {
+        console.log('⚠️ triggerManualSave not available');
       }
       
     } catch (error) {
-      console.warn('Failed to save current character data:', error);
+      console.error('❌ Failed to save current character data:', error);
       if (debugInfo) debugInfo.textContent = `Status: Save failed - ${error.message}`;
     }
   }
