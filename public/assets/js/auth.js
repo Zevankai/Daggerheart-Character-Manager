@@ -662,12 +662,12 @@ class ZeviAuth {
         console.log('❌ Cannot modify save button:', error);
       }
       
-      saveButton.addEventListener('click', async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('🔥 JavaScript event listener triggered!');
+      // Try direct onclick assignment instead of addEventListener
+      const originalOnclick = saveButton.onclick;
+      saveButton.onclick = async (e) => {
+        console.log('🔥 Direct onclick handler triggered!');
         const debugInfo = document.getElementById('debug-info');
-        if (debugInfo) debugInfo.textContent = 'Status: JavaScript listener activated!';
+        if (debugInfo) debugInfo.textContent = 'Status: Direct onclick activated!';
         
         try {
           await this.saveCurrentCharacterData();
@@ -681,6 +681,11 @@ class ZeviAuth {
           console.error('❌ Save failed:', error);
           if (debugInfo) debugInfo.textContent = `Status: Save failed - ${error.message}`;
         }
+      };
+      
+      // Also try addEventListener as backup
+      saveButton.addEventListener('click', async (e) => {
+        console.log('🔥 addEventListener backup triggered!');
       });
       
       console.log('✅ Event listener attached to save button');
