@@ -364,15 +364,32 @@ function hideAccountDeleteModal() {
   modal.style.display = 'none';
 }
 
-function deleteAccountData() {
-  // Clear ALL localStorage data
-  localStorage.clear();
-  
-  // Reset everything to default state
-  resetToDefaults();
-  
-  // Show success message
-  showNotification('Account deleted successfully! All data has been cleared.', 'success');
+async function deleteAccountData() {
+  try {
+    // If user is logged in, delete account from server
+    if (window.zeviAPI && window.zeviAPI.isLoggedIn()) {
+      // First delete all characters
+      const response = await window.zeviAPI.getCharacters();
+      const characters = response.characters || [];
+      
+      for (const character of characters) {
+        await window.zeviAPI.deleteCharacter(character.id);
+      }
+      
+      // Then logout the user
+      window.zeviAuth.logout();
+      
+      showNotification('Account and all character data deleted from server successfully!', 'success');
+    } else {
+      // Just clear local data if not logged in
+      localStorage.clear();
+      resetToDefaults();
+      showNotification('Local account data cleared successfully!', 'success');
+    }
+  } catch (error) {
+    console.error('Error deleting account:', error);
+    showNotification('Error deleting account: ' + error.message, 'error');
+  }
 }
 
 function resetToDefaults() {

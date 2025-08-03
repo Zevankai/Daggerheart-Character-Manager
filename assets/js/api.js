@@ -121,6 +121,9 @@ class ZeviAPI {
   }
 
   async createCharacter(name, characterData = {}) {
+    console.log('📝 API createCharacter called with:', { name, characterData });
+    console.trace('📍 Character creation called from:');
+    
     return await this.makeRequest('/characters', {
       method: 'POST',
       body: JSON.stringify({ name, characterData }),

@@ -359,6 +359,7 @@ class ZeviAuth {
         }
         // Initialize the character sheet if not already done
         if (typeof initializeIndexPage === 'function') {
+          console.log('🔄 Initializing index page after login...');
           initializeIndexPage();
         }
       }, 1000);
@@ -468,23 +469,37 @@ class ZeviAuth {
       !key.includes('character-backup')
     );
 
+    console.log('🔍 Migration check - found local keys:', localKeys);
+
     if (localKeys.length > 0) {
+      console.log('⚠️ Local data found, prompting user for migration');
       const migrate = confirm('We found local character data. Would you like to import it to your cloud account?');
       if (migrate) {
-        this.migrateLocalData();
+        console.log('⬆️ User chose to migrate, starting migration...');
+        await this.migrateLocalData();
+      } else {
+        console.log('🚫 User declined migration');
+        // Clear the local data to prevent repeated prompts
+        this.clearAllLocalCharacterData();
       }
+    } else {
+      console.log('✅ No local data found for migration');
     }
   }
 
   async migrateLocalData() {
     try {
+      console.log('🔄 Starting local data migration...');
       const result = await this.api.migrateLocalStorageData();
+      console.log('✅ Migration result:', result);
       alert(result.message);
       if (result.migrated > 0) {
+        console.log('🔄 Migration successful, reloading page...');
         // Refresh the page to load the migrated character
         window.location.reload();
       }
     } catch (error) {
+      console.error('❌ Migration failed:', error);
       alert(`Migration failed: ${error.message}`);
     }
   }
@@ -580,6 +595,49 @@ class ZeviAuth {
         this.logout();
       }
     });
+    
+    // Clear all local character data to prevent import prompts
+    this.clearAllLocalCharacterData();
+    
+    // Set a flag to track manual vs automatic character creation
+    this.preventAutoCharacterCreation = true;
+  }
+
+  clearAllLocalCharacterData() {
+    const keysToRemove = [];
+    
+    // Find all character-related localStorage keys
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (
+        key.startsWith('zevi-character-file-') ||
+        key.startsWith('zevi-equipment') ||
+        key.startsWith('zevi-journal') ||
+        key.startsWith('zevi-experiences') ||
+        key.startsWith('zevi-character-details') ||
+        key.startsWith('zevi-hope') ||
+        key.startsWith('zevi-stress') ||
+        key.startsWith('zevi-hp') ||
+        key.startsWith('zevi-armor') ||
+        key.startsWith('zevi-domain') ||
+        key.startsWith('zevi-features') ||
+        key.startsWith('zevi-conditions') ||
+        key.startsWith('zevi-projects') ||
+        key.includes('char_') ||
+        (key.startsWith('zevi-') && !key.includes('auth-token') && !key.includes('current-user') && !key.includes('theme') && !key.includes('color') && !key.includes('glass'))
+      )) {
+        keysToRemove.push(key);
+      }
+    }
+    
+    // Remove the keys
+    keysToRemove.forEach(key => {
+      localStorage.removeItem(key);
+    });
+    
+    if (keysToRemove.length > 0) {
+      console.log('Cleared local character data keys:', keysToRemove);
+    }
   }
 
   switchToCharactersTab() {
@@ -606,29 +664,43 @@ class ZeviAuth {
     });
     
     // Update current character display
-    this.updateCurrentCharacterDisplay();
+    await this.updateCurrentCharacterDisplay();
     
     // Load characters
     await this.loadCharactersList();
   }
 
-  async createNewCharacter() {
+  async createNewCharacter(isManual = true) {
     try {
+      if (isManual) {
+        console.log('🚀 Manually creating new character...');
+      } else {
+        console.log('🤖 Automatically creating new character...');
+        if (this.preventAutoCharacterCreation) {
+          console.log('🚫 Auto-character creation prevented');
+          return;
+        }
+      }
+      
       // Create new character via API
       const characterData = this.getDefaultCharacterData();
       
       const response = await this.api.createCharacter('New Character', characterData);
-      console.log('New character created:', response);
+      console.log('✅ New character created:', response);
       
       // Reload the characters list
       await this.loadCharactersList();
       
-      // Switch to the new character
-      await this.loadCharacter(response.character.id);
+      // Switch to the new character if manual creation
+      if (isManual) {
+        await this.loadCharacter(response.character.id);
+      }
       
     } catch (error) {
-      console.error('Create character error:', error);
-      alert(`Failed to create character: ${error.message}`);
+      console.error('❌ Create character error:', error);
+      if (isManual) {
+        alert(`Failed to create character: ${error.message}`);
+      }
     }
   }
 
@@ -827,7 +899,7 @@ class ZeviAuth {
     }
   }
 
-  updateCurrentCharacterDisplay() {
+  async updateCurrentCharacterDisplay() {
     const currentCharacterId = window.app?.characterData?.getCurrentCharacterId();
     const currentCharacterSection = document.getElementById('current-character-section');
     
@@ -838,10 +910,12 @@ class ZeviAuth {
       return;
     }
     
-    // Get current character data from the application
-    const characterData = window.app?.characterData?.getCharacterData(currentCharacterId);
-    
-    if (characterData) {
+    try {
+      // Try to get current character from server
+      const response = await this.api.getCharacter(currentCharacterId);
+      const character = response.character;
+      const characterData = character.character_data || {};
+      
       // Show current character section
       currentCharacterSection.style.display = 'block';
       
@@ -858,9 +932,12 @@ class ZeviAuth {
       // Update level
       document.getElementById('current-character-level').textContent = `Level ${characterData.level || 1}`;
       
-      // Update last saved (you could enhance this with actual save timestamps)
-      document.getElementById('current-character-last-saved').textContent = 'Auto-saved';
-    } else {
+      // Update last saved
+      document.getElementById('current-character-last-saved').textContent = character.updated_at ? 
+        `Last saved: ${new Date(character.updated_at).toLocaleDateString()}` : 'Not saved';
+      
+    } catch (error) {
+      console.warn('Could not load current character data:', error);
       currentCharacterSection.style.display = 'none';
     }
   }
