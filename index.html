@@ -302,16 +302,21 @@
         
         <!-- Official save button - completely rebuilt -->
         <div style="margin-left: 15px; display: inline-block;">
-          <button type="button" id="saveCurrentCharacterBtn" onclick="
-            console.log('🎯 INLINE ONCLICK WORKS!'); 
-            const debugInfo = document.getElementById('debug-info');
-            if (debugInfo) debugInfo.textContent = 'Status: INLINE ONCLICK TRIGGERED!';
-            if (window.zeviAuth) {
-              window.zeviAuth.saveCurrentCharacterData();
-            } else {
-              console.log('zeviAuth not available');
-            }
-          " style="background: #FF0000 !important; color: white !important; border: 3px solid #FF6600 !important; padding: 12px 20px !important; border-radius: 8px !important; font-weight: bold !important; cursor: pointer !important; z-index: 9999 !important; position: relative !important;">
+                     <button type="button" id="saveCurrentCharacterBtn" onclick="
+             console.log('🎯 SAVE BUTTON CLICKED!'); 
+             const debugInfo = document.getElementById('debug-info');
+             if (debugInfo) debugInfo.textContent = 'Status: Processing save...';
+             if (window.zeviAuth) {
+               window.zeviAuth.saveCurrentCharacterData().then(() => {
+                 console.log('✅ Save operation completed');
+               }).catch(err => {
+                 console.error('❌ Save operation failed:', err);
+               });
+             } else {
+               console.log('zeviAuth not available');
+               if (debugInfo) debugInfo.textContent = 'Status: zeviAuth not available';
+             }
+           " style="background: #FF0000 !important; color: white !important; border: 3px solid #FF6600 !important; padding: 12px 20px !important; border-radius: 8px !important; font-weight: bold !important; cursor: pointer !important; z-index: 9999 !important; position: relative !important;">
             💾 SAVE CHARACTER (INLINE)
           </button>
         </div>

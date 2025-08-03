@@ -981,14 +981,6 @@ class ZeviAuth {
       if (debugInfo) debugInfo.textContent = `Status: Saving character ${currentCharacterId}...`;
       console.log('🔄 Starting save process...');
       
-      // Check if app systems are available
-      console.log('🔍 Checking app systems:');
-      console.log('- window.app:', !!window.app);
-      console.log('- window.app.autoSave:', !!window.app?.autoSave);
-      console.log('- triggerManualSave:', !!window.app?.autoSave?.triggerManualSave);
-      console.log('- collectCurrentCharacterData:', !!window.app?.autoSave?.collectCurrentCharacterData);
-      console.log('- saveCharacterData:', !!window.app?.characterData?.saveCharacterData);
-      
       // Get the character name from the UI
       const nameElement = document.querySelector('.character-name-editor');
       const characterName = nameElement?.textContent;
@@ -1007,6 +999,7 @@ class ZeviAuth {
         }
       } else {
         console.log('❌ Cannot collect character data - collectCurrentCharacterData not available');
+        return;
       }
       
       // Try to save using the character data system
@@ -1015,24 +1008,29 @@ class ZeviAuth {
         await window.app.characterData.saveCharacterData(currentCharacterId, characterData);
         console.log('✅ Character data saved successfully');
         
-        if (debugInfo) debugInfo.textContent = `Status: Character saved (${characterData.name || 'Unnamed'})`;
+        // Show success message and KEEP it visible
+        if (debugInfo) {
+          debugInfo.textContent = `Status: ✅ Character "${characterData.name || 'Unnamed'}" saved successfully!`;
+          debugInfo.style.backgroundColor = 'rgba(0, 255, 0, 0.2)';
+          debugInfo.style.color = '#00FF00';
+        }
+        
+        // Don't refresh the display immediately - let the user see the success message
+        console.log('✅ Save completed - NOT refreshing display to preserve success message');
+        return; // Exit here to prevent the refresh
+        
       } else {
         console.log('❌ Cannot save - saveCharacterData not available or no data collected');
         if (debugInfo) debugInfo.textContent = `Status: Save failed - missing save system`;
       }
       
-      // Also trigger the app's auto-save system as backup
-      if (window.app?.autoSave?.triggerManualSave) {
-        console.log('🔄 Triggering manual save as backup...');
-        await window.app.autoSave.triggerManualSave();
-        console.log('✅ Manual save triggered');
-      } else {
-        console.log('⚠️ triggerManualSave not available');
-      }
-      
     } catch (error) {
       console.error('❌ Failed to save current character data:', error);
-      if (debugInfo) debugInfo.textContent = `Status: Save failed - ${error.message}`;
+      if (debugInfo) {
+        debugInfo.textContent = `Status: Save failed - ${error.message}`;
+        debugInfo.style.backgroundColor = 'rgba(255, 0, 0, 0.2)';
+        debugInfo.style.color = '#FF6666';
+      }
     }
   }
 
