@@ -303,18 +303,44 @@
         <!-- Official save button - completely rebuilt -->
         <div style="margin-left: 15px; display: inline-block;">
                      <button type="button" id="saveCurrentCharacterBtn" onclick="
-             console.log('🎯 SAVE BUTTON CLICKED!'); 
+             console.log('🔥 BUTTON CLICK DETECTED!'); 
              const debugInfo = document.getElementById('debug-info');
-             if (debugInfo) debugInfo.textContent = 'Status: Processing save...';
+             
+             // Step 1: Test if we can update the status
+             if (debugInfo) {
+               debugInfo.textContent = 'Status: ✅ BUTTON CLICKED - FUNCTION WORKS!';
+               debugInfo.style.backgroundColor = 'rgba(255, 255, 0, 0.8)';
+               debugInfo.style.color = '#000000';
+               debugInfo.style.fontWeight = 'bold';
+               debugInfo.style.fontSize = '14px';
+             }
+             
+             // Step 2: Test if zeviAuth exists
              if (window.zeviAuth) {
-               window.zeviAuth.saveCurrentCharacterData().then(() => {
-                 console.log('✅ Save operation completed');
-               }).catch(err => {
-                 console.error('❌ Save operation failed:', err);
-               });
+               console.log('✅ zeviAuth found');
+               if (debugInfo) {
+                 setTimeout(() => {
+                   debugInfo.textContent = 'Status: ✅ zeviAuth found, calling save...';
+                   debugInfo.style.backgroundColor = 'rgba(0, 255, 255, 0.8)';
+                 }, 500);
+               }
+               
+               // Step 3: Call the save function
+               try {
+                 window.zeviAuth.saveCurrentCharacterData();
+               } catch (error) {
+                 console.error('Save function error:', error);
+                 if (debugInfo) {
+                   debugInfo.textContent = 'Status: ❌ Save function error: ' + error.message;
+                   debugInfo.style.backgroundColor = 'rgba(255, 0, 0, 0.8)';
+                 }
+               }
              } else {
-               console.log('zeviAuth not available');
-               if (debugInfo) debugInfo.textContent = 'Status: zeviAuth not available';
+               console.log('❌ zeviAuth not found');
+               if (debugInfo) {
+                 debugInfo.textContent = 'Status: ❌ zeviAuth not available';
+                 debugInfo.style.backgroundColor = 'rgba(255, 0, 0, 0.8)';
+               }
              }
            " style="background: #FF0000 !important; color: white !important; border: 3px solid #FF6600 !important; padding: 12px 20px !important; border-radius: 8px !important; font-weight: bold !important; cursor: pointer !important; z-index: 9999 !important; position: relative !important;">
             💾 SAVE CHARACTER (INLINE)
