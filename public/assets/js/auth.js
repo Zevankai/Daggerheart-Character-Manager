@@ -361,11 +361,17 @@ class ZeviAuth {
   switchTab(tab) {
     // Update tab buttons
     document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-    document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+    const tabButton = document.querySelector(`[data-tab="${tab}"]`);
+    if (tabButton) {
+      tabButton.classList.add('active');
+    }
 
     // Update forms
     document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-    document.getElementById(`auth-${tab}`).classList.add('active');
+    const targetForm = document.getElementById(`auth-${tab}`);
+    if (targetForm) {
+      targetForm.classList.add('active');
+    }
 
     this.clearMessages();
   }
