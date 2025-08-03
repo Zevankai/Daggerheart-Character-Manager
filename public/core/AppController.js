@@ -161,11 +161,12 @@ class AppController {
             });
         });
         
-        // Remove any buttons containing save-related text
+        // Remove any buttons containing save-related text (but skip our official save button)
         const allButtons = document.querySelectorAll('button');
         allButtons.forEach(button => {
             const text = button.textContent.toLowerCase();
-            if (text.includes('💾') || text.includes('save character') || text.includes('free storage') || text.includes('🧹')) {
+            const isOfficialSaveButton = button.id === 'saveCurrentCharacterBtn';
+            if (!isOfficialSaveButton && (text.includes('💾') || text.includes('save character') || text.includes('free storage') || text.includes('🧹'))) {
                 console.log('Removing button with save-related text:', button.textContent);
                 button.remove();
             }
