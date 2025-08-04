@@ -353,18 +353,62 @@ class ZeviAuth {
       localStorage.setItem('zevi-current-user', JSON.stringify(response.user));
       
       this.showMessage('Login successful!', 'success');
-      setTimeout(() => {
+      setTimeout(async () => {
         this.hideAuthModal();
         this.updateUIForLoggedInUser();
+        
+        // Initialize cloud mode in character data
+        if (window.app?.characterData) {
+          window.app.characterData.initializeCloudMode();
+        }
+        
         // Show character sheet after login
         if (document.querySelector('.glass')) {
           document.querySelector('.glass').style.display = 'block';
         }
+        
         // Initialize the character sheet if not already done
         if (typeof initializeIndexPage === 'function') {
           console.log('🔄 Initializing index page after login...');
           initializeIndexPage();
         }
+        
+        // Load active character or show character selection
+        try {
+          if (window.app?.characterData) {
+            const activeCharacter = await window.app.characterData.loadActiveCharacter();
+            if (!activeCharacter) {
+              // No active character, check if user has any characters
+              const response = await window.zeviAPI.getCharacters();
+              if (response.characters && response.characters.length > 0) {
+                // User has characters but none active, show characters tab
+                console.log('User has characters but none active, showing characters tab');
+                setTimeout(() => {
+                  const charactersTab = document.querySelector('[data-target="characters-tab-content"]');
+                  if (charactersTab) charactersTab.click();
+                }, 500);
+              } else {
+                // No characters at all, show welcome message and characters tab
+                console.log('No characters found, showing welcome message');
+                setTimeout(() => {
+                  const charactersTab = document.querySelector('[data-target="characters-tab-content"]');
+                  if (charactersTab) charactersTab.click();
+                  
+                  if (window.characterManager) {
+                    window.characterManager.updateStatus('Welcome! Create your first character to get started', '👋', 'info');
+                  }
+                }, 500);
+              }
+            } else {
+              console.log('Active character loaded:', activeCharacter.character_data?.name);
+            }
+          }
+        } catch (error) {
+          console.error('Failed to load character after login:', error);
+        }
+        
+        // Dispatch login event for other components
+        window.dispatchEvent(new CustomEvent('zeviAuth:login', { detail: response }));
       }, 1000);
       
     } catch (error) {

@@ -268,107 +268,499 @@
     </div>
    </div>
 
-     <!-- COMPLETELY REBUILT CHARACTERS TAB -->
+     <!-- COMPREHENSIVE CHARACTER MANAGEMENT TAB -->
   <div id="characters-tab-content" class="tab-panel">
-    <div style="max-width: 1000px; margin: 0 auto; padding: 30px 20px;">
+    <div class="character-management-container">
       
       <!-- Header -->
-      <div style="text-align: center; margin-bottom: 40px;">
-        <h2 style="color: var(--text-color); margin: 0 0 10px 0; font-size: 2.5rem;">Character Management</h2>
-        <p style="color: rgba(255,255,255,0.8); font-size: 1.1rem; margin: 0;">Save, create, and manage your characters</p>
+      <div class="cm-header">
+        <h2>Character Management</h2>
+        <p>Save, create, and manage your characters in the cloud</p>
       </div>
       
-      <!-- Status Display -->
-      <div id="save-status" style="
-        background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,0,0,0.2));
-        padding: 20px;
-        border-radius: 12px;
-        margin-bottom: 30px;
-        text-align: center;
-        font-weight: bold;
-        color: #fff;
-        border: 2px solid rgba(255,255,255,0.1);
-        min-height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.1rem;
-      ">
-        💡 Ready to save your character progress
-      </div>
-      
-      <!-- DEBUG: Test visibility -->
-      <div style="background: purple; color: white; padding: 20px; text-align: center; font-size: 24px; margin: 20px 0; border: 5px solid yellow;">
-        🚨 DEBUG: CAN YOU SEE THIS PURPLE BOX? 🚨
-      </div>
-      
-      <!-- Action Buttons -->
-      <div style="display: flex; gap: 20px; justify-content: center; margin-bottom: 40px; flex-wrap: wrap; background: rgba(0,255,0,0.2); padding: 20px; border: 3px solid lime;">
+      <!-- Current Character Section -->
+      <div class="cm-current-character glass" data-color-target="auth-modal">
+        <div class="cm-current-header">
+          <h3>📋 Currently Active Character</h3>
+          <div class="cm-save-indicator" id="cm-save-indicator">●</div>
+        </div>
         
-        <!-- Save Current Character -->
-        <button id="new-save-btn" style="
-          background: #FF0000 !important;
-          color: white !important;
-          border: 5px solid #FFFF00 !important;
-          padding: 25px 40px !important;
-          border-radius: 12px !important;
-          font-size: 24px !important;
-          font-weight: bold !important;
-          cursor: pointer !important;
-          box-shadow: 0 10px 30px rgba(255, 0, 0, 0.8) !important;
-          transition: all 0.3s ease !important;
-          min-width: 300px !important;
-          position: relative !important;
-          overflow: hidden !important;
-          z-index: 99999 !important;
-          display: block !important;
-          visibility: visible !important;
-          opacity: 1 !important;
-        ">
-          💾 SAVE CHARACTER - RED BUTTON
-        </button>
-        
-        <!-- Create New Character -->
-        <button id="new-create-btn" style="
-          background: linear-gradient(135deg, #2196F3, #1976D2);
-          color: white;
-          border: none;
-          padding: 18px 30px;
-          border-radius: 12px;
-          font-size: 18px;
-          font-weight: bold;
-          cursor: pointer;
-          box-shadow: 0 6px 20px rgba(33, 150, 243, 0.3);
-          transition: all 0.3s ease;
-          min-width: 250px;
-          position: relative;
-          overflow: hidden;
-        ">
-          ➕ Create New Character
-        </button>
-        
-      </div>
-      
-      <!-- Characters List -->
-      <div style="
-        background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-        padding: 30px;
-        border-radius: 12px;
-        border: 2px solid rgba(255,255,255,0.1);
-      ">
-        <h3 style="color: var(--text-color); margin: 0 0 20px 0; font-size: 1.5rem;">Your Characters</h3>
-        <div id="new-characters-grid" style="
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-          gap: 20px;
-          min-height: 200px;
-        ">
-          <div style="text-align: center; color: rgba(255,255,255,0.7); padding: 40px; grid-column: 1 / -1;">
-            <div style="font-size: 3rem; margin-bottom: 10px;">⏳</div>
-            <div style="font-size: 1.2rem;">Loading your characters...</div>
+        <div class="cm-current-content" id="cm-current-content">
+          <div class="cm-current-avatar" id="cm-current-avatar">?</div>
+          <div class="cm-current-info">
+            <div class="cm-current-name" id="cm-current-name">No Character Loaded</div>
+            <div class="cm-current-details" id="cm-current-details">Create or select a character to get started</div>
+            <div class="cm-current-meta">
+              <span class="cm-current-level" id="cm-current-level">Level -</span>
+              <span class="cm-current-saved" id="cm-current-saved">Not saved</span>
+            </div>
+          </div>
+          <div class="cm-current-actions">
+            <button class="cm-btn cm-btn-primary" id="cm-save-current" onclick="saveCurrentCharacter()">
+              💾 Save Current
+            </button>
+            <button class="cm-btn cm-btn-secondary" id="cm-autosave-toggle" onclick="toggleAutoSave()">
+              🔄 Auto-Save: ON
+            </button>
           </div>
         </div>
       </div>
+      
+             <!-- Quick Actions -->
+       <div class="cm-quick-actions">
+         <button class="cm-btn cm-btn-create" onclick="createNewCharacter()">
+           ➕ Create New Character
+         </button>
+         <button class="cm-btn cm-btn-import" onclick="importCharacter()">
+           📥 Import Character
+         </button>
+         <button class="cm-btn cm-btn-export" onclick="exportCurrentCharacter()">
+           📤 Export Current
+         </button>
+         <button class="cm-btn cm-btn-test" onclick="runDatabaseTests()" title="Test database connection and data integrity (Ctrl+Shift+T)">
+           🧪 Test Database
+         </button>
+       </div>
+      
+      <!-- Character List -->
+      <div class="cm-character-list glass" data-color-target="equipment-glass">
+        <div class="cm-list-header">
+          <h3>Your Characters</h3>
+          <div class="cm-list-actions">
+            <button class="cm-btn cm-btn-small" onclick="refreshCharacterList()">🔄 Refresh</button>
+            <select class="cm-sort-select" id="cm-sort-select" onchange="sortCharacterList()">
+              <option value="updated">Recently Updated</option>
+              <option value="created">Recently Created</option>
+              <option value="name">Name (A-Z)</option>
+              <option value="level">Level</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="cm-characters-grid" id="cm-characters-grid">
+          <div class="cm-loading">
+            <div class="cm-loading-icon">⏳</div>
+            <div>Loading your characters...</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Status Bar -->
+      <div class="cm-status-bar" id="cm-status-bar">
+        <div class="cm-status-content">
+          <span class="cm-status-icon" id="cm-status-icon">💡</span>
+          <span class="cm-status-text" id="cm-status-text">Ready to manage your characters</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Character Management Styles -->
+  <style>
+    .character-management-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .cm-header {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .cm-header h2 {
+      color: var(--text-color);
+      margin: 0 0 8px 0;
+      font-size: 2.2rem;
+    }
+
+    .cm-header p {
+      color: rgba(255,255,255,0.8);
+      margin: 0;
+      font-size: 1.1rem;
+    }
+
+    .cm-current-character {
+      padding: 20px;
+      border-radius: 12px;
+      border: 2px solid rgba(255,255,255,0.1);
+    }
+
+    .cm-current-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .cm-current-header h3 {
+      color: var(--text-color);
+      margin: 0;
+      font-size: 1.3rem;
+    }
+
+    .cm-save-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #4CAF50;
+      animation: pulse 2s infinite;
+    }
+
+    .cm-save-indicator.saving {
+      background: #FF9800;
+    }
+
+    .cm-save-indicator.error {
+      background: #f44336;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+
+    .cm-current-content {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .cm-current-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-color), rgba(255,255,255,0.3));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .cm-current-info {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .cm-current-name {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: var(--text-color);
+      margin-bottom: 5px;
+    }
+
+    .cm-current-details {
+      color: rgba(255,255,255,0.8);
+      margin-bottom: 8px;
+    }
+
+    .cm-current-meta {
+      display: flex;
+      gap: 15px;
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .cm-current-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .cm-quick-actions {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .cm-btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cm-btn-primary {
+      background: linear-gradient(135deg, #4CAF50, #45a049);
+      color: white;
+    }
+
+    .cm-btn-secondary {
+      background: linear-gradient(135deg, #2196F3, #1976D2);
+      color: white;
+    }
+
+    .cm-btn-create {
+      background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+      color: white;
+      padding: 15px 30px;
+      font-size: 1.1rem;
+    }
+
+    .cm-btn-import {
+      background: linear-gradient(135deg, #FF9800, #F57C00);
+      color: white;
+    }
+
+    .cm-btn-export {
+      background: linear-gradient(135deg, #607D8B, #455A64);
+      color: white;
+    }
+
+    .cm-btn-test {
+      background: linear-gradient(135deg, #E91E63, #C2185B);
+      color: white;
+    }
+
+    .cm-btn-small {
+      padding: 8px 12px;
+      font-size: 0.9rem;
+      background: rgba(255,255,255,0.1);
+      color: var(--text-color);
+    }
+
+    .cm-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .cm-character-list {
+      padding: 20px;
+      border-radius: 12px;
+      border: 2px solid rgba(255,255,255,0.1);
+    }
+
+    .cm-list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .cm-list-header h3 {
+      color: var(--text-color);
+      margin: 0;
+      font-size: 1.3rem;
+    }
+
+    .cm-list-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .cm-sort-select {
+      padding: 8px 12px;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 6px;
+      background: rgba(255,255,255,0.1);
+      color: var(--text-color);
+      font-size: 0.9rem;
+    }
+
+    .cm-characters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      min-height: 150px;
+    }
+
+    .cm-loading {
+      grid-column: 1 / -1;
+      text-align: center;
+      color: rgba(255,255,255,0.7);
+      padding: 40px;
+    }
+
+    .cm-loading-icon {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+
+    .cm-character-card {
+      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cm-character-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      border-color: var(--accent-color);
+    }
+
+    .cm-character-card.active {
+      border-color: var(--accent-color);
+      background: linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,215,0,0.1));
+    }
+
+    .cm-character-card.active::before {
+      content: "ACTIVE";
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--accent-color);
+      color: black;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: bold;
+    }
+
+    .cm-card-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .cm-card-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-color), rgba(255,255,255,0.3));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .cm-card-info {
+      flex: 1;
+    }
+
+    .cm-card-name {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--text-color);
+      margin-bottom: 5px;
+    }
+
+    .cm-card-details {
+      color: rgba(255,255,255,0.7);
+      font-size: 0.9rem;
+    }
+
+    .cm-card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .cm-card-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .cm-card-btn {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .cm-card-btn-load {
+      background: linear-gradient(135deg, #4CAF50, #45a049);
+      color: white;
+    }
+
+    .cm-card-btn-copy {
+      background: linear-gradient(135deg, #2196F3, #1976D2);
+      color: white;
+    }
+
+    .cm-card-btn-delete {
+      background: linear-gradient(135deg, #f44336, #d32f2f);
+      color: white;
+    }
+
+    .cm-card-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .cm-status-bar {
+      background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,0,0,0.2));
+      padding: 15px 20px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .cm-status-content {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .cm-status-icon {
+      font-size: 1.2rem;
+    }
+
+    .cm-status-text {
+      color: var(--text-color);
+      font-weight: 500;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .character-management-container {
+        padding: 15px;
+      }
+      
+      .cm-current-content {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .cm-quick-actions {
+        flex-direction: column;
+      }
+      
+      .cm-list-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .cm-characters-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
       
     </div>
     
@@ -465,49 +857,478 @@
             grid.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.7); padding: 40px; grid-column: 1 / -1;"><div style="font-size: 2rem; margin-bottom: 10px;">❌</div><div>Characters system not available</div></div>';
           }
         }
-        
-        // Load characters when tab becomes visible
-        const observer = new MutationObserver(function(mutations) {
-          mutations.forEach(function(mutation) {
-            const charactersTab = document.getElementById('characters-tab-content');
-            if (charactersTab && charactersTab.style.display !== 'none' && !charactersTab.classList.contains('loaded')) {
-              charactersTab.classList.add('loaded');
-              setTimeout(loadNewCharactersList, 500);
+            });
+
+      // Initialize character manager when DOM is ready
+      document.addEventListener('DOMContentLoaded', () => {
+        if (window.characterManager) {
+          characterManager.init();
+        }
+      });
+    </script>
+
+    <!-- Character Management JavaScript -->
+    <script>
+      // Character Management System
+      class CharacterManager {
+        constructor() {
+          this.isAutoSaveEnabled = true;
+          this.characters = [];
+          this.currentCharacterId = null;
+          this.sortMethod = 'updated';
+        }
+
+        init() {
+          console.log('🚀 Initializing Character Manager');
+          
+          // Set up event listeners when tab is opened
+          document.addEventListener('click', (e) => {
+            if (e.target.getAttribute('data-target') === 'characters-tab-content') {
+              setTimeout(() => {
+                this.loadCurrentCharacterDisplay();
+                this.loadCharactersList();
+              }, 100);
             }
           });
-        });
-        
-        const charactersTab = document.getElementById('characters-tab-content');
-        if (charactersTab) {
-          observer.observe(charactersTab, { attributes: true, attributeFilter: ['style', 'class'] });
         }
-             });
-       
-       // Global functions for character card buttons
-       window.loadCharacterById = function(characterId) {
-         console.log('🔄 Loading character:', characterId);
-         if (window.zeviAuth && typeof window.zeviAuth.loadCharacter === 'function') {
-           window.zeviAuth.loadCharacter(characterId);
-         }
-       };
-       
-       window.duplicateCharacterById = function(characterId) {
-         console.log('📋 Duplicating character:', characterId);
-         if (window.zeviAuth && typeof window.zeviAuth.duplicateCharacter === 'function') {
-           window.zeviAuth.duplicateCharacter(characterId);
-         }
-       };
-       
-       window.deleteCharacterById = function(characterId) {
-         console.log('🗑️ Deleting character:', characterId);
-         if (confirm('Are you sure you want to delete this character? This action cannot be undone.')) {
-           if (window.zeviAuth && typeof window.zeviAuth.deleteCharacter === 'function') {
-             window.zeviAuth.deleteCharacter(characterId);
-           }
-         }
-       };
-     </script>
-   </div>
+
+        updateStatus(text, icon = '💡', type = 'info') {
+          const statusIcon = document.getElementById('cm-status-icon');
+          const statusText = document.getElementById('cm-status-text');
+          
+          if (statusIcon) statusIcon.textContent = icon;
+          if (statusText) statusText.textContent = text;
+          
+          // Update save indicator
+          const saveIndicator = document.getElementById('cm-save-indicator');
+          if (saveIndicator) {
+            saveIndicator.className = 'cm-save-indicator';
+            if (type === 'saving') saveIndicator.classList.add('saving');
+            if (type === 'error') saveIndicator.classList.add('error');
+          }
+        }
+
+        async loadCurrentCharacterDisplay() {
+          const nameEl = document.getElementById('cm-current-name');
+          const detailsEl = document.getElementById('cm-current-details');
+          const levelEl = document.getElementById('cm-current-level');
+          const savedEl = document.getElementById('cm-current-saved');
+          const avatarEl = document.getElementById('cm-current-avatar');
+          
+          if (!nameEl) return;
+          
+          try {
+            if (window.zeviAPI && window.zeviAPI.isLoggedIn()) {
+              const response = await window.zeviAPI.getActiveCharacter();
+              const character = response.character;
+              const data = character.character_data || {};
+              
+              this.currentCharacterId = character.id;
+              
+              // Update display
+              nameEl.textContent = data.name || 'Unnamed Character';
+              detailsEl.textContent = [data.ancestry, data.class, data.subclass].filter(Boolean).join(' ') || 'No class info';
+              levelEl.textContent = `Level ${data.level || 1}`;
+              savedEl.textContent = `Last saved: ${new Date(character.updated_at).toLocaleDateString()}`;
+              avatarEl.textContent = (data.name || 'U').charAt(0).toUpperCase();
+              
+              this.updateStatus('Active character loaded', '✅', 'success');
+            } else {
+              // Not logged in
+              nameEl.textContent = 'Not Logged In';
+              detailsEl.textContent = 'Please log in to manage characters';
+              levelEl.textContent = 'Level -';
+              savedEl.textContent = 'Not saved';
+              avatarEl.textContent = '?';
+              
+              this.updateStatus('Please log in to manage characters', '🔐', 'info');
+            }
+          } catch (error) {
+            console.error('Failed to load current character:', error);
+            nameEl.textContent = 'No Character Selected';
+            detailsEl.textContent = 'Create or select a character to begin';
+            levelEl.textContent = 'Level -';
+            savedEl.textContent = 'Not saved';
+            avatarEl.textContent = '?';
+            
+            this.updateStatus('No active character found', '⚠️', 'info');
+          }
+        }
+
+        async loadCharactersList() {
+          const grid = document.getElementById('cm-characters-grid');
+          if (!grid) return;
+          
+          if (!window.zeviAPI || !window.zeviAPI.isLoggedIn()) {
+            grid.innerHTML = `
+              <div class="cm-loading">
+                <div class="cm-loading-icon">🔐</div>
+                <div>Please log in to view your characters</div>
+              </div>
+            `;
+            return;
+          }
+          
+          // Show loading
+          grid.innerHTML = `
+            <div class="cm-loading">
+              <div class="cm-loading-icon">⏳</div>
+              <div>Loading your characters...</div>
+            </div>
+          `;
+          
+          try {
+            const response = await window.zeviAPI.getCharacters();
+            this.characters = response.characters || [];
+            this.currentCharacterId = response.activeCharacterId;
+            
+            this.renderCharactersList();
+            this.updateStatus(`Loaded ${this.characters.length} characters`, '📋', 'success');
+          } catch (error) {
+            console.error('Failed to load characters:', error);
+            grid.innerHTML = `
+              <div class="cm-loading">
+                <div class="cm-loading-icon">❌</div>
+                <div>Failed to load characters: ${error.message}</div>
+              </div>
+            `;
+            this.updateStatus('Failed to load characters', '❌', 'error');
+          }
+        }
+
+        renderCharactersList() {
+          const grid = document.getElementById('cm-characters-grid');
+          if (!grid) return;
+          
+          if (this.characters.length === 0) {
+            grid.innerHTML = `
+              <div class="cm-loading">
+                <div class="cm-loading-icon">📋</div>
+                <div>No characters yet. Create your first character!</div>
+              </div>
+            `;
+            return;
+          }
+          
+          // Sort characters
+          this.sortCharacters();
+          
+          const charactersHtml = this.characters.map(char => {
+            const data = char.character_data || {};
+            const isActive = char.id.toString() === this.currentCharacterId?.toString();
+            const avatar = (data.name || 'U').charAt(0).toUpperCase();
+            const details = [data.ancestry, data.class, data.subclass].filter(Boolean).join(' ') || 'No class info';
+            
+            return `
+              <div class="cm-character-card ${isActive ? 'active' : ''}" data-character-id="${char.id}">
+                <div class="cm-card-header">
+                  <div class="cm-card-avatar">${avatar}</div>
+                  <div class="cm-card-info">
+                    <div class="cm-card-name">${data.name || 'Unnamed Character'}</div>
+                    <div class="cm-card-details">${details}</div>
+                  </div>
+                </div>
+                
+                <div class="cm-card-meta">
+                  <span>Level ${data.level || 1}</span>
+                  <span>${new Date(char.updated_at).toLocaleDateString()}</span>
+                </div>
+                
+                <div class="cm-card-actions">
+                  <button class="cm-card-btn cm-card-btn-load" onclick="characterManager.loadCharacter(${char.id})">
+                    📂 Load
+                  </button>
+                  <button class="cm-card-btn cm-card-btn-copy" onclick="characterManager.duplicateCharacter(${char.id})">
+                    📋 Copy
+                  </button>
+                  <button class="cm-card-btn cm-card-btn-delete" onclick="characterManager.deleteCharacter(${char.id})">
+                    🗑️ Delete
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('');
+          
+          grid.innerHTML = charactersHtml;
+        }
+
+        sortCharacters() {
+          switch (this.sortMethod) {
+            case 'name':
+              this.characters.sort((a, b) => (a.character_data?.name || 'Unnamed').localeCompare(b.character_data?.name || 'Unnamed'));
+              break;
+            case 'level':
+              this.characters.sort((a, b) => (b.character_data?.level || 1) - (a.character_data?.level || 1));
+              break;
+            case 'created':
+              this.characters.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+              break;
+            case 'updated':
+            default:
+              this.characters.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+              break;
+          }
+        }
+
+        async loadCharacter(characterId) {
+          try {
+            this.updateStatus('Loading character...', '📂', 'saving');
+            
+            // Save current character first if logged in
+            if (window.app?.characterData?.getCurrentCharacterId()) {
+              await this.saveCurrentCharacter();
+            }
+            
+            // Load the new character
+            await window.app?.characterData?.loadCloudCharacter(characterId);
+            
+            // Update displays
+            await this.loadCurrentCharacterDisplay();
+            this.renderCharactersList();
+            
+            // Switch to main character sheet
+            const downtimeTab = document.querySelector('[data-target="downtime-tab-content"]');
+            if (downtimeTab) downtimeTab.click();
+            
+            this.updateStatus('Character loaded successfully', '✅', 'success');
+          } catch (error) {
+            console.error('Failed to load character:', error);
+            this.updateStatus(`Failed to load character: ${error.message}`, '❌', 'error');
+          }
+        }
+
+        async duplicateCharacter(characterId) {
+          try {
+            this.updateStatus('Duplicating character...', '📋', 'saving');
+            
+            const response = await window.zeviAPI.getCharacter(characterId);
+            const originalChar = response.character;
+            
+            const duplicatedData = {
+              ...originalChar.character_data,
+              name: `${originalChar.character_data?.name || 'Character'} (Copy)`,
+              createdAt: new Date().toISOString()
+            };
+            
+            await window.zeviAPI.createCharacter(duplicatedData.name, duplicatedData, false);
+            
+            await this.loadCharactersList();
+            this.updateStatus('Character duplicated successfully', '✅', 'success');
+          } catch (error) {
+            console.error('Failed to duplicate character:', error);
+            this.updateStatus(`Failed to duplicate character: ${error.message}`, '❌', 'error');
+          }
+        }
+
+        async deleteCharacter(characterId) {
+          if (!confirm('Are you sure you want to delete this character? This action cannot be undone.')) {
+            return;
+          }
+          
+          try {
+            this.updateStatus('Deleting character...', '🗑️', 'saving');
+            
+            await window.zeviAPI.deleteCharacter(characterId);
+            
+            // If we deleted the current character, clear it
+            if (characterId.toString() === this.currentCharacterId?.toString()) {
+              this.currentCharacterId = null;
+              await this.loadCurrentCharacterDisplay();
+            }
+            
+            await this.loadCharactersList();
+            this.updateStatus('Character deleted successfully', '✅', 'success');
+          } catch (error) {
+            console.error('Failed to delete character:', error);
+            this.updateStatus(`Failed to delete character: ${error.message}`, '❌', 'error');
+          }
+        }
+      }
+
+      // Global character manager instance
+      window.characterManager = new CharacterManager();
+
+      // Global functions for HTML onclick handlers
+      async function saveCurrentCharacter() {
+        try {
+          characterManager.updateStatus('Saving character...', '💾', 'saving');
+          
+          const currentCharacterId = window.app?.characterData?.getCurrentCharacterId();
+          if (!currentCharacterId) {
+            throw new Error('No current character to save');
+          }
+          
+          const characterData = window.app?.characterData?.collectCurrentCharacterData();
+          if (!characterData) {
+            throw new Error('Failed to collect character data');
+          }
+          
+          await window.app.characterData.saveCharacterData(currentCharacterId, characterData, 'manual');
+          
+          await characterManager.loadCurrentCharacterDisplay();
+          await characterManager.loadCharactersList();
+          
+          characterManager.updateStatus('Character saved successfully', '✅', 'success');
+        } catch (error) {
+          console.error('Failed to save character:', error);
+          characterManager.updateStatus(`Save failed: ${error.message}`, '❌', 'error');
+        }
+      }
+
+      function toggleAutoSave() {
+        characterManager.isAutoSaveEnabled = !characterManager.isAutoSaveEnabled;
+        const btn = document.getElementById('cm-autosave-toggle');
+        if (btn) {
+          btn.textContent = `🔄 Auto-Save: ${characterManager.isAutoSaveEnabled ? 'ON' : 'OFF'}`;
+        }
+        
+        characterManager.updateStatus(
+          `Auto-save ${characterManager.isAutoSaveEnabled ? 'enabled' : 'disabled'}`, 
+          characterManager.isAutoSaveEnabled ? '✅' : '⏸️', 
+          'info'
+        );
+      }
+
+      async function createNewCharacter() {
+        try {
+          characterManager.updateStatus('Creating new character...', '➕', 'saving');
+          
+          // Save current character first if logged in
+          if (window.app?.characterData?.getCurrentCharacterId()) {
+            await characterManager.saveCurrentCharacter();
+          }
+          
+          // Create new character
+          const defaultData = window.app?.characterData?.createDefaultState() || {};
+          const response = await window.zeviAPI.createCharacter('New Character', defaultData, true);
+          
+          // Load the new character
+          await characterManager.loadCharacter(response.character.id);
+          
+          characterManager.updateStatus('New character created', '✅', 'success');
+        } catch (error) {
+          console.error('Failed to create character:', error);
+          characterManager.updateStatus(`Failed to create character: ${error.message}`, '❌', 'error');
+        }
+      }
+
+      function importCharacter() {
+        characterManager.updateStatus('Import feature coming soon', '🚧', 'info');
+      }
+
+      function exportCurrentCharacter() {
+        characterManager.updateStatus('Export feature coming soon', '🚧', 'info');
+      }
+
+      function refreshCharacterList() {
+        characterManager.loadCharactersList();
+      }
+
+      function sortCharacterList() {
+        const select = document.getElementById('cm-sort-select');
+        if (select) {
+          characterManager.sortMethod = select.value;
+          characterManager.renderCharactersList();
+        }
+      }
+
+      // Testing functions for database verification
+      async function runDatabaseTests() {
+        const statusEl = document.getElementById('cm-status-text');
+        const iconEl = document.getElementById('cm-status-icon');
+        
+        if (!window.zeviAPI || !window.zeviAPI.isLoggedIn()) {
+          characterManager.updateStatus('Must be logged in to run tests', '🔐', 'error');
+          return;
+        }
+        
+        characterManager.updateStatus('Running database tests...', '🧪', 'saving');
+        
+        try {
+          // Test 1: Database Connection
+          iconEl.textContent = '🔌';
+          statusEl.textContent = 'Testing database connection...';
+          const connectionTest = await window.zeviAPI.testDatabaseConnection();
+          console.log('✅ Database connection test:', connectionTest);
+          
+          // Test 2: Character Save/Load
+          iconEl.textContent = '💾';
+          statusEl.textContent = 'Testing character save/load cycle...';
+          const saveTest = await window.zeviAPI.testCharacterSave({
+            testField: 'Database test at ' + new Date().toISOString()
+          });
+          console.log('✅ Character save test:', saveTest);
+          
+          // Test 3: User Characters
+          iconEl.textContent = '👤';
+          statusEl.textContent = 'Testing user character data...';
+          const userTest = await window.zeviAPI.testUserCharacters();
+          console.log('✅ User characters test:', userTest);
+          
+          // Test 4: Database Schema
+          iconEl.textContent = '📋';
+          statusEl.textContent = 'Testing database schema...';
+          const schemaTest = await window.zeviAPI.testDatabaseSchema();
+          console.log('✅ Database schema test:', schemaTest);
+          
+          // Show results
+          const results = {
+            connection: connectionTest.status === 'success',
+            saveLoad: saveTest.status === 'success',
+            userData: userTest.status === 'success',
+            schema: schemaTest.status === 'success'
+          };
+          
+          const allPassed = Object.values(results).every(test => test);
+          
+          characterManager.updateStatus(
+            `Database tests ${allPassed ? 'PASSED' : 'FAILED'} (${Object.values(results).filter(Boolean).length}/4)`,
+            allPassed ? '✅' : '⚠️',
+            allPassed ? 'success' : 'error'
+          );
+          
+          // Show detailed results in console
+          console.group('🧪 Database Test Results');
+          console.log('Connection Test:', connectionTest);
+          console.log('Save/Load Test:', saveTest);
+          console.log('User Data Test:', userTest);
+          console.log('Schema Test:', schemaTest);
+          console.log('Summary:', results);
+          console.groupEnd();
+          
+          // Optionally show alert with summary
+          if (allPassed) {
+            alert('✅ All database tests passed!\n\n' +
+              `• Database connection: Working\n` +
+              `• Character save/load: Working\n` +
+              `• User data integrity: Working\n` +
+              `• Database schema: Valid\n\n` +
+              `Your character data is being saved properly to Neon database!`);
+          } else {
+            alert('⚠️ Some database tests failed!\n\n' +
+              `• Database connection: ${results.connection ? '✅' : '❌'}\n` +
+              `• Character save/load: ${results.saveLoad ? '✅' : '❌'}\n` +
+              `• User data integrity: ${results.userData ? '✅' : '❌'}\n` +
+              `• Database schema: ${results.schema ? '✅' : '❌'}\n\n` +
+              `Check the console for detailed error information.`);
+          }
+          
+        } catch (error) {
+          console.error('❌ Database tests failed:', error);
+          characterManager.updateStatus(`Tests failed: ${error.message}`, '❌', 'error');
+          alert('❌ Database tests failed!\n\n' + error.message + '\n\nCheck the console for details.');
+        }
+      }
+
+      // Add keyboard shortcut for testing
+      document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'T') {
+          e.preventDefault();
+          runDatabaseTests();
+        }
+      });
+    </script>
+  </div>
    <div id="settings-tab-content" class="tab-panel">
     <div class="settings-container">
      <h2>Settings</h2>

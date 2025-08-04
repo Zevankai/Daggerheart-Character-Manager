@@ -105,6 +105,7 @@ class ZeviAPI {
     this.setToken(null);
     // Clear any cached user data
     localStorage.removeItem('zevi-current-user');
+    localStorage.removeItem('zevi-current-character-id');
   }
 
   isLoggedIn() {
@@ -120,13 +121,12 @@ class ZeviAPI {
     return await this.makeRequest(`/characters/${id}`);
   }
 
-  async createCharacter(name, characterData = {}) {
-    console.log('📝 API createCharacter called with:', { name, characterData });
-    console.trace('📍 Character creation called from:');
+  async createCharacter(name, characterData = {}, setAsActive = true) {
+    console.log('📝 API createCharacter called with:', { name, characterData, setAsActive });
     
     return await this.makeRequest('/characters', {
       method: 'POST',
-      body: JSON.stringify({ name, characterData }),
+      body: JSON.stringify({ name, characterData, setAsActive }),
     });
   }
 
@@ -154,15 +154,88 @@ class ZeviAPI {
     return await this.makeRequest(`/characters/shared/${token}`);
   }
 
+  // Active character management
+  async getActiveCharacter() {
+    return await this.makeRequest('/characters/active');
+  }
+
+  async setActiveCharacter(characterId) {
+    return await this.makeRequest('/characters/active', {
+      method: 'POST',
+      body: JSON.stringify({ characterId }),
+    });
+  }
+
   // Auto-save functionality
-  async autoSaveCharacter(id, characterData) {
+  async autoSaveCharacter(characterId, characterData) {
     try {
-      return await this.updateCharacter(id, { characterData });
+      console.log('🔄 Auto-saving character:', characterId);
+      
+      const response = await this.makeRequest('/characters', {
+        method: 'POST',
+        body: JSON.stringify({ characterId, characterData }),
+      });
+      
+      console.log('✅ Auto-save successful:', response);
+      return response;
     } catch (error) {
       console.warn('Auto-save failed:', error);
       // Fall back to localStorage for offline functionality
-      localStorage.setItem(`zevi-character-backup-${id}`, JSON.stringify(characterData));
+      const backupKey = `zevi-character-backup-${characterId}`;
+      localStorage.setItem(backupKey, JSON.stringify({
+        characterData,
+        timestamp: new Date().toISOString(),
+        saved: false
+      }));
+      console.log('💾 Saved to localStorage backup');
       throw error;
+    }
+  }
+
+  // Manual save (uses update endpoint)
+  async saveCharacter(characterId, characterData, characterName = null) {
+    try {
+      console.log('💾 Manually saving character:', characterId);
+      
+      const updates = { characterData };
+      if (characterName) {
+        updates.name = characterName;
+      }
+      
+      const response = await this.updateCharacter(characterId, updates);
+      console.log('✅ Manual save successful:', response);
+      
+      // Clear any backup since we saved successfully
+      localStorage.removeItem(`zevi-character-backup-${characterId}`);
+      
+      return response;
+    } catch (error) {
+      console.error('Manual save failed:', error);
+      throw error;
+    }
+  }
+
+  // Backup management
+  async syncBackups() {
+    if (!this.isLoggedIn()) return;
+    
+    const backupKeys = Object.keys(localStorage).filter(key => 
+      key.startsWith('zevi-character-backup-')
+    );
+    
+    for (const key of backupKeys) {
+      try {
+        const backup = JSON.parse(localStorage.getItem(key));
+        const characterId = key.replace('zevi-character-backup-', '');
+        
+        if (!backup.saved) {
+          await this.autoSaveCharacter(characterId, backup.characterData);
+          localStorage.removeItem(key);
+          console.log('✅ Synced backup for character:', characterId);
+        }
+      } catch (error) {
+        console.warn('Failed to sync backup:', key, error);
+      }
     }
   }
 
@@ -175,7 +248,14 @@ class ZeviAPI {
     try {
       // Check if there's any localStorage character data
       const localStorageKeys = Object.keys(localStorage).filter(key => 
-        key.startsWith('zevi-') && !key.includes('auth-token') && !key.includes('current-user')
+        key.startsWith('zevi-') && 
+        !key.includes('auth-token') && 
+        !key.includes('current-user') &&
+        !key.includes('backup-') &&
+        !key.includes('theme') &&
+        !key.includes('color') &&
+        !key.includes('glass') &&
+        !key.includes('background')
       );
 
       if (localStorageKeys.length === 0) {
@@ -200,7 +280,7 @@ class ZeviAPI {
                            JSON.parse(characterData['zevi-character-details'] || '{}').personal?.name ||
                            'Imported Character';
 
-      const newCharacter = await this.createCharacter(characterName, characterData);
+      const newCharacter = await this.createCharacter(characterName, characterData, true);
 
       // Clear localStorage after successful migration
       localStorageKeys.forEach(key => localStorage.removeItem(key));
@@ -212,6 +292,60 @@ class ZeviAPI {
       };
     } catch (error) {
       console.error('Migration failed:', error);
+      throw error;
+    }
+  }
+
+  // Testing methods for verifying database saves
+  async testDatabaseConnection() {
+    try {
+      const response = await this.makeRequest('/characters/test?action=connection');
+      return response;
+    } catch (error) {
+      console.error('Database test failed:', error);
+      throw error;
+    }
+  }
+
+  async testCharacterSave(testData = {}) {
+    try {
+      const response = await this.makeRequest('/characters/test', {
+        method: 'POST',
+        body: JSON.stringify({ testData })
+      });
+      return response;
+    } catch (error) {
+      console.error('Character save test failed:', error);
+      throw error;
+    }
+  }
+
+  async testUserCharacters() {
+    try {
+      const response = await this.makeRequest('/characters/test?action=characters');
+      return response;
+    } catch (error) {
+      console.error('User characters test failed:', error);
+      throw error;
+    }
+  }
+
+  async testDatabaseSchema() {
+    try {
+      const response = await this.makeRequest('/characters/test?action=schema');
+      return response;
+    } catch (error) {
+      console.error('Database schema test failed:', error);
+      throw error;
+    }
+  }
+
+  async getCharacterSaveHistory(characterId) {
+    try {
+      const response = await this.makeRequest(`/characters/${characterId}/saves`);
+      return response;
+    } catch (error) {
+      console.error('Failed to get save history:', error);
       throw error;
     }
   }
