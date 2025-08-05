@@ -671,7 +671,7 @@ window.CharacterStateManager = new CharacterStateManager();
 console.log('🏗️ CharacterStateManager initialized:', window.CharacterStateManager);
 
 // Make it very obvious if our system is working
-console.log('🚨 CHARACTERSTATE.JS IS LOADED AND RUNNING!');
+console.log('🚨 CHARACTERSTATE.JS IS LOADED AND RUNNING! - DEPLOYMENT TEST');
 
 // Test for white overlay issue
 setTimeout(() => {
