@@ -5,7 +5,10 @@ let experiences = JSON.parse(localStorage.getItem('zevi-experiences')) || [];
 
 // Saves the current state of the experiences array to localStorage
 function saveExperiences() {
-    localStorage.setItem('zevi-experiences', JSON.stringify(experiences));
+    // Trigger auto-save instead of localStorage
+  if (window.app?.characterData?.constructor?.saveCharacterData) {
+    window.app.characterData.constructor.saveCharacterData();
+  }
 }
 
 // Renders the list of experiences as clickable buttons and manages visibility of detail view

@@ -483,7 +483,10 @@ if (projects.length > 0) {
 
 
 function saveProjects() {
-    localStorage.setItem('zevi-projects', JSON.stringify(projects));
+    // Trigger auto-save instead of localStorage
+    if (window.app?.characterData?.constructor?.saveCharacterData) {
+      window.app.characterData.constructor.saveCharacterData();
+    }
 }
 
 

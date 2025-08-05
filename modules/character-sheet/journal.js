@@ -9,7 +9,10 @@ function loadJournalEntries() {
 
 function saveJournalEntries() {
     // Save to localStorage
-    localStorage.setItem('zevi-journal-entries', JSON.stringify(journalEntries));
+    // Trigger auto-save instead of localStorage
+  if (window.app?.characterData?.constructor?.saveCharacterData) {
+    window.app.characterData.constructor.saveCharacterData();
+  }
 }
 
 function renderJournalEntries() {

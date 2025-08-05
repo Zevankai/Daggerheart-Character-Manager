@@ -740,9 +740,12 @@ function initializeBackpackToggle() {
     return;
   }
   
-  // Load saved setting
-  const savedSetting = localStorage.getItem('zevi-backpack-enabled');
-  const isEnabled = savedSetting !== null ? savedSetting === 'true' : true; // Default to enabled
+  // Load saved setting from character-specific storage
+  let isEnabled = true; // Default to enabled
+  if (window.app?.characterData?.getCharacterSpecificValue) {
+    const savedSetting = window.app.characterData.getCharacterSpecificValue('zevi-backpack-enabled');
+    isEnabled = savedSetting !== null ? savedSetting === 'true' : true;
+  }
   
   backpackToggle.checked = isEnabled;
   applyBackpackToggle(isEnabled);
@@ -750,7 +753,17 @@ function initializeBackpackToggle() {
   // Handle toggle change
   backpackToggle.addEventListener('change', (event) => {
     const enabled = event.target.checked;
-    localStorage.setItem('zevi-backpack-enabled', enabled.toString());
+    
+    // Save to character-specific storage and trigger auto-save
+    if (window.app?.characterData?.setCharacterSpecificValue) {
+      window.app.characterData.setCharacterSpecificValue('zevi-backpack-enabled', enabled.toString());
+    }
+    
+    // Trigger auto-save to persist to database
+    if (window.app?.autoSave?.triggerSave) {
+      window.app.autoSave.triggerSave();
+    }
+    
     applyBackpackToggle(enabled);
     showNotification(
       enabled ? 'Backpack & encumbrance system enabled!' : 'Backpack & encumbrance system disabled!',

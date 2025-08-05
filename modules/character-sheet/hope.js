@@ -24,8 +24,10 @@ function renderHopeCircles() {
     if (currentHope > currentMaxHope) currentHope = currentMaxHope;
     if (currentHope < 0) currentHope = 0; // Prevent negative hope
 
-    localStorage.setItem('zevi-hope', currentHope); // Update stored current hope in case it was capped
-    localStorage.setItem('zevi-max-hope', currentMaxHope); // Ensure updated max hope is stored
+    // Trigger auto-save instead of localStorage
+    if (window.app?.characterData?.constructor?.saveCharacterData) {
+        window.app.characterData.constructor.saveCharacterData();
+    }
 
     // Create circles up to the currentMaxHope
     for (let i = 0; i < currentMaxHope; i++) {
@@ -56,7 +58,10 @@ function updateActiveHope(value) {
     if (newHope > currentMaxHope) newHope = currentMaxHope; // Ensure it doesn't exceed current max circles
     if (newHope < 0) newHope = 0; // Ensure it doesn't go below zero
 
-    localStorage.setItem('zevi-hope', newHope);
+            // Trigger auto-save instead of localStorage
+        if (window.app?.characterData?.constructor?.saveCharacterData) {
+            window.app.characterData.constructor.saveCharacterData();
+        }
     renderHopeCircles(); // Re-render to reflect changes
 }
 
@@ -69,7 +74,10 @@ function updateMaxHopeCircles(change) {
     if (newMaxHope < minHopeCircles) newMaxHope = minHopeCircles;
     if (newMaxHope > globalMaxHopeCircles) newMaxHope = globalMaxHopeCircles;
 
-    localStorage.setItem('zevi-max-hope', newMaxHope);
+            // Trigger auto-save instead of localStorage
+        if (window.app?.characterData?.constructor?.saveCharacterData) {
+            window.app.characterData.constructor.saveCharacterData();
+        }
     renderHopeCircles(); // Re-render to reflect changes in total circles
 }
 

@@ -287,10 +287,12 @@ class CharacterData {
             // Appearance settings
             appearanceSettings: this.getCurrentAppearanceSettings(),
             
-            // UI state
+            // UI preferences (character-specific)
             ui: {
                 sectionOrder: this.getCharacterSpecificValue('zevi-section-order'),
                 activeTab: this.getActiveTab(),
+                backpackEnabled: this.getCharacterSpecificValue('zevi-backpack-enabled') === 'true',
+                characterNameFontSize: this.getCharacterSpecificValue('zevi-character-name-font-size') || '2rem',
                 colors: {}
             },
             
@@ -546,6 +548,11 @@ class CharacterData {
             await this.applyAppearanceSettings(characterData.appearanceSettings);
         }
         
+        // Apply UI preferences if they exist
+        if (characterData && characterData.ui) {
+            await this.applyUIPreferences(characterData.ui);
+        }
+        
         // Load the character data into the app
         if (window.app && window.app.loadCharacterFromData) {
             await window.app.loadCharacterFromData(characterData);
@@ -639,6 +646,38 @@ class CharacterData {
         console.log('✅ Applied character-specific appearance settings');
     }
 
+    async applyUIPreferences(ui) {
+        if (!ui) return;
+        
+        console.log('🎨 Applying UI preferences:', ui);
+        
+        // Apply backpack setting
+        if (ui.backpackEnabled !== undefined) {
+            // Update the UI toggle if it exists
+            const backpackToggle = document.querySelector('#backpack-enabled');
+            if (backpackToggle) {
+                backpackToggle.checked = ui.backpackEnabled;
+                // Trigger the change event to update the UI
+                backpackToggle.dispatchEvent(new Event('change'));
+            }
+        }
+        
+        // Apply character name font size
+        if (ui.characterNameFontSize) {
+            const characterNameElement = document.querySelector('#character-name');
+            if (characterNameElement) {
+                characterNameElement.style.fontSize = ui.characterNameFontSize;
+            }
+        }
+        
+        // Apply section order
+        if (ui.sectionOrder && window.applySectionOrder) {
+            window.applySectionOrder(ui.sectionOrder);
+        }
+        
+        console.log('✅ UI preferences applied');
+    }
+
     // Safely parse JSON
     parseJSON(str) {
         if (!str) return null;
@@ -699,6 +738,25 @@ class CharacterData {
         
         const characterKey = `${key}-${currentCharacterId}`;
         localStorage.setItem(characterKey, value);
+    }
+
+    // Universal helper for modules to trigger auto-save instead of localStorage
+    static triggerAutoSaveInsteadOfLocalStorage() {
+        // Trigger auto-save to persist all current data to database
+        if (window.app?.autoSave?.triggerSave) {
+            window.app.autoSave.triggerSave();
+        }
+        
+        // Optional: Show a brief save indicator
+        if (window.showBriefSaveIndicator) {
+            window.showBriefSaveIndicator();
+        }
+    }
+
+    // Helper for modules to replace localStorage.setItem calls
+    static saveCharacterData() {
+        console.log('💾 Module triggered character data save');
+        CharacterData.triggerAutoSaveInsteadOfLocalStorage();
     }
 
     // Delete character data

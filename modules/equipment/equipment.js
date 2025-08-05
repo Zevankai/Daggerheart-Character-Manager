@@ -1493,7 +1493,10 @@ function closeModal(button) {
 
 function saveEquipmentData() {
     // Save to localStorage
-    localStorage.setItem('zevi-equipment', JSON.stringify(equipmentData));
+    // Trigger auto-save instead of localStorage
+  if (window.app?.characterData?.constructor?.saveCharacterData) {
+    window.app.characterData.constructor.saveCharacterData();
+  }
 }
 
 function loadEquipmentData() {

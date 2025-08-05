@@ -337,6 +337,8 @@ class AppController {
             'zevi-features': data.effectsFeatures?.features,
             'zevi-conditions': data.effectsFeatures?.conditions,
             'zevi-section-order': data.ui?.sectionOrder,
+            'zevi-backpack-enabled': data.ui?.backpackEnabled?.toString(),
+            'zevi-character-name-font-size': data.ui?.characterNameFontSize,
             // Appearance settings per character
             'zevi-background-image': data.appearanceSettings?.backgroundImage,
             'zevi-accent-color': data.appearanceSettings?.accentColor,

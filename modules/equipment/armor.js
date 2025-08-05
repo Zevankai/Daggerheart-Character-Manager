@@ -63,7 +63,10 @@ function renderArmorCircles() {
             }
 
             // Update active count and save
-            localStorage.setItem('zevi-active-armor-count', targetActiveCount);
+            // Trigger auto-save instead of localStorage
+    if (window.app?.characterData?.constructor?.saveCharacterData) {
+      window.app.characterData.constructor.saveCharacterData();
+    }
             renderArmorCircles(); // Re-render to update UI
         });
         
@@ -85,7 +88,10 @@ function setupArmorTrackerButtons() {
             let totalArmorCircles = parseInt(localStorage.getItem('zevi-total-armor-circles') || '4');
             totalArmorCircles++;
             totalArmorCircles = Math.max(1, Math.min(totalArmorCircles, 10)); // Min 1, Max 10
-            localStorage.setItem('zevi-total-armor-circles', totalArmorCircles);
+            // Trigger auto-save instead of localStorage
+            if (window.app?.characterData?.constructor?.saveCharacterData) {
+              window.app.characterData.constructor.saveCharacterData();
+            }
             renderArmorCircles();
         });
     }
@@ -99,11 +105,17 @@ function setupArmorTrackerButtons() {
             // If we remove circles, make sure active count doesn't exceed total
             if (activeArmorCount > totalArmorCircles) {
                 activeArmorCount = Math.max(0, totalArmorCircles);
-                localStorage.setItem('zevi-active-armor-count', activeArmorCount);
+                // Trigger auto-save instead of localStorage
+                if (window.app?.characterData?.constructor?.saveCharacterData) {
+                  window.app.characterData.constructor.saveCharacterData();
+                }
             }
             
             totalArmorCircles = Math.max(1, Math.min(totalArmorCircles, 10)); // Min 1, Max 10
-            localStorage.setItem('zevi-total-armor-circles', totalArmorCircles);
+            // Trigger auto-save instead of localStorage
+            if (window.app?.characterData?.constructor?.saveCharacterData) {
+              window.app.characterData.constructor.saveCharacterData();
+            }
             renderArmorCircles();
         });
     }

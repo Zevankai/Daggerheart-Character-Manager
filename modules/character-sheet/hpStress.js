@@ -7,11 +7,17 @@ let stressCircles = JSON.parse(localStorage.getItem('zevi-stress-circles')) || A
 let armorCircles = JSON.parse(localStorage.getItem('zevi-armor-circles')) || Array(4).fill({ active: false });
 
 function saveHPState() {
-    localStorage.setItem('zevi-hp-circles', JSON.stringify(hpCircles));
+    // Trigger auto-save instead of localStorage
+  if (window.app?.characterData?.constructor?.saveCharacterData) {
+    window.app.characterData.constructor.saveCharacterData();
+  }
 }
 
 function saveStressState() {
-    localStorage.setItem('zevi-stress-circles', JSON.stringify(stressCircles));
+    // Trigger auto-save instead of localStorage
+  if (window.app?.characterData?.constructor?.saveCharacterData) {
+    window.app.characterData.constructor.saveCharacterData();
+  }
 }
 
 function renderHPCircles() {
@@ -146,7 +152,10 @@ function updateDamageValue(element, type) {
     if (isNaN(value)) {
         value = 0; // Default to 0 if input is empty or invalid
     }
-    localStorage.setItem(`zevi-${type}-damage-value`, value);
+          // Trigger auto-save instead of localStorage
+      if (window.app?.characterData?.constructor?.saveCharacterData) {
+        window.app.characterData.constructor.saveCharacterData();
+      }
 }
 
 // Function to load damage values on page load
@@ -218,7 +227,10 @@ window.addArmorCircle = addArmorCircle;
 window.removeArmorCircle = removeArmorCircle;
 
 function saveArmorState() {
-    localStorage.setItem('zevi-armor-circles', JSON.stringify(armorCircles));
+          // Trigger auto-save instead of localStorage
+      if (window.app?.characterData?.constructor?.saveCharacterData) {
+        window.app.characterData.constructor.saveCharacterData();
+      }
 }
 
 function renderArmorCircles() {

@@ -27,7 +27,10 @@ function loadCharacterDetails() {
 // Saves the current state of character details
 function saveCharacterDetails() {
   // Save to localStorage
-  localStorage.setItem('zevi-character-details', JSON.stringify(characterDetails));
+  // Trigger auto-save instead of localStorage
+  if (window.app?.characterData?.constructor?.saveCharacterData) {
+    window.app.characterData.constructor.saveCharacterData();
+  }
 }
 
 // Initializes the details tab with input fields and loads saved data

@@ -28,7 +28,10 @@ try {
 // Ensure equipped cards array always has exactly 5 slots
 if (!domainVaultData.equippedCards || domainVaultData.equippedCards.length !== 5) {
     domainVaultData.equippedCards = [null, null, null, null, null];
-    localStorage.setItem('zevi-domain-vault', JSON.stringify(domainVaultData));
+    // Trigger auto-save instead of localStorage
+    if (window.app?.characterData?.constructor?.saveCharacterData) {
+      window.app.characterData.constructor.saveCharacterData();
+    }
 }
 
 // Card types available for selection
@@ -41,7 +44,10 @@ const DEFAULT_COLOR = '#3498db';
 function saveDomainVaultData() {
     try {
         const dataString = JSON.stringify(domainVaultData);
-        localStorage.setItem('zevi-domain-vault', dataString);
+        // Trigger auto-save instead of localStorage
+        if (window.app?.characterData?.constructor?.saveCharacterData) {
+          window.app.characterData.constructor.saveCharacterData();
+        }
     } catch (error) {
         console.error('Error saving domain vault data:', error);
     }
