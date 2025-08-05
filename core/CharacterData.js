@@ -289,7 +289,7 @@ class CharacterData {
             
             // UI state
             ui: {
-                sectionOrder: localStorage.getItem('zevi-section-order'),
+                sectionOrder: this.getCharacterSpecificValue('zevi-section-order'),
                 activeTab: this.getActiveTab(),
                 colors: {}
             },
@@ -445,11 +445,12 @@ class CharacterData {
         return {
             theme: document.body.getAttribute('data-theme') || 'auto',
             accentColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() || '#ffd700',
-            accentColorLight: localStorage.getItem('zevi-custom-accent-light'),
-            accentColorDark: localStorage.getItem('zevi-custom-accent-dark'),
-            glassColor: localStorage.getItem('zevi-glass-color') || '#ffffff',
-            glassOpacity: parseInt(localStorage.getItem('zevi-glass-opacity')) || 10,
-            backgroundImage: localStorage.getItem('zevi-background-image'),
+            accentColorLight: this.getCharacterSpecificValue('zevi-custom-accent-light'),
+            accentColorDark: this.getCharacterSpecificValue('zevi-custom-accent-dark'),
+            glassColor: this.getCharacterSpecificValue('zevi-glass-color') || '#ffffff',
+            glassOpacity: parseInt(this.getCharacterSpecificValue('zevi-glass-opacity')) || 10,
+            backgroundImage: this.getCharacterSpecificValue('zevi-background-image'),
+            glassmorphicTint: this.getCharacterSpecificValue('zevi-glassmorphic-tint'),
             customColors: this.getCurrentCustomColors()
         };
     }
@@ -591,28 +592,33 @@ class CharacterData {
         // Apply accent color
         if (settings.accentColor) {
             root.style.setProperty('--accent-color', settings.accentColor);
-            localStorage.setItem('zevi-custom-accent-base', settings.accentColor);
+            this.setCharacterSpecificValue('zevi-custom-accent-base', settings.accentColor);
         }
         
         // Apply accent color variations
         if (settings.accentColorLight) {
-            localStorage.setItem('zevi-custom-accent-light', settings.accentColorLight);
+            this.setCharacterSpecificValue('zevi-custom-accent-light', settings.accentColorLight);
         }
         if (settings.accentColorDark) {
-            localStorage.setItem('zevi-custom-accent-dark', settings.accentColorDark);
+            this.setCharacterSpecificValue('zevi-custom-accent-dark', settings.accentColorDark);
         }
         
         // Apply glass color and opacity
         if (settings.glassColor) {
-            localStorage.setItem('zevi-glass-color', settings.glassColor);
+            this.setCharacterSpecificValue('zevi-glass-color', settings.glassColor);
         }
         if (settings.glassOpacity !== undefined) {
-            localStorage.setItem('zevi-glass-opacity', settings.glassOpacity.toString());
+            this.setCharacterSpecificValue('zevi-glass-opacity', settings.glassOpacity.toString());
+        }
+        
+        // Apply glassmorphic tint
+        if (settings.glassmorphicTint) {
+            this.setCharacterSpecificValue('zevi-glassmorphic-tint', settings.glassmorphicTint);
         }
         
         // Apply background image
         if (settings.backgroundImage) {
-            localStorage.setItem('zevi-background-image', settings.backgroundImage);
+            this.setCharacterSpecificValue('zevi-background-image', settings.backgroundImage);
         }
         
         // Apply custom colors
@@ -680,6 +686,19 @@ class CharacterData {
         }
         
         return characterValue;
+    }
+
+    // Set character-specific simple value in localStorage
+    setCharacterSpecificValue(key, value) {
+        const currentCharacterId = this.getCurrentCharacterId();
+        if (!currentCharacterId) {
+            // Fallback to global key if no character ID
+            localStorage.setItem(key, value);
+            return;
+        }
+        
+        const characterKey = `${key}-${currentCharacterId}`;
+        localStorage.setItem(characterKey, value);
     }
 
     // Delete character data

@@ -335,13 +335,16 @@ class AppController {
             'zevi-domain-abilities': data.domainVault?.domainAbilities,
             'zevi-active-effects': data.effectsFeatures?.activeEffects,
             'zevi-features': data.effectsFeatures?.features,
-            'zevi-conditions': data.effectsFeatures?.conditions
+            'zevi-conditions': data.effectsFeatures?.conditions,
+            'zevi-section-order': data.ui?.sectionOrder,
+            // Appearance settings per character
+            'zevi-background-image': data.appearanceSettings?.backgroundImage,
+            'zevi-accent-color': data.appearanceSettings?.accentColor,
+            'zevi-glassmorphic-tint': data.appearanceSettings?.glassmorphicTint
         };
         
-        // Global data that should persist across characters
-        const globalData = {
-            'zevi-section-order': data.ui?.sectionOrder
-        };
+        // No global data - everything is now character-specific
+        const globalData = {};
         
         // Store character-specific data with character ID prefix
         if (currentCharacterId) {

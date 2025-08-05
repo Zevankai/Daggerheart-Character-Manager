@@ -181,8 +181,14 @@ function toggleTextColor() {
         window.updateAccentColorTransparencies(finalAccentColor);
     }
 
+    // Save character-specific accent color if CharacterData is available
+    if (window.app?.characterData?.setCharacterSpecificValue) {
+        window.app.characterData.setCharacterSpecificValue('zevi-accent-color', root.style.getPropertyValue('--accent-color'));
+    } else {
+        localStorage.setItem('zevi-accent-color', root.style.getPropertyValue('--accent-color'));
+    }
+    
     localStorage.setItem('zevi-text-color', root.style.getPropertyValue('--text-color'));
-    localStorage.setItem('zevi-accent-color', root.style.getPropertyValue('--accent-color'));
     localStorage.setItem('zevi-theme', document.body.getAttribute('data-theme'));
 }
 
@@ -286,7 +292,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Draggable sections with SortableJS
     const draggableSections = document.getElementById('draggable-sections');
-    const savedOrder = JSON.parse(localStorage.getItem('zevi-section-order'));
+    
+    // Get saved order from character-specific storage if available
+    let savedOrder;
+    if (window.app?.characterData?.getCharacterSpecificValue) {
+        const orderData = window.app.characterData.getCharacterSpecificValue('zevi-section-order');
+        savedOrder = orderData ? JSON.parse(orderData) : null;
+    } else {
+        savedOrder = JSON.parse(localStorage.getItem('zevi-section-order'));
+    }
 
     if (savedOrder) {
         const sections = Array.from(draggableSections.children);
@@ -300,7 +314,13 @@ document.addEventListener('DOMContentLoaded', () => {
         animation: 150,
         onEnd: function (evt) {
             const newOrder = Array.from(evt.from.children).map(item => item.dataset.id);
-            localStorage.setItem('zevi-section-order', JSON.stringify(newOrder));
+            
+            // Save to character-specific storage if available
+            if (window.app?.characterData?.setCharacterSpecificValue) {
+                window.app.characterData.setCharacterSpecificValue('zevi-section-order', JSON.stringify(newOrder));
+            } else {
+                localStorage.setItem('zevi-section-order', JSON.stringify(newOrder));
+            }
         },
     });
 

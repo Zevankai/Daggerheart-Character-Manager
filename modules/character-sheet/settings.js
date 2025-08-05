@@ -105,8 +105,14 @@ function initializeGlassColorPicker() {
   }
   
   // Load saved values first, then use computed values as fallback
-  const savedGlassColor = localStorage.getItem('zevi-glass-color');
-  const savedGlassOpacity = localStorage.getItem('zevi-glass-opacity');
+  let savedGlassColor, savedGlassOpacity;
+  if (window.app?.characterData?.getCharacterSpecificValue) {
+      savedGlassColor = window.app.characterData.getCharacterSpecificValue('zevi-glass-color');
+      savedGlassOpacity = window.app.characterData.getCharacterSpecificValue('zevi-glass-opacity');
+  } else {
+      savedGlassColor = localStorage.getItem('zevi-glass-color');
+      savedGlassOpacity = localStorage.getItem('zevi-glass-opacity');
+  }
   
   let currentColor = '#ffffff';
   let currentOpacity = 0.1;
@@ -183,8 +189,15 @@ function changeGlassBackgroundColor(hexColor, opacity) {
     const newRgbaColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity})`;
     
     root.style.setProperty('--glass-background-color', newRgbaColor);
-    localStorage.setItem('zevi-glass-color', hexColor);
-    localStorage.setItem('zevi-glass-opacity', opacity.toString());
+    
+    // Save to character-specific storage if available
+    if (window.app?.characterData?.setCharacterSpecificValue) {
+        window.app.characterData.setCharacterSpecificValue('zevi-glass-color', hexColor);
+        window.app.characterData.setCharacterSpecificValue('zevi-glass-opacity', opacity.toString());
+    } else {
+        localStorage.setItem('zevi-glass-color', hexColor);
+        localStorage.setItem('zevi-glass-opacity', opacity.toString());
+    }
   } catch (error) {
     console.error('Error changing glass background color:', error);
   }
