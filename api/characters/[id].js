@@ -41,32 +41,39 @@ async function updateCharacter(req, res) {
     }
     
     // Build update query dynamically based on provided fields
-    const updates = [];
-    const values = [];
+    let result;
     
-    if (name !== undefined) {
-      updates.push('name = $' + (values.length + 1));
-      values.push(name.trim());
-    }
-    
-    if (characterData !== undefined) {
-      updates.push('character_data = $' + (values.length + 1));
-      values.push(JSON.stringify(characterData));
-    }
-    
-    if (updates.length === 0) {
+    if (name !== undefined && characterData !== undefined) {
+      // Update both name and character data
+      result = await sql`
+        UPDATE characters 
+        SET name = ${name.trim()}, 
+            character_data = ${JSON.stringify(characterData)}, 
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ${id} AND user_id = ${req.user.id}
+        RETURNING id, name, character_data, is_shared, share_token, created_at, updated_at
+      `;
+    } else if (name !== undefined) {
+      // Update only name
+      result = await sql`
+        UPDATE characters 
+        SET name = ${name.trim()}, 
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ${id} AND user_id = ${req.user.id}
+        RETURNING id, name, character_data, is_shared, share_token, created_at, updated_at
+      `;
+    } else if (characterData !== undefined) {
+      // Update only character data
+      result = await sql`
+        UPDATE characters 
+        SET character_data = ${JSON.stringify(characterData)}, 
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ${id} AND user_id = ${req.user.id}
+        RETURNING id, name, character_data, is_shared, share_token, created_at, updated_at
+      `;
+    } else {
       return res.status(400).json({ error: 'No valid fields to update' });
     }
-    
-    updates.push('updated_at = CURRENT_TIMESTAMP');
-    values.push(id, req.user.id);
-    
-    const result = await sql`
-      UPDATE characters 
-      SET ${sql(updates.join(', '))}
-      WHERE id = ${id} AND user_id = ${req.user.id}
-      RETURNING id, name, character_data, is_shared, share_token, created_at, updated_at
-    `;
     
     res.status(200).json({ character: result[0] });
   } catch (error) {
