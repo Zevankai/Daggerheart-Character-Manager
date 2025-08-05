@@ -63,6 +63,15 @@ class AutoSave {
                 window.CharacterStateManager.getCurrentCharacterData() : 
                 this.collectCurrentCharacterData();
             
+            // Debug: Log what we're saving
+            console.log('💾 AutoSave data to send:', {
+                characterId: currentCharacterId,
+                hasData: !!characterData,
+                dataKeys: characterData ? Object.keys(characterData) : [],
+                hope: characterData?.hope,
+                hp: characterData?.hp
+            });
+            
             // Save the data
             const success = await this.characterData.saveCharacterData(currentCharacterId, characterData);
             

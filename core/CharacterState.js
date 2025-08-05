@@ -392,6 +392,10 @@ class CharacterState {
     collectFromUI() {
         console.log(`📥 Collecting data into character ${this.characterId} folder...`);
         
+        // Debug: Log what we had before
+        const beforeHope = this.data.hope.current;
+        const beforeHp = this.data.hp.circles.filter(c => c.active).length;
+        
         try {
             // Collect basic info from UI
             this.data.name = this.getUIValue('.character-name-editor', 'textContent') || this.data.name;
@@ -510,6 +514,15 @@ class CharacterState {
         if (window.effectsFeaturesData) {
             this.data.effectsFeatures = { ...window.effectsFeaturesData };
         }
+        
+        // Debug: Log what we collected
+        const afterHope = this.data.hope.current;
+        const afterHp = this.data.hp.circles.filter(c => c.active).length;
+        console.log(`📊 Data collection complete:
+            Hope: ${beforeHope} → ${afterHope}
+            HP: ${beforeHp} → ${afterHp}
+            Name: ${this.data.name}
+            Level: ${this.data.level}`);
     }
 
     // Utility methods for UI interaction
@@ -583,11 +596,24 @@ class CharacterStateManager {
 
     // Get the current active character's data for saving
     getCurrentCharacterData() {
-        if (!this.activeCharacterId) return null;
+        console.log('📋 Getting current character data for:', this.activeCharacterId);
+        if (!this.activeCharacterId) {
+            console.log('❌ No active character ID');
+            return null;
+        }
         
         const currentState = this.getCharacterState(this.activeCharacterId);
         currentState.collectFromUI(); // Collect latest changes
-        return currentState.getAllData();
+        const data = currentState.getAllData();
+        
+        console.log('📊 Current character data:', {
+            hasData: !!data,
+            keys: data ? Object.keys(data) : [],
+            hope: data?.hope,
+            hp: data?.hp
+        });
+        
+        return data;
     }
 
     // Force re-render all modules
