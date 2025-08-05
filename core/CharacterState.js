@@ -276,12 +276,8 @@ class CharacterState {
 
     // Apply hope data directly to UI
     applyHopeToUI() {
-        console.log('🎯 Applying hope to UI for character:', this.characterId, 'Hope data:', this.data.hope);
         const hopeTracker = document.getElementById('hope-tracker');
-        if (!hopeTracker) {
-            console.error('❌ Hope tracker element not found!');
-            return;
-        }
+        if (!hopeTracker) return;
         
         hopeTracker.innerHTML = ''; // Clear existing circles
         
@@ -308,7 +304,6 @@ class CharacterState {
 
     // Apply HP/Stress/Armor circles directly to UI
     applyCirclesToUI() {
-        console.log('🎯 Applying circles to UI for character:', this.characterId);
         // Apply HP circles
         const hpTracker = document.getElementById('hp-tracker');
         if (hpTracker) {
@@ -367,7 +362,7 @@ class CharacterState {
             armorTracker.innerHTML = '';
             this.data.armor.circles.forEach((circle, index) => {
                 const circleElement = document.createElement('div');
-                circleElement.classList.add('hp-circle');
+                circleElement.classList.add('hp-circle', 'armor-circle');
                 if (circle.active) {
                     circleElement.classList.add('active');
                 }
@@ -446,6 +441,15 @@ class CharacterState {
             // Collect from global variables (for modules that still use them)
             this.collectFromGlobals();
             
+            // Debug: Log what we collected
+            const afterHope = this.data.hope.current;
+            const afterHp = this.data.hp.circles.filter(c => c.active).length;
+            console.log(`📊 Data collection complete for ${this.characterId}:
+                Hope: ${beforeHope} → ${afterHope}
+                HP: ${beforeHp} → ${afterHp}
+                Name: ${this.data.name}
+                Level: ${this.data.level}`);
+            
             console.log(`✅ Data collected into character ${this.characterId} folder`);
             
         } catch (error) {
@@ -514,15 +518,6 @@ class CharacterState {
         if (window.effectsFeaturesData) {
             this.data.effectsFeatures = { ...window.effectsFeaturesData };
         }
-        
-        // Debug: Log what we collected
-        const afterHope = this.data.hope.current;
-        const afterHp = this.data.hp.circles.filter(c => c.active).length;
-        console.log(`📊 Data collection complete:
-            Hope: ${beforeHope} → ${afterHope}
-            HP: ${beforeHp} → ${afterHp}
-            Name: ${this.data.name}
-            Level: ${this.data.level}`);
     }
 
     // Utility methods for UI interaction
