@@ -661,4 +661,4 @@ window.addEventListener('load', () => {
     }, 1000);
 });
 
-export { CharacterState, CharacterStateManager };
+// Note: Classes are available globally via window.CharacterState and window.CharacterStateManager
