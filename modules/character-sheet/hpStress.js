@@ -202,9 +202,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Initial rendering for HP and Stress circles
-    renderHPCircles();
-    renderStressCircles(); // This will now also create the label
-    renderArmorCircles(); // Initial render for armor circles
+    // Only render if CharacterStateManager is not available (fallback mode)
+    if (!window.CharacterStateManager) {
+        renderHPCircles();
+        renderStressCircles(); // This will now also create the label
+        renderArmorCircles(); // Initial render for armor circles
+    }
     loadDamageValues(); // Load saved damage values for the inputs
 });
 

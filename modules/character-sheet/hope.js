@@ -90,7 +90,10 @@ window.updateMaxHopeCircles = updateMaxHopeCircles;
 
 // Initialize hope circles and attach button listeners when hope.js is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    renderHopeCircles(); // Initial render based on stored values
+    // Only render if CharacterStateManager is not available (fallback mode)
+    if (!window.CharacterStateManager) {
+        renderHopeCircles(); // Initial render based on stored values
+    }
 
     const hopeIncrementBtn = document.getElementById('hope-increment');
     const hopeDecrementBtn = document.getElementById('hope-decrement');

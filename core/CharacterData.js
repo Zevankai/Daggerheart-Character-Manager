@@ -865,20 +865,8 @@ class CharacterData {
          
          try {
              // Re-render HP/Stress circles
-             if (window.renderHPCircles) {
-                 window.renderHPCircles();
-             }
-             if (window.renderStressCircles) {
-                 window.renderStressCircles();
-             }
-             if (window.renderArmorCircles) {
-                 window.renderArmorCircles();
-             }
-             
-             // Re-render hope circles
-             if (window.renderHopeCircles) {
-                 window.renderHopeCircles();
-             }
+                         // NOTE: HP, Stress, Armor, and Hope circles are now handled directly by CharacterState
+            // Don't call the old module render functions as they conflict with our system
              
              // Re-render equipment
              if (window.renderEquipmentCategories) {

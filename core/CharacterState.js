@@ -43,21 +43,21 @@ class CharacterState {
             
             // HP system
             hp: {
-                circles: Array(4).fill({ active: true }),
+                circles: Array.from({length: 4}, () => ({ active: true })),
                 current: 4,
                 max: 4
             },
             
             // Stress system
             stress: {
-                circles: Array(4).fill({ active: false }),
+                circles: Array.from({length: 4}, () => ({ active: false })),
                 current: 0,
                 max: 4
             },
             
             // Armor system
             armor: {
-                circles: Array(4).fill({ active: false }),
+                circles: Array.from({length: 4}, () => ({ active: false })),
                 current: 0,
                 totalCircles: 4,
                 activeCount: 0
@@ -592,10 +592,8 @@ class CharacterStateManager {
             await new Promise(resolve => setTimeout(resolve, 50));
             
             // Re-render various modules
-            if (window.renderHPCircles) window.renderHPCircles();
-            if (window.renderStressCircles) window.renderStressCircles();
-            if (window.renderArmorCircles) window.renderArmorCircles();
-            if (window.renderHopeCircles) window.renderHopeCircles();
+            // NOTE: HP, Stress, Armor, and Hope circles are now handled directly by CharacterState
+            // Don't call the old module render functions as they conflict with our system
             if (window.renderEquipmentCategories) window.renderEquipmentCategories();
             if (window.renderJournalEntries) window.renderJournalEntries();
             if (window.renderExperiences) window.renderExperiences();
