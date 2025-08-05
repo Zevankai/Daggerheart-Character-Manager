@@ -1503,7 +1503,8 @@ function loadEquipmentData() {
     console.log('Loading equipment data...');
     
     // Load from localStorage
-    const saved = localStorage.getItem('zevi-equipment');
+    // Initialize with defaults - will be populated when character loads from cloud
+  const saved = null; // Don't load from localStorage
     console.log('Saved data from localStorage:', saved);
     
     if (saved) {

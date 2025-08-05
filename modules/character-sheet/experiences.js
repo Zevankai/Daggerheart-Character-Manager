@@ -1,7 +1,8 @@
 // experiences.js
 
 // Retrieve experiences from localStorage or initialize as an empty array
-let experiences = JSON.parse(localStorage.getItem('zevi-experiences')) || [];
+// Initialize empty - will be populated when character loads from cloud
+let experiences = [];
 
 // Saves the current state of the experiences array to localStorage
 function saveExperiences() {

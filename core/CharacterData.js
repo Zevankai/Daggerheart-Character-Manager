@@ -717,6 +717,10 @@ class CharacterData {
             window.armorCircles = Array(4).fill({ active: false });
         }
         
+        // Reset armor counts
+        window.totalArmorCircles = 4;
+        window.activeArmorCount = 0;
+        
         // Reset hope variables
         if (window.currentHope !== undefined) {
             window.currentHope = 0;

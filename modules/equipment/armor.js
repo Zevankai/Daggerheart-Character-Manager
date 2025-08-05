@@ -32,9 +32,9 @@ function renderArmorCircles() {
     
     armorCirclesContainer.innerHTML = ''; // Clear existing circles
 
-    // Get total number of armor circles and active count
-    let totalArmorCircles = parseInt(localStorage.getItem('zevi-total-armor-circles') || '4');
-    let activeArmorCount = parseInt(localStorage.getItem('zevi-active-armor-count') || '0');
+    // Get total number of armor circles and active count from global variables
+    let totalArmorCircles = window.totalArmorCircles || 4;
+    let activeArmorCount = window.activeArmorCount || 0;
     
     // Ensure values are within reasonable bounds
     totalArmorCircles = Math.max(1, Math.min(totalArmorCircles, 10));
@@ -85,9 +85,10 @@ function setupArmorTrackerButtons() {
     
     if (addArmorBtn) {
         addArmorBtn.addEventListener('click', () => {
-            let totalArmorCircles = parseInt(localStorage.getItem('zevi-total-armor-circles') || '4');
+            let totalArmorCircles = window.totalArmorCircles || 4;
             totalArmorCircles++;
             totalArmorCircles = Math.max(1, Math.min(totalArmorCircles, 10)); // Min 1, Max 10
+            window.totalArmorCircles = totalArmorCircles;
             // Trigger auto-save instead of localStorage
             if (window.app?.characterData?.constructor?.saveCharacterData) {
               window.app.characterData.constructor.saveCharacterData();
@@ -98,20 +99,18 @@ function setupArmorTrackerButtons() {
     
     if (removeArmorBtn) {
         removeArmorBtn.addEventListener('click', () => {
-            let totalArmorCircles = parseInt(localStorage.getItem('zevi-total-armor-circles') || '4');
-            let activeArmorCount = parseInt(localStorage.getItem('zevi-active-armor-count') || '0');
+            let totalArmorCircles = window.totalArmorCircles || 4;
+            let activeArmorCount = window.activeArmorCount || 0;
             
             totalArmorCircles--;
             // If we remove circles, make sure active count doesn't exceed total
             if (activeArmorCount > totalArmorCircles) {
                 activeArmorCount = Math.max(0, totalArmorCircles);
-                // Trigger auto-save instead of localStorage
-                if (window.app?.characterData?.constructor?.saveCharacterData) {
-                  window.app.characterData.constructor.saveCharacterData();
-                }
+                window.activeArmorCount = activeArmorCount;
             }
             
             totalArmorCircles = Math.max(1, Math.min(totalArmorCircles, 10)); // Min 1, Max 10
+            window.totalArmorCircles = totalArmorCircles;
             // Trigger auto-save instead of localStorage
             if (window.app?.characterData?.constructor?.saveCharacterData) {
               window.app.characterData.constructor.saveCharacterData();

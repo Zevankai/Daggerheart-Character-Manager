@@ -21,7 +21,8 @@ let characterDetails = {
 // Load character details from localStorage
 function loadCharacterDetails() {
   // Load from localStorage
-  characterDetails = JSON.parse(localStorage.getItem('zevi-character-details')) || characterDetails;
+  // Initialize with defaults - will be populated when character loads from cloud
+  // characterDetails already has default structure
 }
 
 // Saves the current state of character details

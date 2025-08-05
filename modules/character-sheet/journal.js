@@ -4,7 +4,8 @@ let currentFilterCategory = 'all'; // Default filter category
 
 function loadJournalEntries() {
     // Load from localStorage
-    journalEntries = JSON.parse(localStorage.getItem('zevi-journal-entries')) || [];
+    // Initialize empty - will be populated when character loads from cloud
+journalEntries = [];
 }
 
 function saveJournalEntries() {

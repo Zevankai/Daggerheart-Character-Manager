@@ -62,7 +62,8 @@ function handlePrepareWithParty(isWithParty) {
     const hopeGained = isWithParty ? 2 : 1;
     
     // Get current hope and add the gained amount
-    const currentHope = parseInt(localStorage.getItem('zevi-hope')) || 0;
+    // Get current hope from global variable (set by character reset/load)
+  const currentHope = window.currentHope || 0;
     const newHope = currentHope + hopeGained;
     
     // Use the proper hope update function
@@ -469,7 +470,8 @@ function resetDowntimeView() {
 
 
 // --- PROJECT MANAGEMENT LOGIC ---
-let projects = JSON.parse(localStorage.getItem('zevi-projects')) || [];
+  // Initialize empty - will be populated when character loads from cloud
+  let projects = [];
 
 // Migrate existing projects to ensure they have IDs
 projects.forEach(project => {

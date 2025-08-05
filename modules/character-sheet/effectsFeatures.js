@@ -15,7 +15,8 @@ let effectsFeaturesData = {
 
 // Load effects and features data from localStorage
 try {
-    const savedData = localStorage.getItem('zevi-effects-features');
+    // Initialize with defaults - will be populated when character loads from cloud  
+const savedData = null; // Don't load from localStorage
     if (savedData) {
         effectsFeaturesData = JSON.parse(savedData);
     }

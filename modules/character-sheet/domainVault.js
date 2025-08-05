@@ -5,7 +5,8 @@ console.log('🎴 DomainVault.js loaded successfully!');
 // Retrieve domain vault data from localStorage or initialize with defaults
 let domainVaultData;
 try {
-    const savedData = localStorage.getItem('zevi-domain-vault');
+    // Initialize with defaults - will be populated when character loads from cloud
+const savedData = null; // Don't load from localStorage
     if (savedData) {
         domainVaultData = JSON.parse(savedData);
         console.log('Loaded domain vault data. Cards count:', domainVaultData.cards?.length || 0);
