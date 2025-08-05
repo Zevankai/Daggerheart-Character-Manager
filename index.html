@@ -323,9 +323,7 @@
                      <button class="cm-btn cm-btn-migrate" onclick="runDatabaseMigration()" title="Run database migration to add missing columns (Ctrl+Shift+M)">
             🔄 Migrate Database
           </button>
-          <button class="cm-btn cm-btn-cleanup" onclick="migrateToCloudFirst()" title="Clean up localStorage and switch to cloud-first mode">
-            ☁️ Cloud-First Mode
-          </button>
+
        </div>
       
       <!-- Character List -->
@@ -545,15 +543,7 @@
       transform: translateY(-1px);
     }
 
-    .cm-btn-cleanup {
-      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-      color: white;
-    }
 
-    .cm-btn-cleanup:hover {
-      background: linear-gradient(135deg, #7c3aed, #6d28d9);
-      transform: translateY(-1px);
-    }
 
     .cm-btn-small {
       padding: 8px 12px;
@@ -1512,37 +1502,7 @@
         }
       }
 
-      // Migrate to cloud-first mode function
-      async function migrateToCloudFirst() {
-        try {
-          characterManager.updateStatus('Starting cloud-first migration...', '☁️', 'loading');
-          
-          // Load the cleanup utility
-          if (!window.LocalStorageCleanup) {
-            const module = await import('./core/LocalStorageCleanup.js');
-            window.LocalStorageCleanup = module.default;
-          }
-          
-          const result = await window.LocalStorageCleanup.migrateToCloudFirst();
-          
-          characterManager.updateStatus(`Cloud-first migration complete! Cleaned ${result} items`, '✅', 'success');
-          alert(`✅ Successfully migrated to cloud-first mode!\n\nCleaned up ${result} localStorage items.\nAll character data now saves directly to the cloud.`);
-          
-          // Refresh the current character to load from cloud
-          if (window.app?.characterData?.getCurrentCharacterId) {
-            const currentId = window.app.characterData.getCurrentCharacterId();
-            if (currentId) {
-              console.log('Reloading current character from cloud...');
-              await characterManager.loadCharacter(currentId);
-            }
-          }
-          
-        } catch (error) {
-          console.error('Cloud-first migration failed:', error);
-          characterManager.updateStatus(`Migration failed: ${error.message}`, '❌', 'error');
-          alert('❌ Cloud-first migration failed!\n\n' + error.message + '\n\nCheck the console for details.');
-        }
-      }
+
 
       // Add keyboard shortcut for testing
       document.addEventListener('keydown', (e) => {
@@ -1555,11 +1515,7 @@
           e.preventDefault();
           runDatabaseMigration();
         }
-        // Add keyboard shortcut for cloud-first migration (Ctrl+Shift+C)
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'C') {
-          e.preventDefault();
-          migrateToCloudFirst();
-        }
+
       });
     </script>
   </div>
@@ -1784,7 +1740,7 @@
         <script src="core/UIManager.js"></script>
         <script src="core/AutoSave.js"></script>
         <script src="core/AppController.js"></script>
-        <script src="core/LocalStorageCleanup.js"></script>
+
         
 
         

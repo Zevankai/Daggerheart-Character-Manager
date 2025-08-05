@@ -2,9 +2,10 @@
 
 // --- HP & STRESS TRACKER LOGIC ---
 // These are global variables and functions that main script.js and downtime.js need to access
-let hpCircles = JSON.parse(localStorage.getItem('zevi-hp-circles')) || Array(4).fill({ active: false });
-let stressCircles = JSON.parse(localStorage.getItem('zevi-stress-circles')) || Array(4).fill({ active: false });
-let armorCircles = JSON.parse(localStorage.getItem('zevi-armor-circles')) || Array(4).fill({ active: false });
+// Initialize with defaults - will be populated when character loads from cloud
+let hpCircles = Array(4).fill({ active: true }); // Default HP circles active
+let stressCircles = Array(4).fill({ active: false });
+let armorCircles = Array(4).fill({ active: false });
 
 function saveHPState() {
     // Trigger auto-save instead of localStorage
@@ -165,11 +166,12 @@ function loadDamageValues() {
     const majorDamageInput = document.getElementById('major-damage-value');
     // Removed severeDamageInput as its element is no longer in HTML
 
-    if (minorDamageInput) {
-        minorDamageInput.value = localStorage.getItem('zevi-minor-damage-value') || '1';
+    // Set defaults - will be overridden when character loads from cloud
+    if (minorDamageInput && !minorDamageInput.value) {
+        minorDamageInput.value = '1';
     }
-    if (majorDamageInput) {
-        majorDamageInput.value = localStorage.getItem('zevi-major-damage-value') || '2';
+    if (majorDamageInput && !majorDamageInput.value) {
+        majorDamageInput.value = '2';
     }
     // No longer loading severeDamageInput
 }

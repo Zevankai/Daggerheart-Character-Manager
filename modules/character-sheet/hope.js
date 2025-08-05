@@ -12,9 +12,9 @@ function renderHopeCircles() {
     }
     hopeTracker.innerHTML = ''; // Clear existing circles
 
-    let currentHope = parseInt(localStorage.getItem('zevi-hope')) || 0;
-    // Get the current maximum number of circles for Hope from localStorage, default to 6
-    let currentMaxHope = parseInt(localStorage.getItem('zevi-max-hope')) || 6;
+    // Initialize with defaults - will be populated when character loads from cloud
+    let currentHope = 0;
+    let currentMaxHope = 6;
 
     // Ensure currentMaxHope stays within global limits
     if (currentMaxHope < minHopeCircles) currentMaxHope = minHopeCircles;
