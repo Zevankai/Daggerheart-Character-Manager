@@ -675,14 +675,40 @@ console.log('🚨 CHARACTERSTATE.JS IS LOADED AND RUNNING!');
 
 // Test for white overlay issue
 setTimeout(() => {
-    const body = document.body;
-    const glasElements = document.querySelectorAll('.glass');
-    console.log('🔍 White overlay debug:', {
-        bodyStyle: body.style.cssText,
-        bodyClasses: body.className,
-        glassElements: glasElements.length,
-        firstGlassStyle: glasElements[0]?.style.cssText,
-        firstGlassClasses: glasElements[0]?.className
+    // Check for common overlay/modal elements
+    const overlayElements = [
+        ...document.querySelectorAll('[class*="overlay"]'),
+        ...document.querySelectorAll('[class*="modal"]'),
+        ...document.querySelectorAll('[style*="position: fixed"]'),
+        ...document.querySelectorAll('[style*="position:fixed"]'),
+        ...document.querySelectorAll('.auth-modal'),
+        ...document.querySelectorAll('[id*="modal"]')
+    ];
+    
+    // Check body computed styles
+    const bodyComputed = window.getComputedStyle(document.body);
+    
+    console.log('🔍 White overlay detailed debug:', {
+        bodyBackground: bodyComputed.backgroundColor,
+        bodyOpacity: bodyComputed.opacity,
+        overlayElements: overlayElements.length,
+        overlayDetails: overlayElements.map(el => ({
+            tagName: el.tagName,
+            className: el.className,
+            id: el.id,
+            style: el.style.cssText,
+            display: window.getComputedStyle(el).display,
+            zIndex: window.getComputedStyle(el).zIndex,
+            position: window.getComputedStyle(el).position
+        })),
+        allElementsWithZIndex: [...document.querySelectorAll('*')].filter(el => {
+            const zIndex = window.getComputedStyle(el).zIndex;
+            return zIndex !== 'auto' && parseInt(zIndex) > 1000;
+        }).map(el => ({
+            tagName: el.tagName,
+            className: el.className,
+            zIndex: window.getComputedStyle(el).zIndex
+        }))
     });
 }, 2000);
 
