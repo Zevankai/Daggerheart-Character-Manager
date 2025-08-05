@@ -276,7 +276,7 @@ class CharacterState {
 
     // Apply hope data directly to UI
     applyHopeToUI() {
-        const hopeTracker = document.querySelector('.hope-tracker');
+        const hopeTracker = document.getElementById('hope-tracker');
         if (!hopeTracker) return;
         
         hopeTracker.innerHTML = ''; // Clear existing circles
@@ -316,7 +316,10 @@ class CharacterState {
                 }
                 
                 circleElement.addEventListener('click', () => {
-                    this.data.hp.circles[index].active = !this.data.hp.circles[index].active;
+                    // Fill up to this point (like hope circles)
+                    for (let i = 0; i < this.data.hp.circles.length; i++) {
+                        this.data.hp.circles[i].active = i <= index;
+                    }
                     this.applyCirclesToUI(); // Re-render
                     if (window.app?.autoSave?.triggerSave) {
                         window.app.autoSave.triggerSave();
@@ -339,7 +342,10 @@ class CharacterState {
                 }
                 
                 circleElement.addEventListener('click', () => {
-                    this.data.stress.circles[index].active = !this.data.stress.circles[index].active;
+                    // Fill up to this point (like hope circles)
+                    for (let i = 0; i < this.data.stress.circles.length; i++) {
+                        this.data.stress.circles[i].active = i <= index;
+                    }
                     this.applyCirclesToUI(); // Re-render
                     if (window.app?.autoSave?.triggerSave) {
                         window.app.autoSave.triggerSave();
@@ -362,7 +368,10 @@ class CharacterState {
                 }
                 
                 circleElement.addEventListener('click', () => {
-                    this.data.armor.circles[index].active = !this.data.armor.circles[index].active;
+                    // Fill up to this point (like hope circles)
+                    for (let i = 0; i < this.data.armor.circles.length; i++) {
+                        this.data.armor.circles[i].active = i <= index;
+                    }
                     this.applyCirclesToUI(); // Re-render
                     if (window.app?.autoSave?.triggerSave) {
                         window.app.autoSave.triggerSave();
@@ -395,10 +404,10 @@ class CharacterState {
             this.data.damage.major = parseInt(this.getUIValue('#major-damage-value', 'value')) || 2;
             
             // Collect hope data from UI (it's managed directly by character state now)
-            const hopeCircles = document.querySelectorAll('.hope-tracker .hope-circle');
+            const hopeCircles = document.querySelectorAll('#hope-tracker .hope-circle');
             if (hopeCircles.length > 0) {
                 this.data.hope.max = hopeCircles.length;
-                this.data.hope.current = document.querySelectorAll('.hope-tracker .hope-circle.active').length;
+                this.data.hope.current = document.querySelectorAll('#hope-tracker .hope-circle.active').length;
             }
             
             // Collect circle data from UI (it's managed directly by character state now) 
