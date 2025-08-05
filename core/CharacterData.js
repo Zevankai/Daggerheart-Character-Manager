@@ -259,29 +259,29 @@ class CharacterData {
             evasion: this.getEvasionFromUI(),
             damage: this.getDamageFromUI(),
             
-            // Data from localStorage
-            hope: this.parseJSON(localStorage.getItem('zevi-hope')) || { current: 0, max: 6 },
+            // Data from character-specific localStorage
+            hope: this.getCharacterSpecificData('zevi-hope') || { current: 0, max: 6 },
             stress: this.getStressFromStorage(),
             hp: this.getHPFromStorage(),
             armor: this.getArmorFromStorage(),
             
-            // Complex data from localStorage
-            equipment: this.parseJSON(localStorage.getItem('zevi-equipment')) || this.defaultCharacterState.equipment,
-            journal: { entries: this.parseJSON(localStorage.getItem('zevi-journal-entries')) || [] },
-            details: this.parseJSON(localStorage.getItem('zevi-character-details')) || { personal: {}, physical: {} },
-            experiences: this.parseJSON(localStorage.getItem('zevi-experiences')) || [],
-            downtime: { projects: this.parseJSON(localStorage.getItem('zevi-projects')) || [] },
+            // Complex data from character-specific localStorage
+            equipment: this.getCharacterSpecificData('zevi-equipment') || this.defaultCharacterState.equipment,
+            journal: { entries: this.getCharacterSpecificData('zevi-journal-entries') || [] },
+            details: this.getCharacterSpecificData('zevi-character-details') || { personal: {}, physical: {} },
+            experiences: this.getCharacterSpecificData('zevi-experiences') || [],
+            downtime: { projects: this.getCharacterSpecificData('zevi-projects') || [] },
             
             // Game systems
             domainVault: {
-                domainCards: this.parseJSON(localStorage.getItem('zevi-domain-cards')) || [],
-                selectedDomains: this.parseJSON(localStorage.getItem('zevi-selected-domains')) || [],
-                domainAbilities: this.parseJSON(localStorage.getItem('zevi-domain-abilities')) || {}
+                domainCards: this.getCharacterSpecificData('zevi-domain-cards') || [],
+                selectedDomains: this.getCharacterSpecificData('zevi-selected-domains') || [],
+                domainAbilities: this.getCharacterSpecificData('zevi-domain-abilities') || {}
             },
             effectsFeatures: {
-                activeEffects: this.parseJSON(localStorage.getItem('zevi-active-effects')) || [],
-                features: this.parseJSON(localStorage.getItem('zevi-features')) || [],
-                conditions: this.parseJSON(localStorage.getItem('zevi-conditions')) || []
+                activeEffects: this.getCharacterSpecificData('zevi-active-effects') || [],
+                features: this.getCharacterSpecificData('zevi-features') || [],
+                conditions: this.getCharacterSpecificData('zevi-conditions') || []
             },
             
             // Appearance settings
@@ -417,27 +417,27 @@ class CharacterData {
 
     getStressFromStorage() {
         return {
-            circles: this.parseJSON(localStorage.getItem('zevi-stress-circles')) || Array(4).fill({ active: false }),
-            current: parseInt(localStorage.getItem('zevi-stress-current')) || 0,
+            circles: this.getCharacterSpecificData('zevi-stress-circles') || Array(4).fill({ active: false }),
+            current: parseInt(this.getCharacterSpecificValue('zevi-stress-current')) || 0,
             max: 4
         };
     }
 
     getHPFromStorage() {
         return {
-            circles: this.parseJSON(localStorage.getItem('zevi-hp-circles')) || Array(4).fill({ active: true }),
-            current: parseInt(localStorage.getItem('zevi-hp-current')) || 4,
+            circles: this.getCharacterSpecificData('zevi-hp-circles') || Array(4).fill({ active: true }),
+            current: parseInt(this.getCharacterSpecificValue('zevi-hp-current')) || 4,
             max: 4
         };
     }
 
     getArmorFromStorage() {
         return {
-            circles: this.parseJSON(localStorage.getItem('zevi-armor-circles')) || Array(4).fill({ active: false }),
-            current: parseInt(localStorage.getItem('zevi-armor-current')) || 0,
+            circles: this.getCharacterSpecificData('zevi-armor-circles') || Array(4).fill({ active: false }),
+            current: parseInt(this.getCharacterSpecificValue('zevi-armor-current')) || 0,
             max: 4,
-            activeCount: parseInt(localStorage.getItem('zevi-active-armor-count')) || 0,
-            totalCircles: parseInt(localStorage.getItem('zevi-total-armor-circles')) || 4
+            activeCount: parseInt(this.getCharacterSpecificValue('zevi-active-armor-count')) || 0,
+            totalCircles: parseInt(this.getCharacterSpecificValue('zevi-total-armor-circles')) || 4
         };
     }
 
@@ -642,6 +642,44 @@ class CharacterData {
             console.error('Error parsing JSON:', e);
             return null;
         }
+    }
+
+    // Get character-specific data from localStorage
+    getCharacterSpecificData(key) {
+        const currentCharacterId = this.getCurrentCharacterId();
+        if (!currentCharacterId) {
+            // Fallback to global key if no character ID
+            return this.parseJSON(localStorage.getItem(key));
+        }
+        
+        const characterKey = `${key}-${currentCharacterId}`;
+        const characterData = this.parseJSON(localStorage.getItem(characterKey));
+        
+        // If character-specific data doesn't exist, try the global key as fallback
+        if (characterData === null) {
+            return this.parseJSON(localStorage.getItem(key));
+        }
+        
+        return characterData;
+    }
+
+    // Get character-specific simple value from localStorage
+    getCharacterSpecificValue(key) {
+        const currentCharacterId = this.getCurrentCharacterId();
+        if (!currentCharacterId) {
+            // Fallback to global key if no character ID
+            return localStorage.getItem(key);
+        }
+        
+        const characterKey = `${key}-${currentCharacterId}`;
+        const characterValue = localStorage.getItem(characterKey);
+        
+        // If character-specific data doesn't exist, try the global key as fallback
+        if (characterValue === null) {
+            return localStorage.getItem(key);
+        }
+        
+        return characterValue;
     }
 
     // Delete character data

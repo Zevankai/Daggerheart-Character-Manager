@@ -312,7 +312,10 @@ class AppController {
 
     // Store complex data structures in localStorage for other modules
     storeComplexDataInLocalStorage(data) {
-        const dataMap = {
+        const currentCharacterId = this.characterData.getCurrentCharacterId();
+        
+        // Character-specific data that should be unique per character
+        const characterSpecificData = {
             'zevi-hope': data.hope,
             'zevi-stress-circles': data.stress?.circles,
             'zevi-stress-current': data.stress?.current,
@@ -332,16 +335,35 @@ class AppController {
             'zevi-domain-abilities': data.domainVault?.domainAbilities,
             'zevi-active-effects': data.effectsFeatures?.activeEffects,
             'zevi-features': data.effectsFeatures?.features,
-            'zevi-conditions': data.effectsFeatures?.conditions,
+            'zevi-conditions': data.effectsFeatures?.conditions
+        };
+        
+        // Global data that should persist across characters
+        const globalData = {
             'zevi-section-order': data.ui?.sectionOrder
         };
         
-        Object.entries(dataMap).forEach(([key, value]) => {
+        // Store character-specific data with character ID prefix
+        if (currentCharacterId) {
+            Object.entries(characterSpecificData).forEach(([key, value]) => {
+                if (value !== undefined) {
+                    try {
+                        const characterKey = `${key}-${currentCharacterId}`;
+                        localStorage.setItem(characterKey, typeof value === 'string' ? value : JSON.stringify(value));
+                    } catch (error) {
+                        console.warn(`Failed to store character-specific ${key}:`, error);
+                    }
+                }
+            });
+        }
+        
+        // Store global data without character ID
+        Object.entries(globalData).forEach(([key, value]) => {
             if (value !== undefined) {
                 try {
                     localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
                 } catch (error) {
-                    console.warn(`Failed to store ${key}:`, error);
+                    console.warn(`Failed to store global ${key}:`, error);
                 }
             }
         });
