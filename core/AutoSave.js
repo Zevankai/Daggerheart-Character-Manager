@@ -9,6 +9,8 @@ class AutoSave {
         this.saveInterval = null;
         this.saveIntervalMs = 10000; // Save every 10 seconds
         this.isEnabled = true;
+        this.triggerSaveTimeout = null;
+        this.triggerSaveDelay = 2000; // Debounce delay for triggered saves (2 seconds)
     }
 
     // Start autosave
@@ -74,6 +76,24 @@ class AutoSave {
             console.error('AutoSave: Error during save:', error);
             this.uiManager.showStatus('Auto-save error', 'error');
         }
+    }
+
+    // Trigger an immediate save with debouncing
+    triggerSave() {
+        if (!this.isEnabled) return;
+        
+        console.log('AutoSave: Triggered save requested');
+        
+        // Clear any existing timeout
+        if (this.triggerSaveTimeout) {
+            clearTimeout(this.triggerSaveTimeout);
+        }
+        
+        // Set a new timeout with debouncing
+        this.triggerSaveTimeout = setTimeout(() => {
+            this.performAutoSave();
+            this.triggerSaveTimeout = null;
+        }, this.triggerSaveDelay);
     }
 
     // Collect current character data from UI and localStorage
