@@ -156,13 +156,13 @@ class ZeviAPI {
 
   // Active character management
   async getActiveCharacter() {
-    return await this.makeRequest('/characters/active');
+    return await this.makeRequest('/characters?action=active');
   }
 
   async setActiveCharacter(characterId) {
-    return await this.makeRequest('/characters/active', {
+    return await this.makeRequest('/characters', {
       method: 'POST',
-      body: JSON.stringify({ characterId }),
+      body: JSON.stringify({ characterId, setActive: true }),
     });
   }
 
@@ -299,7 +299,7 @@ class ZeviAPI {
   // Testing methods for verifying database saves
   async testDatabaseConnection() {
     try {
-      const response = await this.makeRequest('/characters/test?action=connection');
+      const response = await this.makeRequest('/characters?action=test-connection');
       return response;
     } catch (error) {
       console.error('Database test failed:', error);
@@ -309,7 +309,7 @@ class ZeviAPI {
 
   async testCharacterSave(testData = {}) {
     try {
-      const response = await this.makeRequest('/characters/test', {
+      const response = await this.makeRequest('/characters?action=test-save', {
         method: 'POST',
         body: JSON.stringify({ testData })
       });
@@ -322,7 +322,7 @@ class ZeviAPI {
 
   async testUserCharacters() {
     try {
-      const response = await this.makeRequest('/characters/test?action=characters');
+      const response = await this.makeRequest('/characters?action=test-characters');
       return response;
     } catch (error) {
       console.error('User characters test failed:', error);
@@ -332,7 +332,7 @@ class ZeviAPI {
 
   async testDatabaseSchema() {
     try {
-      const response = await this.makeRequest('/characters/test?action=schema');
+      const response = await this.makeRequest('/characters?action=test-schema');
       return response;
     } catch (error) {
       console.error('Database schema test failed:', error);
