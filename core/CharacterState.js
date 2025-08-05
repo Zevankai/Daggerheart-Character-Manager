@@ -172,7 +172,8 @@ class CharacterState {
         console.log(`🔄 Updating character ${this.characterId} with cloud data:`, {
             hope: cloudData.hope,
             hp: cloudData.hp,
-            hasCircleData: !!(cloudData.hp?.circles)
+            hasCircleData: !!(cloudData.hp?.circles),
+            fullCloudData: cloudData
         });
         
         this.data = { ...this.data, ...cloudData };
@@ -578,7 +579,12 @@ class CharacterStateManager {
         // Save current character's data first
         if (this.activeCharacterId) {
             const currentState = this.getCharacterState(this.activeCharacterId);
+            console.log(`💾 About to collect data from character ${this.activeCharacterId} before switching`);
             currentState.collectFromUI();
+            console.log(`💾 Collected data for character ${this.activeCharacterId}:`, {
+                hope: currentState.data.hope,
+                hp: currentState.data.hp
+            });
             currentState.deactivate();
         }
         
@@ -591,6 +597,10 @@ class CharacterStateManager {
         }
         
         // Apply the new character's data to UI
+        console.log(`🎨 About to apply character ${characterId} data to UI:`, {
+            hope: newState.data.hope,
+            hp: newState.data.hp
+        });
         newState.applyToUI();
         
         // Set as active
@@ -662,7 +672,6 @@ console.log('🏗️ CharacterStateManager initialized:', window.CharacterStateM
 
 // Make it very obvious if our system is working
 console.log('🚨 CHARACTERSTATE.JS IS LOADED AND RUNNING!');
-alert('CharacterState.js loaded! Check console for character switching logs.');
 
 // Debug function to manually test the circle system
 window.testCircleSystem = function() {
