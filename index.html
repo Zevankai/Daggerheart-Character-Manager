@@ -960,11 +960,10 @@
                 // Update display with current UI data
                 nameEl.textContent = currentData.name || 'Unnamed Character';
                 
-                const details = [];
-                if (currentData.ancestry) details.push(currentData.ancestry);
-                if (currentData.class) details.push(currentData.class);
-                if (currentData.subclass) details.push(currentData.subclass);
-                detailsEl.textContent = details.length > 0 ? details.join(' ') : 'No class info';
+                // Use the subtitle directly from the UI (the italicized text beneath character name)
+                detailsEl.textContent = currentData.subtitle && currentData.subtitle !== 'Community Ancestry Class (Subclass)' 
+                  ? currentData.subtitle 
+                  : 'No class info';
                 
                 levelEl.textContent = `Level ${currentData.level || 1}`;
                 
@@ -1182,9 +1181,14 @@
           try {
             this.updateStatus('Loading character...', '📂', 'saving');
             
-            // Save current character first if logged in
-            if (window.app?.characterData?.getCurrentCharacterId()) {
-              await this.saveCurrentCharacter();
+            // Save current character first if there is one
+            try {
+              const currentCharacterId = window.app?.characterData?.getCurrentCharacterId();
+              if (currentCharacterId && currentCharacterId !== characterId.toString()) {
+                await saveCurrentCharacter();
+              }
+            } catch (saveError) {
+              console.warn('Could not save current character before loading new one:', saveError);
             }
             
             // Load the new character
@@ -1281,7 +1285,14 @@
           characterManager.updateStatus('Character saved successfully', '✅', 'success');
         } catch (error) {
           console.error('Failed to save character:', error);
-          characterManager.updateStatus(`Save failed: ${error.message}`, '❌', 'error');
+          
+          // Check if it's a database schema issue
+          if (error.message.includes('column') && error.message.includes('does not exist')) {
+            characterManager.updateStatus('Database needs migration - use Migrate Database button', '🔄', 'error');
+            alert('Database migration required!\n\nPlease click the "🔄 Migrate Database" button to update your database schema, then try saving again.');
+          } else {
+            characterManager.updateStatus(`Save failed: ${error.message}`, '❌', 'error');
+          }
         }
       }
 
@@ -1303,22 +1314,50 @@
         try {
           characterManager.updateStatus('Creating new character...', '➕', 'saving');
           
-          // Save current character first if logged in
-          if (window.app?.characterData?.getCurrentCharacterId()) {
-            await characterManager.saveCurrentCharacter();
+          // Save current character first if there is one
+          try {
+            const currentCharacterId = window.app?.characterData?.getCurrentCharacterId();
+            if (currentCharacterId) {
+              await saveCurrentCharacter();
+            }
+          } catch (saveError) {
+            console.warn('Could not save current character before creating new one:', saveError);
           }
           
-          // Create new character
-          const defaultData = window.app?.characterData?.createDefaultState() || {};
+          // Create new character with default data
+          const defaultData = {
+            name: 'New Character',
+            subtitle: 'Community Ancestry Class (Subclass)',
+            level: 1,
+            domain1: 'Domain 1',
+            domain2: 'Domain 2',
+            hope: { current: 3, max: 6 }
+          };
+          
           const response = await window.zeviAPI.createCharacter('New Character', defaultData, true);
           
-          // Load the new character
-          await characterManager.loadCharacter(response.character.id);
+          // Load the new character directly without saving current
+          await window.app?.characterData?.loadCloudCharacter(response.character.id);
+          
+          // Update displays
+          characterManager.updateCurrentCharacterDisplayFromUI();
+          await characterManager.loadCharactersList();
+          
+          // Switch to main character sheet
+          const downtimeTab = document.querySelector('[data-target="downtime-tab-content"]');
+          if (downtimeTab) downtimeTab.click();
           
           characterManager.updateStatus('New character created', '✅', 'success');
         } catch (error) {
           console.error('Failed to create character:', error);
-          characterManager.updateStatus(`Failed to create character: ${error.message}`, '❌', 'error');
+          
+          // Check if it's a database schema issue
+          if (error.message.includes('column') && error.message.includes('does not exist')) {
+            characterManager.updateStatus('Database needs migration - use Migrate Database button', '🔄', 'error');
+            alert('Database migration required!\n\nPlease click the "🔄 Migrate Database" button to update your database schema, then try creating a character again.');
+          } else {
+            characterManager.updateStatus(`Failed to create character: ${error.message}`, '❌', 'error');
+          }
         }
       }
 
