@@ -353,6 +353,19 @@ class ZeviAPI {
     }
   }
 
+  // Delete all character data (admin/reset function)
+  async deleteAllCharacterData() {
+    try {
+      const response = await this.makeRequest('/admin/reset-all', {
+        method: 'DELETE'
+      });
+      return response;
+    } catch (error) {
+      console.error('Failed to delete character data:', error);
+      throw error;
+    }
+  }
+
   async getCharacterSaveHistory(characterId) {
     try {
       const response = await this.makeRequest(`/characters/${characterId}/saves`);

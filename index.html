@@ -323,6 +323,9 @@
                      <button class="cm-btn cm-btn-migrate" onclick="runDatabaseMigration()" title="Run database migration to add missing columns (Ctrl+Shift+M)">
             🔄 Migrate Database
           </button>
+          <button class="cm-btn cm-btn-reset" onclick="deleteAllCharacterData()" title="Delete all character data and start fresh">
+            🗑️ Reset All Data
+          </button>
 
        </div>
       
@@ -540,6 +543,16 @@
 
     .cm-btn-migrate:hover {
       background: linear-gradient(135deg, #d97706, #b45309);
+      transform: translateY(-1px);
+    }
+
+    .cm-btn-reset {
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      color: white;
+    }
+
+    .cm-btn-reset:hover {
+      background: linear-gradient(135deg, #b91c1c, #991b1b);
       transform: translateY(-1px);
     }
 
@@ -1499,6 +1512,58 @@
           console.error('❌ Database migration failed:', error);
           characterManager.updateStatus(`Migration failed: ${error.message}`, '❌', 'error');
           alert('❌ Database migration failed!\n\n' + error.message + '\n\nCheck the console for details.');
+        }
+      }
+
+      // Delete all character data function
+      async function deleteAllCharacterData() {
+        // Show confirmation dialog
+        const confirmMessage = `⚠️ WARNING: This will permanently delete ALL character data!\n\n` +
+                              `This action will:\n` +
+                              `• Delete all characters\n` +
+                              `• Delete all character saves\n` +
+                              `• Reset your account to fresh state\n` +
+                              `• Clear local character folders\n\n` +
+                              `This CANNOT be undone!\n\n` +
+                              `Type "DELETE ALL" to confirm:`;
+        
+        const confirmation = prompt(confirmMessage);
+        
+        if (confirmation !== 'DELETE ALL') {
+          alert('Reset cancelled. Character data preserved.');
+          return;
+        }
+        
+        try {
+          characterManager.updateStatus('Deleting all character data...', '🗑️', 'loading');
+          
+          // Delete from database
+          await window.zeviAPI.deleteAllCharacterData();
+          
+          // Clear local character folders
+          if (window.CharacterStateManager) {
+            window.CharacterStateManager.characters.clear();
+            window.CharacterStateManager.activeCharacterId = null;
+          }
+          
+          // Clear current character ID
+          localStorage.removeItem('zevi-current-character-id');
+          
+          // Reset UI to fresh state
+          characterManager.updateCurrentCharacterDisplayFromUI();
+          await characterManager.loadCharactersList();
+          
+          // Show fresh character sheet
+          const downtimeTab = document.querySelector('[data-target="downtime-tab-content"]');
+          if (downtimeTab) downtimeTab.click();
+          
+          characterManager.updateStatus('All character data deleted - fresh start!', '✅', 'success');
+          alert('✅ All character data deleted successfully!\n\nYou now have a fresh, blank character sheet.');
+          
+        } catch (error) {
+          console.error('Failed to delete character data:', error);
+          characterManager.updateStatus(`Reset failed: ${error.message}`, '❌', 'error');
+          alert('❌ Failed to delete character data!\n\n' + error.message + '\n\nCheck the console for details.');
         }
       }
 
