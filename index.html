@@ -1185,7 +1185,7 @@
             try {
               const currentCharacterId = window.app?.characterData?.getCurrentCharacterId();
               if (currentCharacterId && currentCharacterId !== characterId.toString()) {
-                await saveCurrentCharacter();
+                await window.saveCurrentCharacter();
               }
             } catch (saveError) {
               console.warn('Could not save current character before loading new one:', saveError);
@@ -1296,6 +1296,9 @@
         }
       }
 
+      // Make saveCurrentCharacter available globally
+      window.saveCurrentCharacter = saveCurrentCharacter;
+
       function toggleAutoSave() {
         characterManager.isAutoSaveEnabled = !characterManager.isAutoSaveEnabled;
         const btn = document.getElementById('cm-autosave-toggle');
@@ -1318,7 +1321,7 @@
           try {
             const currentCharacterId = window.app?.characterData?.getCurrentCharacterId();
             if (currentCharacterId) {
-              await saveCurrentCharacter();
+              await window.saveCurrentCharacter();
             }
           } catch (saveError) {
             console.warn('Could not save current character before creating new one:', saveError);
