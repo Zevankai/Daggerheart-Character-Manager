@@ -169,9 +169,18 @@ class CharacterState {
         if (!cloudData) return;
         
         // Merge cloud data into the state, preserving structure
+        console.log(`🔄 Updating character ${this.characterId} with cloud data:`, {
+            hope: cloudData.hope,
+            hp: cloudData.hp,
+            hasCircleData: !!(cloudData.hp?.circles)
+        });
+        
         this.data = { ...this.data, ...cloudData };
         
-        console.log(`📁 Character ${this.characterId} state updated from cloud`);
+        console.log(`📁 Character ${this.characterId} state updated from cloud. New data:`, {
+            hope: this.data.hope,
+            hp: this.data.hp
+        });
     }
 
     // Get all data for saving to cloud
@@ -318,12 +327,13 @@ class CharacterState {
                 }
                 
                 circleElement.addEventListener('click', () => {
-                    console.log(`🩸 HP circle ${index + 1} clicked! Filling up to ${index + 1}`);
+                    console.log(`🩸 HP circle at position ${index} clicked! Filling positions 0 to ${index}`);
                     // Fill up to this point (like hope circles)
                     for (let i = 0; i < this.data.hp.circles.length; i++) {
                         this.data.hp.circles[i].active = i <= index;
                     }
-                    console.log(`❤️ HP circles updated:`, this.data.hp.circles.map(c => c.active));
+                    const activeCounts = this.data.hp.circles.filter(c => c.active).length;
+                    console.log(`❤️ HP circles updated: ${activeCounts} active out of ${this.data.hp.circles.length}`, this.data.hp.circles.map(c => c.active));
                     this.applyCirclesToUI(); // Re-render
                     if (window.app?.autoSave?.triggerSave) {
                         window.app.autoSave.triggerSave();
