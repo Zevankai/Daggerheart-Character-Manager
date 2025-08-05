@@ -276,8 +276,12 @@ class CharacterState {
 
     // Apply hope data directly to UI
     applyHopeToUI() {
+        console.log('🎯 Applying hope to UI for character:', this.characterId, 'Hope data:', this.data.hope);
         const hopeTracker = document.getElementById('hope-tracker');
-        if (!hopeTracker) return;
+        if (!hopeTracker) {
+            console.error('❌ Hope tracker element not found!');
+            return;
+        }
         
         hopeTracker.innerHTML = ''; // Clear existing circles
         
@@ -304,6 +308,7 @@ class CharacterState {
 
     // Apply HP/Stress/Armor circles directly to UI
     applyCirclesToUI() {
+        console.log('🎯 Applying circles to UI for character:', this.characterId);
         // Apply HP circles
         const hpTracker = document.getElementById('hp-tracker');
         if (hpTracker) {
@@ -546,6 +551,8 @@ class CharacterStateManager {
     // Switch to a different character's folder
     async switchToCharacter(characterId, cloudData = null) {
         console.log(`🔄 Switching to character ${characterId} folder...`);
+        console.log('🔍 Current active character before switch:', this.activeCharacterId);
+        console.log('🔍 Cloud data provided:', !!cloudData);
         
         // Save current character's data first
         if (this.activeCharacterId) {
@@ -615,7 +622,15 @@ class CharacterStateManager {
     }
 }
 
-// Global instance
+// Initialize the global CharacterStateManager when this script loads
 window.CharacterStateManager = new CharacterStateManager();
+console.log('🏗️ CharacterStateManager initialized:', window.CharacterStateManager);
+
+// Add debug logging to see if this system is being used
+window.addEventListener('load', () => {
+    console.log('🔍 Page loaded - CharacterStateManager available:', !!window.CharacterStateManager);
+    console.log('🔍 Hope tracker element:', document.getElementById('hope-tracker'));
+    console.log('🔍 HP tracker element:', document.getElementById('hp-tracker'));
+});
 
 export { CharacterState, CharacterStateManager };
