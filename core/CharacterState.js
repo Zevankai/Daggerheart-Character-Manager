@@ -673,6 +673,19 @@ console.log('🏗️ CharacterStateManager initialized:', window.CharacterStateM
 // Make it very obvious if our system is working
 console.log('🚨 CHARACTERSTATE.JS IS LOADED AND RUNNING!');
 
+// Test for white overlay issue
+setTimeout(() => {
+    const body = document.body;
+    const glasElements = document.querySelectorAll('.glass');
+    console.log('🔍 White overlay debug:', {
+        bodyStyle: body.style.cssText,
+        bodyClasses: body.className,
+        glassElements: glasElements.length,
+        firstGlassStyle: glasElements[0]?.style.cssText,
+        firstGlassClasses: glasElements[0]?.className
+    });
+}, 2000);
+
 // Debug function to manually test the circle system
 window.testCircleSystem = function() {
     console.log('🧪 Testing circle system...');
@@ -688,8 +701,10 @@ window.addEventListener('load', () => {
     console.log('🔍 Hope tracker element:', document.getElementById('hope-tracker'));
     console.log('🔍 HP tracker element:', document.getElementById('hp-tracker'));
     
-    // If no active character, create default circles so the UI is functional
+    // Temporarily disable default circle creation to test white overlay issue
     setTimeout(() => {
+        console.log('🚫 Default circle creation temporarily disabled to debug white overlay');
+        /* 
         if (!window.CharacterStateManager.activeCharacterId) {
             console.log('🏗️ No active character - creating default circles for UI testing');
             const defaultState = window.CharacterStateManager.getCharacterState('default');
@@ -705,6 +720,7 @@ window.addEventListener('load', () => {
             const defaultState = window.CharacterStateManager.getCharacterState('default');
             defaultState.applyToUI(); // This will replace any existing circles with working ones
         }
+        */
     }, 1000);
 });
 
