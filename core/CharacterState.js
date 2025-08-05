@@ -291,7 +291,9 @@ class CharacterState {
             
             // Add click handler for this circle
             circle.addEventListener('click', () => {
+                console.log(`🎯 Hope circle ${i + 1} clicked! Setting hope to ${i + 1}`);
                 this.data.hope.current = i + 1;
+                console.log(`💝 Hope updated to: ${this.data.hope.current}`);
                 this.applyHopeToUI(); // Re-render
                 if (window.app?.autoSave?.triggerSave) {
                     window.app.autoSave.triggerSave();
@@ -316,10 +318,12 @@ class CharacterState {
                 }
                 
                 circleElement.addEventListener('click', () => {
+                    console.log(`🩸 HP circle ${index + 1} clicked! Filling up to ${index + 1}`);
                     // Fill up to this point (like hope circles)
                     for (let i = 0; i < this.data.hp.circles.length; i++) {
                         this.data.hp.circles[i].active = i <= index;
                     }
+                    console.log(`❤️ HP circles updated:`, this.data.hp.circles.map(c => c.active));
                     this.applyCirclesToUI(); // Re-render
                     if (window.app?.autoSave?.triggerSave) {
                         window.app.autoSave.triggerSave();
