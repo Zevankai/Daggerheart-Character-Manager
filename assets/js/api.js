@@ -356,7 +356,7 @@ class ZeviAPI {
   // Delete all character data (admin/reset function)
   async deleteAllCharacterData() {
     try {
-      const response = await this.makeRequest('/admin/reset-all', {
+      const response = await this.makeRequest('/characters?action=reset-all', {
         method: 'DELETE'
       });
       return response;
