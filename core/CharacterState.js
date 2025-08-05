@@ -483,24 +483,13 @@ class CharacterState {
 
     // Collect data from global variables
     collectFromGlobals() {
-        // Hope
-        if (window.currentHope !== undefined) {
-            this.data.hope.current = window.currentHope;
-        }
-        if (window.currentMaxHope !== undefined) {
-            this.data.hope.max = window.currentMaxHope;
-        }
+        console.log(`🚫 collectFromGlobals: Skipping hope/circle globals - managed by CharacterState`);
+        console.log(`🔍 Global values (NOT used): currentHope=${window.currentHope}, hpCircles length=${window.hpCircles?.length}`);
         
-        // HP/Stress/Armor
-        if (window.hpCircles) {
-            this.data.hp.circles = [...window.hpCircles];
-        }
-        if (window.stressCircles) {
-            this.data.stress.circles = [...window.stressCircles];
-        }
-        if (window.armorCircles) {
-            this.data.armor.circles = [...window.armorCircles];
-        }
+        // NOTE: Hope and circle data is now managed directly by CharacterState
+        // Don't override with stale global variables
+        
+        // Still collect other global data that modules manage
         if (window.totalArmorCircles !== undefined) {
             this.data.armor.totalCircles = window.totalArmorCircles;
         }
