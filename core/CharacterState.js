@@ -413,17 +413,27 @@ class CharacterState {
             
             // Collect hope data from UI (it's managed directly by character state now)
             const hopeCircles = document.querySelectorAll('#hope-tracker .hope-circle');
+            const activeHopeCircles = document.querySelectorAll('#hope-tracker .hope-circle.active');
+            console.log(`🔍 Hope collection: Found ${hopeCircles.length} total, ${activeHopeCircles.length} active`);
+            console.log(`🔍 Hope before collection: current=${this.data.hope.current}, max=${this.data.hope.max}`);
+            
             if (hopeCircles.length > 0) {
                 this.data.hope.max = hopeCircles.length;
-                this.data.hope.current = document.querySelectorAll('#hope-tracker .hope-circle.active').length;
+                this.data.hope.current = activeHopeCircles.length;
+                console.log(`🔍 Hope after collection: current=${this.data.hope.current}, max=${this.data.hope.max}`);
             }
             
             // Collect circle data from UI (it's managed directly by character state now) 
             const hpCircles = document.querySelectorAll('#hp-tracker .hp-circle');
+            const activeHpCircles = document.querySelectorAll('#hp-tracker .hp-circle.active');
+            console.log(`🔍 HP collection: Found ${hpCircles.length} total, ${activeHpCircles.length} active`);
+            console.log(`🔍 HP before collection:`, this.data.hp.circles.map(c => c.active));
+            
             if (hpCircles.length > 0) {
                 this.data.hp.circles = Array.from(hpCircles).map(circle => ({
                     active: circle.classList.contains('active')
                 }));
+                console.log(`🔍 HP after collection:`, this.data.hp.circles.map(c => c.active));
             }
             
             const stressCircles = document.querySelectorAll('#stress-tracker .stress-circle');
