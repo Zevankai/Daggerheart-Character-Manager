@@ -626,11 +626,39 @@ class CharacterStateManager {
 window.CharacterStateManager = new CharacterStateManager();
 console.log('🏗️ CharacterStateManager initialized:', window.CharacterStateManager);
 
+// Debug function to manually test the circle system
+window.testCircleSystem = function() {
+    console.log('🧪 Testing circle system...');
+    const testState = window.CharacterStateManager.getCharacterState('test');
+    testState.applyToUI();
+    console.log('✅ Test circles created! Try clicking them.');
+    return testState;
+};
+
 // Add debug logging to see if this system is being used
 window.addEventListener('load', () => {
     console.log('🔍 Page loaded - CharacterStateManager available:', !!window.CharacterStateManager);
     console.log('🔍 Hope tracker element:', document.getElementById('hope-tracker'));
     console.log('🔍 HP tracker element:', document.getElementById('hp-tracker'));
+    
+    // If no active character, create default circles so the UI is functional
+    setTimeout(() => {
+        if (!window.CharacterStateManager.activeCharacterId) {
+            console.log('🏗️ No active character - creating default circles for UI testing');
+            const defaultState = window.CharacterStateManager.getCharacterState('default');
+            defaultState.applyToUI();
+        }
+        
+        // Also check if there are existing circles without click handlers and fix them
+        const existingHopeCircles = document.querySelectorAll('#hope-tracker .hope-circle');
+        const existingHpCircles = document.querySelectorAll('#hp-tracker .hp-circle');
+        
+        if (existingHopeCircles.length > 0 && !window.CharacterStateManager.activeCharacterId) {
+            console.log('🔧 Found existing circles without character state - taking control');
+            const defaultState = window.CharacterStateManager.getCharacterState('default');
+            defaultState.applyToUI(); // This will replace any existing circles with working ones
+        }
+    }, 1000);
 });
 
 export { CharacterState, CharacterStateManager };
