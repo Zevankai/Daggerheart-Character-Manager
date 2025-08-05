@@ -58,8 +58,10 @@ class AutoSave {
         try {
             console.log('AutoSave: Saving character', currentCharacterId);
             
-            // Collect current character data from UI and localStorage
-            const characterData = this.collectCurrentCharacterData();
+            // Collect current character data from character state manager
+            const characterData = window.CharacterStateManager ? 
+                window.CharacterStateManager.getCurrentCharacterData() : 
+                this.collectCurrentCharacterData();
             
             // Save the data
             const success = await this.characterData.saveCharacterData(currentCharacterId, characterData);

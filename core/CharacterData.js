@@ -540,30 +540,21 @@ class CharacterData {
     async loadCharacterData(characterData, characterId) {
         console.log('📂 Loading character data:', { characterId, hasData: !!characterData });
         
-        // First, reset all character state to ensure fresh slate
-        await this.resetCharacterState();
-        
         // Set the current character ID
         this.setCurrentCharacterId(characterId);
         
-        // Apply appearance settings if they exist
-        if (characterData && characterData.appearanceSettings) {
-            await this.applyAppearanceSettings(characterData.appearanceSettings);
+        // Use the character state manager to switch to this character's folder
+        if (window.CharacterStateManager) {
+            await window.CharacterStateManager.switchToCharacter(characterId, characterData);
+        } else {
+            console.error('CharacterStateManager not available, falling back to old method');
+            // Fallback to old method if state manager not loaded
+            await this.resetCharacterState();
+            if (window.app && window.app.loadCharacterFromData) {
+                await window.app.loadCharacterFromData(characterData);
+            }
+            await this.reRenderAllModules();
         }
-        
-        // Apply UI preferences if they exist
-        if (characterData && characterData.ui) {
-            await this.applyUIPreferences(characterData.ui);
-        }
-        
-        // Load the character data into the app
-        if (window.app && window.app.loadCharacterFromData) {
-            await window.app.loadCharacterFromData(characterData);
-        }
-        
-        // Small delay to ensure all data is applied, then force re-render
-        await new Promise(resolve => setTimeout(resolve, 100));
-        await this.reRenderAllModules();
         
         console.log('✅ Character data loaded successfully');
         return characterData;
@@ -1008,6 +999,13 @@ class CharacterData {
     // Helper for modules to replace localStorage.setItem calls
     static saveCharacterData() {
         console.log('💾 Module triggered character data save');
+        
+        // If using character state manager, collect current data into the active character's folder
+        if (window.CharacterStateManager && window.CharacterStateManager.activeCharacterId) {
+            const activeState = window.CharacterStateManager.getCharacterState(window.CharacterStateManager.activeCharacterId);
+            activeState.collectFromUI();
+        }
+        
         CharacterData.triggerAutoSaveInsteadOfLocalStorage();
     }
 
