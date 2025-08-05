@@ -540,6 +540,9 @@ class CharacterData {
     async loadCharacterData(characterData, characterId) {
         console.log('📂 Loading character data:', { characterId, hasData: !!characterData });
         
+        // First, reset all character state to ensure fresh slate
+        await this.resetCharacterState();
+        
         // Set the current character ID
         this.setCurrentCharacterId(characterId);
         
@@ -557,6 +560,9 @@ class CharacterData {
         if (window.app && window.app.loadCharacterFromData) {
             await window.app.loadCharacterFromData(characterData);
         }
+        
+        // Force re-render all modules with fresh data
+        await this.reRenderAllModules();
         
         console.log('✅ Character data loaded successfully');
         return characterData;
@@ -678,7 +684,248 @@ class CharacterData {
         console.log('✅ UI preferences applied');
     }
 
-    // Safely parse JSON
+    // Reset all character state to ensure fresh slate for new character
+    async resetCharacterState() {
+        console.log('🔄 Resetting character state for fresh slate...');
+        
+        try {
+            // Reset global module variables
+            this.resetModuleGlobals();
+            
+            // Clear UI elements
+            this.clearUIElements();
+            
+            // Reset form inputs to defaults
+            this.resetFormInputs();
+            
+            console.log('✅ Character state reset complete');
+        } catch (error) {
+            console.error('Error resetting character state:', error);
+        }
+    }
+
+    // Reset global variables used by modules
+    resetModuleGlobals() {
+        // Reset HP/Stress global variables
+        if (window.hpCircles) {
+            window.hpCircles = Array(4).fill({ active: true });
+        }
+        if (window.stressCircles) {
+            window.stressCircles = Array(4).fill({ active: false });
+        }
+        if (window.armorCircles) {
+            window.armorCircles = Array(4).fill({ active: false });
+        }
+        
+        // Reset hope variables
+        if (window.currentHope !== undefined) {
+            window.currentHope = 0;
+        }
+        if (window.currentMaxHope !== undefined) {
+            window.currentMaxHope = 6;
+        }
+        
+        // Reset equipment data
+        if (window.equipmentData) {
+            window.equipmentData = {
+                weapons: [], armor: [], accessories: [], consumables: [], 
+                treasures: [], tools: [], materials: []
+            };
+        }
+        
+        // Reset journal entries
+        if (window.journalEntries) {
+            window.journalEntries = [];
+        }
+        
+        // Reset experiences
+        if (window.experiences) {
+            window.experiences = [];
+        }
+        
+        // Reset projects
+        if (window.projects) {
+            window.projects = [];
+        }
+        
+        // Reset character details
+        if (window.characterDetails) {
+            window.characterDetails = { personal: {}, physical: {} };
+        }
+        
+        // Reset domain vault
+        if (window.domainVaultData) {
+            window.domainVaultData = {
+                equippedCards: [null, null, null, null, null],
+                availableCards: [],
+                selectedDomains: [],
+                domainAbilities: {}
+            };
+        }
+        
+        // Reset effects and features
+        if (window.effectsFeaturesData) {
+            window.effectsFeaturesData = {
+                activeEffects: [],
+                features: [],
+                conditions: []
+            };
+        }
+    }
+
+    // Clear UI elements to default state
+    clearUIElements() {
+        // Clear character name and subtitle
+        const nameEditor = document.querySelector('.character-name-editor');
+        if (nameEditor) {
+            nameEditor.textContent = 'Character Name';
+        }
+        
+        const subtitle = document.querySelector('.subtitle');
+        if (subtitle) {
+            subtitle.textContent = 'Community Ancestry Class (Subclass)';
+        }
+        
+        // Clear character image
+        const charImage = document.getElementById('charImage');
+        const charPlaceholder = document.getElementById('charPlaceholder');
+        if (charImage && charPlaceholder) {
+            charImage.src = '';
+            charImage.style.display = 'none';
+            charPlaceholder.style.display = 'block';
+        }
+        
+        // Clear level
+        const levelElement = document.querySelector('.level');
+        if (levelElement) {
+            levelElement.textContent = '1';
+        }
+        
+        // Clear ability scores
+        const abilities = ['agility', 'strength', 'finesse', 'instinct', 'presence', 'knowledge'];
+        abilities.forEach(ability => {
+            const element = document.getElementById(ability);
+            if (element) {
+                element.textContent = '0';
+            }
+        });
+        
+        // Clear evasion and damage values
+        const evasionElement = document.getElementById('evasionValue');
+        if (evasionElement) {
+            evasionElement.textContent = '10';
+        }
+        
+        const minorDamage = document.getElementById('minor-damage-value');
+        const majorDamage = document.getElementById('major-damage-value');
+        if (minorDamage) minorDamage.value = '1';
+        if (majorDamage) majorDamage.value = '2';
+    }
+
+    // Reset form inputs to defaults
+    resetFormInputs() {
+        // Reset all text inputs, textareas, and selects in character forms
+        const characterForms = document.querySelectorAll('.tab-panel');
+        characterForms.forEach(form => {
+            // Clear text inputs and textareas
+            form.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach(input => {
+                if (input.id !== 'minor-damage-value' && input.id !== 'major-damage-value') {
+                    input.value = '';
+                }
+            });
+            
+            // Reset checkboxes
+            form.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+            // Reset select elements
+            form.querySelectorAll('select').forEach(select => {
+                select.selectedIndex = 0;
+            });
+        });
+        
+        // Clear dynamic content areas
+        const dynamicContainers = [
+            'journal-entries-container',
+            'experiences-list',
+            'projects-container',
+            'equipment-list',
+            'domain-cards-container',
+            'effects-features-container'
+        ];
+        
+        dynamicContainers.forEach(containerId => {
+            const container = document.getElementById(containerId);
+            if (container) {
+                container.innerHTML = '';
+            }
+                 });
+     }
+
+     // Force re-render all modules to use fresh character data
+     async reRenderAllModules() {
+         console.log('🔄 Re-rendering all modules with fresh data...');
+         
+         try {
+             // Re-render HP/Stress circles
+             if (window.renderHPCircles) {
+                 window.renderHPCircles();
+             }
+             if (window.renderStressCircles) {
+                 window.renderStressCircles();
+             }
+             if (window.renderArmorCircles) {
+                 window.renderArmorCircles();
+             }
+             
+             // Re-render hope circles
+             if (window.renderHopeCircles) {
+                 window.renderHopeCircles();
+             }
+             
+             // Re-render equipment
+             if (window.renderEquipmentCategories) {
+                 window.renderEquipmentCategories();
+             }
+             
+             // Re-render journal
+             if (window.renderJournalEntries) {
+                 window.renderJournalEntries();
+             }
+             
+             // Re-render experiences
+             if (window.renderExperiences) {
+                 window.renderExperiences();
+             }
+             
+             // Re-render projects
+             if (window.renderProjects) {
+                 window.renderProjects();
+             }
+             
+             // Re-render character details
+             if (window.initializeDetailsTab) {
+                 window.initializeDetailsTab();
+             }
+             
+             // Re-render domain vault
+             if (window.initializeDomainVault) {
+                 window.initializeDomainVault();
+             }
+             
+             // Re-render effects and features
+             if (window.initializeEffectsFeatures) {
+                 window.initializeEffectsFeatures();
+             }
+             
+             console.log('✅ All modules re-rendered with fresh data');
+         } catch (error) {
+             console.error('Error re-rendering modules:', error);
+         }
+     }
+
+     // Safely parse JSON
     parseJSON(str) {
         if (!str) return null;
         try {
