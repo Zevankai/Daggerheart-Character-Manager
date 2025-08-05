@@ -647,6 +647,10 @@ class CharacterStateManager {
 window.CharacterStateManager = new CharacterStateManager();
 console.log('🏗️ CharacterStateManager initialized:', window.CharacterStateManager);
 
+// Make it very obvious if our system is working
+console.log('🚨 CHARACTERSTATE.JS IS LOADED AND RUNNING!');
+alert('CharacterState.js loaded! Check console for character switching logs.');
+
 // Debug function to manually test the circle system
 window.testCircleSystem = function() {
     console.log('🧪 Testing circle system...');
