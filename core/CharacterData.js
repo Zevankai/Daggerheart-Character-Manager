@@ -456,6 +456,9 @@ class CharacterData {
                 const characterData = this.collectCurrentCharacterData();
                 await this.saveCharacterData(currentCharacterId, characterData, 'auto');
                 
+                // Update last saved timestamp for character manager display
+                localStorage.setItem(`zevi-character-${currentCharacterId}-lastSaved`, new Date().toISOString());
+                
                 // Show save indicator
                 if (window.app?.uiManager?.showStatus) {
                     window.app.uiManager.showStatus('Auto-saved', 'success');

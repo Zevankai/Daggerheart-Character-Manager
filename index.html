@@ -898,11 +898,29 @@
           document.addEventListener('click', (e) => {
             if (e.target.getAttribute('data-target') === 'characters-tab-content') {
               setTimeout(() => {
-                this.loadCurrentCharacterDisplay();
+                this.updateCurrentCharacterDisplayFromUI();
                 this.loadCharactersList();
               }, 100);
             }
           });
+          
+          // Set up periodic updates to keep the display fresh
+          this.startDisplayUpdateInterval();
+        }
+
+        startDisplayUpdateInterval() {
+          // Update the display every 3 seconds to reflect UI changes
+          if (this.displayUpdateInterval) {
+            clearInterval(this.displayUpdateInterval);
+          }
+          
+          this.displayUpdateInterval = setInterval(() => {
+            // Only update if Characters tab is visible
+            const charactersTab = document.getElementById('characters-tab-content');
+            if (charactersTab && charactersTab.style.display !== 'none' && !charactersTab.classList.contains('hidden')) {
+              this.updateCurrentCharacterDisplayFromUI();
+            }
+          }, 3000);
         }
 
         updateStatus(text, icon = '💡', type = 'info') {
@@ -921,7 +939,84 @@
           }
         }
 
-        async loadCurrentCharacterDisplay() {
+        updateCurrentCharacterDisplayFromUI() {
+          const nameEl = document.getElementById('cm-current-name');
+          const detailsEl = document.getElementById('cm-current-details');
+          const levelEl = document.getElementById('cm-current-level');
+          const savedEl = document.getElementById('cm-current-saved');
+          const avatarEl = document.getElementById('cm-current-avatar');
+          
+          if (!nameEl) return;
+          
+          try {
+            if (window.zeviAPI && window.zeviAPI.isLoggedIn()) {
+              // Get current character data from the UI
+              const currentData = window.app.characterData.collectCurrentCharacterData();
+              const currentCharacterId = window.app.characterData.getCurrentCharacterId();
+              
+              if (currentData && currentCharacterId) {
+                this.currentCharacterId = currentCharacterId;
+                
+                // Update display with current UI data
+                nameEl.textContent = currentData.name || 'Unnamed Character';
+                
+                const details = [];
+                if (currentData.ancestry) details.push(currentData.ancestry);
+                if (currentData.class) details.push(currentData.class);
+                if (currentData.subclass) details.push(currentData.subclass);
+                detailsEl.textContent = details.length > 0 ? details.join(' ') : 'No class info';
+                
+                levelEl.textContent = `Level ${currentData.level || 1}`;
+                
+                // Show when last saved with time since
+                const lastSaved = localStorage.getItem(`zevi-character-${currentCharacterId}-lastSaved`);
+                if (lastSaved) {
+                  const date = new Date(lastSaved);
+                  const now = new Date();
+                  const timeDiff = now - date;
+                  
+                  let timeAgo;
+                  if (timeDiff < 60000) { // Less than 1 minute
+                    timeAgo = 'Just now';
+                  } else if (timeDiff < 3600000) { // Less than 1 hour
+                    const minutes = Math.floor(timeDiff / 60000);
+                    timeAgo = `${minutes} min ago`;
+                  } else if (timeDiff < 86400000) { // Less than 1 day
+                    const hours = Math.floor(timeDiff / 3600000);
+                    timeAgo = `${hours} hr ago`;
+                  } else {
+                    timeAgo = date.toLocaleDateString();
+                  }
+                  
+                  savedEl.textContent = `Last saved: ${timeAgo}`;
+                } else {
+                  savedEl.textContent = 'Not saved yet';
+                }
+                
+                avatarEl.textContent = (currentData.name || 'U').charAt(0).toUpperCase();
+                
+                this.updateStatus('Showing current character data', '📋', 'info');
+              } else {
+                this.loadCurrentCharacterDisplayFromServer();
+              }
+            } else {
+              // Not logged in
+              nameEl.textContent = 'Not Logged In';
+              detailsEl.textContent = 'Please log in to manage characters';
+              levelEl.textContent = 'Level -';
+              savedEl.textContent = 'Not saved';
+              avatarEl.textContent = '?';
+              
+              this.updateStatus('Please log in to manage characters', '🔐', 'info');
+            }
+          } catch (error) {
+            console.error('Failed to update current character display:', error);
+            // Fallback to server data
+            this.loadCurrentCharacterDisplayFromServer();
+          }
+        }
+
+        async loadCurrentCharacterDisplayFromServer() {
           const nameEl = document.getElementById('cm-current-name');
           const detailsEl = document.getElementById('cm-current-details');
           const levelEl = document.getElementById('cm-current-level');
@@ -1096,7 +1191,7 @@
             await window.app?.characterData?.loadCloudCharacter(characterId);
             
             // Update displays
-            await this.loadCurrentCharacterDisplay();
+            this.updateCurrentCharacterDisplayFromUI();
             this.renderCharactersList();
             
             // Switch to main character sheet
@@ -1146,7 +1241,7 @@
             // If we deleted the current character, clear it
             if (characterId.toString() === this.currentCharacterId?.toString()) {
               this.currentCharacterId = null;
-              await this.loadCurrentCharacterDisplay();
+              this.updateCurrentCharacterDisplayFromUI();
             }
             
             await this.loadCharactersList();
@@ -1178,7 +1273,9 @@
           
           await window.app.characterData.saveCharacterData(currentCharacterId, characterData, 'manual');
           
-          await characterManager.loadCurrentCharacterDisplay();
+          // Update display immediately and set last saved timestamp
+          localStorage.setItem(`zevi-character-${currentCharacterId}-lastSaved`, new Date().toISOString());
+          characterManager.updateCurrentCharacterDisplayFromUI();
           await characterManager.loadCharactersList();
           
           characterManager.updateStatus('Character saved successfully', '✅', 'success');
