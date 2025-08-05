@@ -561,7 +561,8 @@ class CharacterData {
             await window.app.loadCharacterFromData(characterData);
         }
         
-        // Force re-render all modules with fresh data
+        // Small delay to ensure all data is applied, then force re-render
+        await new Promise(resolve => setTimeout(resolve, 100));
         await this.reRenderAllModules();
         
         console.log('✅ Character data loaded successfully');

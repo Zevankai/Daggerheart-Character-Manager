@@ -295,12 +295,12 @@ class AppController {
         }
         
         if (data.damage) {
-            this.setUIValue('#minorDamageValue', data.damage.minor || 1, 'textContent');
-            this.setUIValue('#majorDamageValue', data.damage.major || 2, 'textContent');
+            this.setUIValue('#minor-damage-value', data.damage.minor || 1, 'value');
+            this.setUIValue('#major-damage-value', data.damage.major || 2, 'value');
         }
         
-        // Store complex data in localStorage for other modules to use
-        this.storeComplexDataInLocalStorage(data);
+        // Apply complex data to global variables for modules to use
+        this.applyComplexDataToGlobals(data);
         
         // Apply appearance settings if they exist
         if (data.appearanceSettings) {
@@ -308,6 +308,87 @@ class AppController {
         }
         
         console.log('Character data applied to UI');
+    }
+
+    // Apply complex data to global variables for modules to use
+    applyComplexDataToGlobals(data) {
+        console.log('🔗 Applying complex data to global variables...');
+        
+        try {
+            // Hope data
+            if (data.hope) {
+                window.currentHope = data.hope.current || 0;
+                window.currentMaxHope = data.hope.max || 6;
+            }
+            
+            // HP data
+            if (data.hp) {
+                window.hpCircles = data.hp.circles || Array(4).fill({ active: true });
+            }
+            
+            // Stress data
+            if (data.stress) {
+                window.stressCircles = data.stress.circles || Array(4).fill({ active: false });
+            }
+            
+            // Armor data
+            if (data.armor) {
+                window.armorCircles = data.armor.circles || Array(4).fill({ active: false });
+                window.totalArmorCircles = data.armor.totalCircles || 4;
+                window.activeArmorCount = data.armor.activeCount || 0;
+            }
+            
+            // Equipment data
+            if (data.equipment) {
+                window.equipmentData = data.equipment;
+            }
+            
+            // Journal data
+            if (data.journal) {
+                window.journalEntries = data.journal.entries || [];
+            }
+            
+            // Character details
+            if (data.details) {
+                window.characterDetails = data.details;
+            }
+            
+            // Experiences
+            if (data.experiences) {
+                window.experiences = data.experiences;
+            }
+            
+            // Projects (downtime)
+            if (data.downtime) {
+                window.projects = data.downtime.projects || [];
+            }
+            
+            // Domain vault
+            if (data.domainVault) {
+                window.domainVaultData = {
+                    equippedCards: data.domainVault.equippedCards || [null, null, null, null, null],
+                    availableCards: data.domainVault.domainCards || [],
+                    selectedDomains: data.domainVault.selectedDomains || [],
+                    domainAbilities: data.domainVault.domainAbilities || {}
+                };
+            }
+            
+            // Effects and features
+            if (data.effectsFeatures) {
+                window.effectsFeaturesData = {
+                    activeEffects: data.effectsFeatures.activeEffects || [],
+                    features: data.effectsFeatures.features || [],
+                    conditions: data.effectsFeatures.conditions || []
+                };
+            }
+            
+            console.log('✅ Complex data applied to global variables');
+        } catch (error) {
+            console.error('Error applying complex data to globals:', error);
+        }
+        
+        // Still store character-specific settings in localStorage for appearance/UI
+        this.storeComplexDataInLocalStorage(data);
     }
 
     // Store complex data structures in localStorage for other modules
