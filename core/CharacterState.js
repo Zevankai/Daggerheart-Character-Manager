@@ -675,6 +675,7 @@ console.log('🚨 CHARACTERSTATE.JS IS LOADED AND RUNNING!');
 
 // Test for white overlay issue
 setTimeout(() => {
+    console.log('🚨 NEW ENHANCED OVERLAY DEBUG RUNNING!');
     // Check for common overlay/modal elements
     const overlayElements = [
         ...document.querySelectorAll('[class*="overlay"]'),

@@ -237,18 +237,24 @@ function initializeCharacterDeletion() {
   const cancelCharDeleteBtn = document.getElementById('cancelCharacterDelete');
   const charDeleteModal = document.getElementById('characterDeleteModal');
   
-  deleteCharBtn.addEventListener('click', () => {
-      showCharacterDeleteModal();
-  });
+  if (deleteCharBtn) {
+    deleteCharBtn.addEventListener('click', () => {
+        showCharacterDeleteModal();
+    });
+  }
   
-  confirmCharDeleteBtn.addEventListener('click', () => {
-      deleteCharacterData();
-      hideCharacterDeleteModal();
-  });
-  
-  cancelCharDeleteBtn.addEventListener('click', () => {
-      hideCharacterDeleteModal();
-  });
+    if (confirmCharDeleteBtn) {
+    confirmCharDeleteBtn.addEventListener('click', () => {
+        deleteCharacterData();
+        hideCharacterDeleteModal();
+    });
+  }
+   
+  if (cancelCharDeleteBtn) {
+    cancelCharDeleteBtn.addEventListener('click', () => {
+        hideCharacterDeleteModal();
+    });
+  }
   
   // Close modal when clicking outside
   charDeleteModal.addEventListener('click', (event) => {
