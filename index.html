@@ -317,9 +317,12 @@
          <button class="cm-btn cm-btn-export" onclick="exportCurrentCharacter()">
            📤 Export Current
          </button>
-         <button class="cm-btn cm-btn-test" onclick="runDatabaseTests()" title="Test database connection and data integrity (Ctrl+Shift+T)">
-           🧪 Test Database
-         </button>
+                    <button class="cm-btn cm-btn-test" onclick="runDatabaseTests()" title="Test database connection and data integrity (Ctrl+Shift+T)">
+             🧪 Test Database
+           </button>
+           <button class="cm-btn cm-btn-migrate" onclick="runDatabaseMigration()" title="Run database migration to add missing columns (Ctrl+Shift+M)">
+             🔄 Migrate Database
+           </button>
        </div>
       
       <!-- Character List -->
@@ -527,6 +530,16 @@
     .cm-btn-test {
       background: linear-gradient(135deg, #E91E63, #C2185B);
       color: white;
+    }
+
+    .cm-btn-migrate {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+    }
+
+    .cm-btn-migrate:hover {
+      background: linear-gradient(135deg, #d97706, #b45309);
+      transform: translateY(-1px);
     }
 
     .cm-btn-small {
@@ -1320,11 +1333,39 @@
         }
       }
 
+      // Database Migration Function
+      async function runDatabaseMigration() {
+        try {
+          characterManager.updateStatus('Running database migration...', '🔄', 'warning');
+          
+          console.log('🔄 Starting database migration...');
+          const result = await window.zeviAPI.runDatabaseMigration();
+          
+          console.log('✅ Migration completed:', result);
+          characterManager.updateStatus('Database migration completed successfully!', '✅', 'success');
+          
+          alert('✅ Database migration completed!\n\nThe database schema has been updated with all required columns and tables.');
+          
+          // Refresh the character list after migration
+          await refreshCharacterList();
+          
+        } catch (error) {
+          console.error('❌ Database migration failed:', error);
+          characterManager.updateStatus(`Migration failed: ${error.message}`, '❌', 'error');
+          alert('❌ Database migration failed!\n\n' + error.message + '\n\nCheck the console for details.');
+        }
+      }
+
       // Add keyboard shortcut for testing
       document.addEventListener('keydown', (e) => {
         if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'T') {
           e.preventDefault();
           runDatabaseTests();
+        }
+        // Add keyboard shortcut for migration (Ctrl+Shift+M)
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'M') {
+          e.preventDefault();
+          runDatabaseMigration();
         }
       });
     </script>

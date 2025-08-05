@@ -340,6 +340,19 @@ class ZeviAPI {
     }
   }
 
+  // Database migration
+  async runDatabaseMigration() {
+    try {
+      const response = await this.makeRequest('/migrate-db', {
+        method: 'POST'
+      });
+      return response;
+    } catch (error) {
+      console.error('Database migration failed:', error);
+      throw error;
+    }
+  }
+
   async getCharacterSaveHistory(characterId) {
     try {
       const response = await this.makeRequest(`/characters/${characterId}/saves`);
