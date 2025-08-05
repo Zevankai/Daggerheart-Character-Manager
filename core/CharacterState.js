@@ -213,6 +213,12 @@ class CharacterState {
             this.setUIElement('#minor-damage-value', this.data.damage.minor, 'value');
             this.setUIElement('#major-damage-value', this.data.damage.major, 'value');
             
+            // Apply hope directly to UI
+            this.applyHopeToUI();
+            
+            // Apply HP/Stress/Armor directly to UI  
+            this.applyCirclesToUI();
+            
             // Apply data to global variables for modules
             this.applyToGlobals();
             
@@ -268,6 +274,106 @@ class CharacterState {
         window.effectsFeaturesData = { ...this.data.effectsFeatures };
     }
 
+    // Apply hope data directly to UI
+    applyHopeToUI() {
+        const hopeTracker = document.querySelector('.hope-tracker');
+        if (!hopeTracker) return;
+        
+        hopeTracker.innerHTML = ''; // Clear existing circles
+        
+        // Create circles based on character's hope data
+        for (let i = 0; i < this.data.hope.max; i++) {
+            const circle = document.createElement('div');
+            circle.classList.add('hp-circle', 'hope-circle');
+            if (i < this.data.hope.current) {
+                circle.classList.add('active');
+            }
+            
+            // Add click handler for this circle
+            circle.addEventListener('click', () => {
+                this.data.hope.current = i + 1;
+                this.applyHopeToUI(); // Re-render
+                if (window.app?.autoSave?.triggerSave) {
+                    window.app.autoSave.triggerSave();
+                }
+            });
+            
+            hopeTracker.appendChild(circle);
+        }
+    }
+
+    // Apply HP/Stress/Armor circles directly to UI
+    applyCirclesToUI() {
+        // Apply HP circles
+        const hpTracker = document.getElementById('hp-tracker');
+        if (hpTracker) {
+            hpTracker.innerHTML = '';
+            this.data.hp.circles.forEach((circle, index) => {
+                const circleElement = document.createElement('div');
+                circleElement.classList.add('hp-circle');
+                if (circle.active) {
+                    circleElement.classList.add('active');
+                }
+                
+                circleElement.addEventListener('click', () => {
+                    this.data.hp.circles[index].active = !this.data.hp.circles[index].active;
+                    this.applyCirclesToUI(); // Re-render
+                    if (window.app?.autoSave?.triggerSave) {
+                        window.app.autoSave.triggerSave();
+                    }
+                });
+                
+                hpTracker.appendChild(circleElement);
+            });
+        }
+        
+        // Apply Stress circles
+        const stressTracker = document.getElementById('stress-tracker');
+        if (stressTracker) {
+            stressTracker.innerHTML = '';
+            this.data.stress.circles.forEach((circle, index) => {
+                const circleElement = document.createElement('div');
+                circleElement.classList.add('hp-circle', 'stress-circle');
+                if (circle.active) {
+                    circleElement.classList.add('active');
+                }
+                
+                circleElement.addEventListener('click', () => {
+                    this.data.stress.circles[index].active = !this.data.stress.circles[index].active;
+                    this.applyCirclesToUI(); // Re-render
+                    if (window.app?.autoSave?.triggerSave) {
+                        window.app.autoSave.triggerSave();
+                    }
+                });
+                
+                stressTracker.appendChild(circleElement);
+            });
+        }
+        
+        // Apply Armor circles
+        const armorTracker = document.getElementById('armor-tracker');
+        if (armorTracker) {
+            armorTracker.innerHTML = '';
+            this.data.armor.circles.forEach((circle, index) => {
+                const circleElement = document.createElement('div');
+                circleElement.classList.add('hp-circle');
+                if (circle.active) {
+                    circleElement.classList.add('active');
+                }
+                
+                circleElement.addEventListener('click', () => {
+                    this.data.armor.circles[index].active = !this.data.armor.circles[index].active;
+                    this.applyCirclesToUI(); // Re-render
+                    if (window.app?.autoSave?.triggerSave) {
+                        window.app.autoSave.triggerSave();
+                    }
+                });
+                
+                armorTracker.appendChild(circleElement);
+            });
+        }
+    }
+
     // Collect current data from UI and globals back into this character's folder
     collectFromUI() {
         console.log(`📥 Collecting data into character ${this.characterId} folder...`);
@@ -288,7 +394,38 @@ class CharacterState {
             this.data.damage.minor = parseInt(this.getUIValue('#minor-damage-value', 'value')) || 1;
             this.data.damage.major = parseInt(this.getUIValue('#major-damage-value', 'value')) || 2;
             
-            // Collect from global variables
+            // Collect hope data from UI (it's managed directly by character state now)
+            const hopeCircles = document.querySelectorAll('.hope-tracker .hope-circle');
+            if (hopeCircles.length > 0) {
+                this.data.hope.max = hopeCircles.length;
+                this.data.hope.current = document.querySelectorAll('.hope-tracker .hope-circle.active').length;
+            }
+            
+            // Collect circle data from UI (it's managed directly by character state now) 
+            const hpCircles = document.querySelectorAll('#hp-tracker .hp-circle');
+            if (hpCircles.length > 0) {
+                this.data.hp.circles = Array.from(hpCircles).map(circle => ({
+                    active: circle.classList.contains('active')
+                }));
+            }
+            
+            const stressCircles = document.querySelectorAll('#stress-tracker .stress-circle');
+            if (stressCircles.length > 0) {
+                this.data.stress.circles = Array.from(stressCircles).map(circle => ({
+                    active: circle.classList.contains('active')
+                }));
+            }
+            
+            const armorCircles = document.querySelectorAll('#armor-tracker .hp-circle');
+            if (armorCircles.length > 0) {
+                this.data.armor.circles = Array.from(armorCircles).map(circle => ({
+                    active: circle.classList.contains('active')
+                }));
+                this.data.armor.totalCircles = armorCircles.length;
+                this.data.armor.activeCount = document.querySelectorAll('#armor-tracker .hp-circle.active').length;
+            }
+            
+            // Collect from global variables (for modules that still use them)
             this.collectFromGlobals();
             
             console.log(`✅ Data collected into character ${this.characterId} folder`);
