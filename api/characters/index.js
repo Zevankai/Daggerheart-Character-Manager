@@ -63,34 +63,36 @@ async function createCharacter(req, res) {
       return res.status(400).json({ error: 'Character name is required' });
     }
     
-    // Start transaction
-    await sql.begin(async sql => {
-      // Create the character
-      const result = await sql`
+    // Use transaction for character creation
+    const results = await sql.transaction([
+      sql`
         INSERT INTO characters (user_id, name, character_data, is_active)
         VALUES (${req.user.id}, ${name.trim()}, ${JSON.stringify(characterData)}, ${setAsActive})
         RETURNING id, name, character_data, is_shared, share_token, is_active, created_at, updated_at
-      `;
-      
-      const character = result[0];
-      
-      // Create initial save record
-      await sql`
+      `
+    ]);
+    
+    const character = results[0][0];
+    
+    // Create initial save record and update user's active character if needed
+    const additionalQueries = [
+      sql`
         INSERT INTO character_saves (character_id, user_id, save_data, save_type)
         VALUES (${character.id}, ${req.user.id}, ${JSON.stringify(characterData)}, 'initial')
-      `;
-      
-      // If setting as active, update user's active character
-      if (setAsActive) {
-        await sql`
-          UPDATE users 
-          SET active_character_id = ${character.id}
-          WHERE id = ${req.user.id}
-        `;
-      }
-      
-      res.status(201).json({ character });
-    });
+      `
+    ];
+    
+    if (setAsActive) {
+      additionalQueries.push(sql`
+        UPDATE users 
+        SET active_character_id = ${character.id}
+        WHERE id = ${req.user.id}
+      `);
+    }
+    
+    await sql.transaction(additionalQueries);
+    
+    res.status(201).json({ character });
   } catch (error) {
     console.error('Error creating character:', error);
     res.status(500).json({ error: 'Failed to create character' });
@@ -116,29 +118,24 @@ async function setActiveCharacter(req, res) {
       return res.status(404).json({ error: 'Character not found' });
     }
     
-    // Start transaction to set active character
-    await sql.begin(async sql => {
-      // Deactivate all characters for this user
-      await sql`
+    // Use transaction to set active character
+    await sql.transaction([
+      sql`
         UPDATE characters 
         SET is_active = FALSE 
         WHERE user_id = ${req.user.id}
-      `;
-      
-      // Activate the selected character
-      await sql`
+      `,
+      sql`
         UPDATE characters 
         SET is_active = TRUE 
         WHERE id = ${characterId} AND user_id = ${req.user.id}
-      `;
-      
-      // Update user's active character
-      await sql`
+      `,
+      sql`
         UPDATE users 
         SET active_character_id = ${characterId}
         WHERE id = ${req.user.id}
-      `;
-    });
+      `
+    ]);
     
     // Return updated character info
     const updatedCharacter = await sql`
@@ -177,23 +174,18 @@ async function autoSaveCharacter(req, res) {
       return res.status(404).json({ error: 'Character not found' });
     }
     
-    // Start transaction
-    await sql.begin(async sql => {
-      // Update character data
-      await sql`
+    // Use transaction for auto-save
+    await sql.transaction([
+      sql`
         UPDATE characters 
         SET character_data = ${JSON.stringify(characterData)}, updated_at = NOW()
         WHERE id = ${characterId} AND user_id = ${req.user.id}
-      `;
-      
-      // Create save record
-      await sql`
+      `,
+      sql`
         INSERT INTO character_saves (character_id, user_id, save_data, save_type)
         VALUES (${characterId}, ${req.user.id}, ${JSON.stringify(characterData)}, 'auto')
-      `;
-      
-      // Clean up old auto-saves (keep last 10)
-      await sql`
+      `,
+      sql`
         DELETE FROM character_saves 
         WHERE character_id = ${characterId} 
         AND save_type = 'auto' 
@@ -203,8 +195,8 @@ async function autoSaveCharacter(req, res) {
           ORDER BY created_at DESC 
           LIMIT 10
         )
-      `;
-    });
+      `
+    ]);
     
     res.status(200).json({ 
       message: 'Character auto-saved successfully',
@@ -260,88 +252,87 @@ async function testCharacterSave(req, res) {
       ...testData
     };
     
-    // Start transaction to test full save/load cycle
-    await sql.begin(async sql => {
-      // 1. Create character
-      const createResult = await sql`
-        INSERT INTO characters (user_id, name, character_data, is_active)
-        VALUES (${req.user.id}, ${testCharacterData.name}, ${JSON.stringify(testCharacterData)}, false)
-        RETURNING id, name, character_data, created_at, updated_at
-      `;
-      
-      const character = createResult[0];
-      
-      // 2. Create save record
-      await sql`
-        INSERT INTO character_saves (character_id, user_id, save_data, save_type)
-        VALUES (${character.id}, ${req.user.id}, ${JSON.stringify(testCharacterData)}, 'test')
-      `;
-      
-      // 3. Update character data
-      const updatedData = {
-        ...testCharacterData,
-        name: testCharacterData.name + ' (Updated)',
-        level: 10,
-        lastModified: new Date().toISOString()
-      };
-      
-      const updateResult = await sql`
-        UPDATE characters 
-        SET character_data = ${JSON.stringify(updatedData)}
-        WHERE id = ${character.id}
-        RETURNING id, name, character_data, updated_at
-      `;
-      
-      // 4. Create another save record
-      await sql`
-        INSERT INTO character_saves (character_id, user_id, save_data, save_type)
-        VALUES (${character.id}, ${req.user.id}, ${JSON.stringify(updatedData)}, 'test')
-      `;
-      
-      // 5. Verify data integrity
-      const verifyResult = await sql`
-        SELECT id, name, character_data, created_at, updated_at
-        FROM characters
-        WHERE id = ${character.id}
-      `;
-      
-      const verifiedCharacter = verifyResult[0];
-      const storedData = verifiedCharacter.character_data;
-      
-      // 6. Get save history
-      const saveHistory = await sql`
-        SELECT id, save_type, created_at
-        FROM character_saves
-        WHERE character_id = ${character.id}
-        ORDER BY created_at DESC
-      `;
-      
-      // 7. Clean up test data
-      await sql`DELETE FROM character_saves WHERE character_id = ${character.id}`;
-      await sql`DELETE FROM characters WHERE id = ${character.id}`;
-      
-      res.status(200).json({
-        status: 'success',
-        message: 'Character save/load test completed successfully',
-        testResults: {
-          characterCreated: !!character,
-          characterUpdated: !!updateResult[0],
-          dataIntegrity: {
-            originalName: testCharacterData.name,
-            updatedName: storedData.name,
-            levelUpdated: storedData.level === 10,
-            attributesPreserved: JSON.stringify(storedData.attributes) === JSON.stringify(testCharacterData.attributes),
-            hopePreserved: JSON.stringify(storedData.hope) === JSON.stringify(testCharacterData.hope)
-          },
-          saveHistoryCount: saveHistory.length,
-          timestamps: {
-            created: character.created_at,
-            updated: verifiedCharacter.updated_at,
-            createdDifferent: character.created_at !== verifiedCharacter.updated_at
-          }
+    // 1. Create character
+    const createResult = await sql`
+      INSERT INTO characters (user_id, name, character_data, is_active)
+      VALUES (${req.user.id}, ${testCharacterData.name}, ${JSON.stringify(testCharacterData)}, false)
+      RETURNING id, name, character_data, created_at, updated_at
+    `;
+    
+    const character = createResult[0];
+    
+    // 2. Create save record
+    await sql`
+      INSERT INTO character_saves (character_id, user_id, save_data, save_type)
+      VALUES (${character.id}, ${req.user.id}, ${JSON.stringify(testCharacterData)}, 'test')
+    `;
+    
+    // 3. Update character data
+    const updatedData = {
+      ...testCharacterData,
+      name: testCharacterData.name + ' (Updated)',
+      level: 10,
+      lastModified: new Date().toISOString()
+    };
+    
+    const updateResult = await sql`
+      UPDATE characters 
+      SET character_data = ${JSON.stringify(updatedData)}
+      WHERE id = ${character.id}
+      RETURNING id, name, character_data, updated_at
+    `;
+    
+    // 4. Create another save record
+    await sql`
+      INSERT INTO character_saves (character_id, user_id, save_data, save_type)
+      VALUES (${character.id}, ${req.user.id}, ${JSON.stringify(updatedData)}, 'test')
+    `;
+    
+    // 5. Verify data integrity
+    const verifyResult = await sql`
+      SELECT id, name, character_data, created_at, updated_at
+      FROM characters
+      WHERE id = ${character.id}
+    `;
+    
+    const verifiedCharacter = verifyResult[0];
+    const storedData = verifiedCharacter.character_data;
+    
+    // 6. Get save history
+    const saveHistory = await sql`
+      SELECT id, save_type, created_at
+      FROM character_saves
+      WHERE character_id = ${character.id}
+      ORDER BY created_at DESC
+    `;
+    
+    // 7. Clean up test data
+    await sql.transaction([
+      sql`DELETE FROM character_saves WHERE character_id = ${character.id}`,
+      sql`DELETE FROM characters WHERE id = ${character.id}`
+    ]);
+    
+    res.status(200).json({
+      status: 'success',
+      message: 'Character save/load test completed successfully',
+      testResults: {
+        characterCreated: !!character,
+        characterUpdated: !!updateResult[0],
+        dataIntegrity: {
+          originalName: testCharacterData.name,
+          updatedName: storedData.name,
+          levelUpdated: storedData.level === 10,
+          attributesPreserved: JSON.stringify(storedData.attributes) === JSON.stringify(testCharacterData.attributes),
+          hopePreserved: JSON.stringify(storedData.hope) === JSON.stringify(testCharacterData.hope)
         },
-        timestamp: new Date().toISOString()
-      });
+        saveHistoryCount: saveHistory.length,
+        timestamps: {
+          created: character.created_at,
+          updated: verifiedCharacter.updated_at,
+          createdDifferent: character.created_at !== verifiedCharacter.updated_at
+        }
+      },
+      timestamp: new Date().toISOString()
     });
     
   } catch (error) {
