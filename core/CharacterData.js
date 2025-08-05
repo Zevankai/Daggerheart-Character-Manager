@@ -242,6 +242,9 @@ class CharacterData {
             level: this.getLevelFromUI(),
             subtitle: this.getSubtitleFromUI(),
             
+            // Parse subtitle into individual components for compatibility
+            ...this.parseSubtitleIntoComponents(this.getSubtitleFromUI()),
+            
             // Domains from UI
             domain1: this.getDomainFromUI(0),
             domain2: this.getDomainFromUI(1),
@@ -316,6 +319,64 @@ class CharacterData {
     getSubtitleFromUI() {
         const subtitleElement = document.querySelector('.subtitle');
         return subtitleElement?.textContent || 'Community Ancestry Class (Subclass)';
+    }
+
+    parseSubtitleIntoComponents(subtitle) {
+        // Parse subtitle like "Community Ancestry Class (Subclass)" into individual fields
+        if (!subtitle || subtitle === 'Community Ancestry Class (Subclass)') {
+            return {
+                ancestry: '',
+                class: '',
+                subclass: '',
+                characterInfo: {
+                    community: '',
+                    ancestry: '',
+                    class: '',
+                    subclass: ''
+                }
+            };
+        }
+
+        // Try to parse the subtitle into components
+        // Expected format: "Community Ancestry Class (Subclass)" or variations
+        const parts = subtitle.split(' ');
+        
+        // Look for parentheses to identify subclass
+        const subclassMatch = subtitle.match(/\(([^)]+)\)/);
+        const subclass = subclassMatch ? subclassMatch[1] : '';
+        
+        // Remove the subclass part to get the remaining parts
+        const withoutSubclass = subtitle.replace(/\s*\([^)]*\)\s*/, '').trim();
+        const remainingParts = withoutSubclass.split(' ').filter(part => part.length > 0);
+        
+        // Attempt to identify community, ancestry, and class
+        // This is a best-guess parsing since the format can vary
+        let community = '';
+        let ancestry = '';
+        let characterClass = '';
+        
+        if (remainingParts.length >= 3) {
+            community = remainingParts[0];
+            ancestry = remainingParts[1];
+            characterClass = remainingParts.slice(2).join(' ');
+        } else if (remainingParts.length === 2) {
+            ancestry = remainingParts[0];
+            characterClass = remainingParts[1];
+        } else if (remainingParts.length === 1) {
+            characterClass = remainingParts[0];
+        }
+
+        return {
+            ancestry: ancestry,
+            class: characterClass,
+            subclass: subclass,
+            characterInfo: {
+                community: community,
+                ancestry: ancestry,
+                class: characterClass,
+                subclass: subclass
+            }
+        };
     }
 
     getDomainFromUI(index) {

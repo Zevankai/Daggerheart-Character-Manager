@@ -1124,7 +1124,8 @@
             const data = char.character_data || {};
             const isActive = char.id.toString() === this.currentCharacterId?.toString();
             const avatar = (data.name || 'U').charAt(0).toUpperCase();
-            const details = [data.ancestry, data.class, data.subclass].filter(Boolean).join(' ') || 'No class info';
+            // Use individual fields if available, otherwise fall back to subtitle
+            const details = [data.ancestry, data.class, data.subclass].filter(Boolean).join(' ') || data.subtitle || 'No class info';
             
             return `
               <div class="cm-character-card ${isActive ? 'active' : ''}" data-character-id="${char.id}">
@@ -1280,6 +1281,9 @@
           // Update display immediately and set last saved timestamp
           localStorage.setItem(`zevi-character-${currentCharacterId}-lastSaved`, new Date().toISOString());
           characterManager.updateCurrentCharacterDisplayFromUI();
+          
+          // Small delay to ensure server has processed the save
+          await new Promise(resolve => setTimeout(resolve, 500));
           await characterManager.loadCharactersList();
           
           characterManager.updateStatus('Character saved successfully', '✅', 'success');
