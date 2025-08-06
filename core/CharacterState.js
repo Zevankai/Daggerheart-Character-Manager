@@ -249,39 +249,31 @@ class CharacterState {
         }
     }
 
-    // Apply data to global variables that modules use
+    // Apply this character's data to global variables (SINGLE SOURCE OF TRUTH)
     applyToGlobals() {
-        // Hope
+        console.log(`🌐 Setting global variables for character ${this.characterId}`);
+        
+        // Set hope globals
         window.currentHope = this.data.hope.current;
         window.currentMaxHope = this.data.hope.max;
         
-        // HP/Stress/Armor
+        // Set circle globals
         window.hpCircles = [...this.data.hp.circles];
         window.stressCircles = [...this.data.stress.circles];
         window.armorCircles = [...this.data.armor.circles];
         window.totalArmorCircles = this.data.armor.totalCircles;
         window.activeArmorCount = this.data.armor.activeCount;
         
-        // Equipment
+        // Set other global data that modules expect
         window.equipmentData = { ...this.data.equipment };
-        
-        // Journal
         window.journalEntries = [...this.data.journal.entries];
-        
-        // Details
         window.characterDetails = { ...this.data.details };
-        
-        // Experiences
         window.experiences = [...this.data.experiences];
-        
-        // Projects
         window.projects = [...this.data.downtime.projects];
-        
-        // Domain vault
         window.domainVaultData = { ...this.data.domainVault };
-        
-        // Effects and features
         window.effectsFeaturesData = { ...this.data.effectsFeatures };
+        
+        console.log(`✅ Globals set: hope=${window.currentHope}, HP circles=${window.hpCircles?.length}`);
     }
 
     // Apply hope data directly to UI
@@ -299,12 +291,19 @@ class CharacterState {
                 circle.classList.add('active');
             }
             
-            // Add click handler for this circle
+            // Add click handler for this circle - UPDATE GLOBALS DIRECTLY
             circle.addEventListener('click', () => {
-                console.log(`🎯 Hope circle ${i + 1} clicked! Setting hope to ${i + 1}`);
-                this.data.hope.current = i + 1;
-                console.log(`💝 Hope updated to: ${this.data.hope.current}`);
-                this.applyHopeToUI(); // Re-render
+                console.log(`🎯 Hope circle ${i + 1} clicked! Setting global hope`);
+                // Update global variable directly (single source of truth)
+                window.currentHope = i + 1;
+                window.currentMaxHope = this.data.hope.max;
+                console.log(`💝 Global hope updated to: ${window.currentHope}`);
+                
+                // Update our internal data to match
+                this.data.hope.current = window.currentHope;
+                
+                // Re-render and save
+                this.applyHopeToUI();
                 if (window.app?.autoSave?.triggerSave) {
                     window.app.autoSave.triggerSave();
                 }
@@ -328,14 +327,25 @@ class CharacterState {
                 }
                 
                 circleElement.addEventListener('click', () => {
-                    console.log(`🩸 HP circle at position ${index} clicked! Filling positions 0 to ${index}`);
-                    // Fill up to this point (like hope circles)
+                    console.log(`🩸 HP circle at position ${index} clicked! Updating global HP`);
+                    
+                    // Update global variable directly (single source of truth)
+                    if (!window.hpCircles) window.hpCircles = [];
+                    
+                    // Fill up to this point in global array
                     for (let i = 0; i < this.data.hp.circles.length; i++) {
-                        this.data.hp.circles[i].active = i <= index;
+                        if (!window.hpCircles[i]) window.hpCircles[i] = { active: false };
+                        window.hpCircles[i].active = i <= index;
                     }
-                    const activeCounts = this.data.hp.circles.filter(c => c.active).length;
-                    console.log(`❤️ HP circles updated: ${activeCounts} active out of ${this.data.hp.circles.length}`, this.data.hp.circles.map(c => c.active));
-                    this.applyCirclesToUI(); // Re-render
+                    
+                    // Update our internal data to match globals
+                    this.data.hp.circles = [...window.hpCircles];
+                    
+                    const activeCounts = window.hpCircles.filter(c => c.active).length;
+                    console.log(`❤️ Global HP updated: ${activeCounts} active out of ${window.hpCircles.length}`);
+                    
+                    // Re-render and save
+                    this.applyCirclesToUI();
                     if (window.app?.autoSave?.triggerSave) {
                         window.app.autoSave.triggerSave();
                     }
@@ -482,20 +492,27 @@ class CharacterState {
         }
     }
 
-    // Collect data from global variables
+    // Collect data from global variables (SINGLE SOURCE OF TRUTH)
     collectFromGlobals() {
-        console.log(`🚫 collectFromGlobals: Skipping hope/circle globals - managed by CharacterState`);
-        console.log(`🔍 Global values (NOT used): currentHope=${window.currentHope}, hpCircles length=${window.hpCircles?.length}`);
+        console.log(`✅ collectFromGlobals: Using globals as single source of truth`);
         
-        // NOTE: Hope and circle data is now managed directly by CharacterState
-        // Don't override with stale global variables
-        
-        // Still collect other global data that modules manage
-        if (window.totalArmorCircles !== undefined) {
-            this.data.armor.totalCircles = window.totalArmorCircles;
+        // Hope - use globals as source of truth
+        if (window.currentHope !== undefined) {
+            this.data.hope.current = window.currentHope;
         }
-        if (window.activeArmorCount !== undefined) {
-            this.data.armor.activeCount = window.activeArmorCount;
+        if (window.currentMaxHope !== undefined) {
+            this.data.hope.max = window.currentMaxHope;
+        }
+        
+        // HP/Stress/Armor - use globals as source of truth  
+        if (window.hpCircles) {
+            this.data.hp.circles = [...window.hpCircles];
+        }
+        if (window.stressCircles) {
+            this.data.stress.circles = [...window.stressCircles];
+        }
+        if (window.armorCircles) {
+            this.data.armor.circles = [...window.armorCircles];
         }
         
         // Equipment
