@@ -428,38 +428,33 @@ class CharacterState {
             this.data.damage.minor = parseInt(this.getUIValue('#minor-damage-value', 'value')) || 1;
             this.data.damage.major = parseInt(this.getUIValue('#major-damage-value', 'value')) || 2;
             
-            // Collect hope data from UI
-            const hopeCircles = document.querySelectorAll('#hope-tracker .hope-circle');
-            const activeHopeCircles = document.querySelectorAll('#hope-tracker .hope-circle.active');
-            
-            if (hopeCircles.length > 0) {
-                this.data.hope.max = hopeCircles.length;
-                this.data.hope.current = activeHopeCircles.length;
+            // Collect hope data from GLOBALS (single source of truth), not DOM
+            if (window.currentHope !== undefined) {
+                this.data.hope.current = window.currentHope;
+            }
+            if (window.currentMaxHope !== undefined) {
+                this.data.hope.max = window.currentMaxHope;
             }
             
-            // Collect circle data from UI
-            const hpCircles = document.querySelectorAll('#hp-tracker .hp-circle');
-            
-            if (hpCircles.length > 0) {
-                this.data.hp.circles = Array.from(hpCircles).map(circle => ({
-                    active: circle.classList.contains('active')
-                }));
+            // Collect HP circle data from GLOBALS (single source of truth), not DOM
+            if (window.hpCircles && Array.isArray(window.hpCircles)) {
+                this.data.hp.circles = [...window.hpCircles];
             }
             
-            const stressCircles = document.querySelectorAll('#stress-tracker .stress-circle');
-            if (stressCircles.length > 0) {
-                this.data.stress.circles = Array.from(stressCircles).map(circle => ({
-                    active: circle.classList.contains('active')
-                }));
+            // Collect Stress circle data from GLOBALS (single source of truth), not DOM
+            if (window.stressCircles && Array.isArray(window.stressCircles)) {
+                this.data.stress.circles = [...window.stressCircles];
             }
             
-            const armorCircles = document.querySelectorAll('#armor-tracker .hp-circle');
-            if (armorCircles.length > 0) {
-                this.data.armor.circles = Array.from(armorCircles).map(circle => ({
-                    active: circle.classList.contains('active')
-                }));
-                this.data.armor.totalCircles = armorCircles.length;
-                this.data.armor.activeCount = document.querySelectorAll('#armor-tracker .hp-circle.active').length;
+            // Collect Armor circle data from GLOBALS (single source of truth), not DOM
+            if (window.armorCircles && Array.isArray(window.armorCircles)) {
+                this.data.armor.circles = [...window.armorCircles];
+            }
+            if (window.totalArmorCircles !== undefined) {
+                this.data.armor.totalCircles = window.totalArmorCircles;
+            }
+            if (window.activeArmorCount !== undefined) {
+                this.data.armor.activeCount = window.activeArmorCount;
             }
             
             // Collect from global variables (for modules that still use them)
