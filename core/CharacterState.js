@@ -460,15 +460,7 @@ class CharacterState {
             // Collect from global variables (for modules that still use them)
             this.collectFromGlobals();
             
-            // Debug: Log what we collected
-            const afterHope = this.data.hope.current;
-            const afterHp = this.data.hp.circles.filter(c => c.active).length;
-            console.log(`📊 Data collection complete for ${this.characterId}:
-                Hope: ${beforeHope} → ${afterHope}
-                HP: ${beforeHp} → ${afterHp}
-                Name: ${this.data.name}
-                Level: ${this.data.level}`);
-            
+            // Collection complete - no detailed logging needed
             console.log(`✅ Data collected into character ${this.characterId} folder`);
             
         } catch (error) {
