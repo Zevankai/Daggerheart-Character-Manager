@@ -46,6 +46,14 @@ async function getActiveCharacter(req, res) {
     if (result.length === 0) {
       return res.status(404).json({ error: 'No active character found' });
     }
+
+    // Debug: Log what we're loading from database  
+    const characterData = result[0].character_data;
+    console.log(`📀 LOADING FROM DATABASE - Character ${result[0].id}:`, {
+      hope: characterData?.hope,
+      hp: characterData?.hp?.circles?.map(c => c.active),
+      hpActiveCount: characterData?.hp?.circles?.filter(c => c.active).length
+    });
     
     res.status(200).json({ character: result[0] });
   } catch (error) {
@@ -174,6 +182,13 @@ async function autoSaveCharacter(req, res) {
       return res.status(404).json({ error: 'Character not found' });
     }
     
+    // Debug: Log what we're saving to database
+    console.log(`📀 SAVING TO DATABASE - Character ${characterId}:`, {
+      hope: characterData.hope,
+      hp: characterData.hp?.circles?.map(c => c.active),
+      hpActiveCount: characterData.hp?.circles?.filter(c => c.active).length
+    });
+
     // Use transaction for auto-save
     await sql.transaction([
       sql`
