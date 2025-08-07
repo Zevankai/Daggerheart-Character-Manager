@@ -52,6 +52,10 @@
     <button id="save-character-btn" class="save-character-btn" onclick="saveCharacter()">
      💾 Save Character
     </button>
+    <br>
+    <button onclick="debugCurrentCharacter()" style="margin-top: 10px; padding: 5px 10px; background: #666; color: white; border: none; border-radius: 4px; font-size: 0.8rem;">
+     🔍 Debug Current Character
+    </button>
    </div>
    
    <div class="header-bottom-center">
@@ -709,12 +713,34 @@
         return;
       }
 
-      // Check if we have a current character ID
-      const characterId = window.app?.getCurrentCharacterId();
+      // Check if we have a current character ID (try multiple sources)
+      let characterId = null;
+      
+      // Method 1: Try app controller
+      if (window.app?.getCurrentCharacterId) {
+        characterId = window.app.getCurrentCharacterId();
+        console.log('🔍 Character ID from app:', characterId);
+      }
+      
+      // Method 2: Try direct localStorage if app method failed
       if (!characterId) {
+        characterId = localStorage.getItem('zevi-current-character-id');
+        console.log('🔍 Character ID from localStorage:', characterId);
+      }
+      
+      // Method 3: Try characterData if available
+      if (!characterId && window.app?.characterData?.getCurrentCharacterId) {
+        characterId = window.app.characterData.getCurrentCharacterId();
+        console.log('🔍 Character ID from characterData:', characterId);
+      }
+      
+      if (!characterId) {
+        console.error('❌ No character ID found in any source');
         alert('❌ No character selected. Please create a new character first.');
         return;
       }
+      
+      console.log('✅ Using character ID for save:', characterId);
 
       // Disable button and show saving state
       saveBtn.disabled = true;
@@ -771,8 +797,26 @@
 
       console.log('📂 Character data received:', character);
 
-      // Set as current character
-      window.app?.setCurrentCharacterId(characterId);
+      // Set as current character (multiple ways to ensure it works)
+      console.log('🔧 Setting current character ID:', characterId);
+      
+      // Method 1: Via app controller
+      if (window.app?.setCurrentCharacterId) {
+        window.app.setCurrentCharacterId(characterId);
+        console.log('✅ Set via app controller');
+      } else {
+        console.warn('❌ App controller not available');
+      }
+      
+      // Method 2: Direct localStorage backup
+      localStorage.setItem('zevi-current-character-id', characterId.toString());
+      console.log('✅ Set via localStorage backup');
+      
+      // Method 3: Via characterData if available
+      if (window.app?.characterData?.setCurrentCharacterId) {
+        window.app.characterData.setCurrentCharacterId(characterId);
+        console.log('✅ Set via characterData');
+      }
 
       // Apply data to UI
       window.app?.applyCharacterDataToUI(character.character_data);
@@ -840,10 +884,29 @@
     }
   }
 
+  // Debug function to check current character state
+  function debugCurrentCharacter() {
+    console.log('🔍 === CURRENT CHARACTER DEBUG ===');
+    
+    // Check all possible sources
+    const appId = window.app?.getCurrentCharacterId?.();
+    const localStorageId = localStorage.getItem('zevi-current-character-id');
+    const characterDataId = window.app?.characterData?.getCurrentCharacterId?.();
+    
+    console.log('App Controller ID:', appId);
+    console.log('localStorage ID:', localStorageId);
+    console.log('CharacterData ID:', characterDataId);
+    console.log('window.app exists:', !!window.app);
+    console.log('window.app.characterData exists:', !!window.app?.characterData);
+    
+    alert(`Debug Info:\n\nApp Controller ID: ${appId}\nlocalStorage ID: ${localStorageId}\nCharacterData ID: ${characterDataId}\n\nwindow.app exists: ${!!window.app}\nwindow.app.characterData exists: ${!!window.app?.characterData}`);
+  }
+
   // Make functions globally available
   window.saveCharacter = saveCharacter;
   window.loadCharacter = loadCharacter;
   window.createNewCharacter = createNewCharacter;
+  window.debugCurrentCharacter = debugCurrentCharacter;
 
  </script>
 </html>
