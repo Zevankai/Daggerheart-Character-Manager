@@ -30,8 +30,6 @@ function saveEffectsFeaturesData() {
     try {
         const dataString = JSON.stringify(window.effectsFeaturesData);
         // Trigger auto-save instead of localStorage
-  if (window.app?.characterData?.constructor?.saveCharacterData) {
-    window.app.characterData.constructor.saveCharacterData();
   }
     } catch (error) {
         console.error('Error saving effects and features data:', error);

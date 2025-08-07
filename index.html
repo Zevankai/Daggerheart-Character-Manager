@@ -296,7 +296,6 @@
             </div>
           </div>
           <div class="cm-current-actions">
-            <button class="cm-btn cm-btn-primary" id="cm-save-current" onclick="saveCurrentCharacter()">
               💾 Save Current
             </button>
             <button class="cm-btn cm-btn-secondary" id="cm-autosave-toggle" onclick="toggleAutoSave()">
@@ -810,10 +809,7 @@
             status.style.background = 'linear-gradient(135deg, #FF9800, #F57C00)';
             
             // Test if save function exists and call it
-            if (window.zeviAuth && typeof window.zeviAuth.saveCurrentCharacterData === 'function') {
-              console.log('✅ Calling zeviAuth.saveCurrentCharacterData()');
               
-              window.zeviAuth.saveCurrentCharacterData()
                 .then(() => {
                   status.innerHTML = '✅ Character saved successfully!';
                   status.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
@@ -825,7 +821,6 @@
                   status.style.background = 'linear-gradient(135deg, #f44336, #d32f2f)';
                 });
             } else {
-              console.error('zeviAuth.saveCurrentCharacterData not available');
               status.innerHTML = '❌ Save system not available';
               status.style.background = 'linear-gradient(135deg, #f44336, #d32f2f)';
             }
@@ -896,12 +891,11 @@
       });
     </script>
 
-    <!-- Character Management JavaScript -->
+    <!-- Simple Character Management JavaScript - NO SAVE FUNCTIONALITY -->
     <script>
-      // Character Management System
+      // Simple Character Management System - READ ONLY
       class CharacterManager {
         constructor() {
-          this.isAutoSaveEnabled = true;
           this.characters = [];
           this.currentCharacterId = null;
           this.sortMethod = 'updated';
@@ -1162,10 +1156,8 @@
                   <button class="cm-card-btn cm-card-btn-load" onclick="characterManager.loadCharacter(${char.id})">
                     📂 Load
                   </button>
-                  <button class="cm-card-btn cm-card-btn-copy" onclick="characterManager.duplicateCharacter(${char.id})">
                     📋 Copy
                   </button>
-                  <button class="cm-card-btn cm-card-btn-delete" onclick="characterManager.deleteCharacter(${char.id})">
                     🗑️ Delete
                   </button>
                 </div>
@@ -1202,7 +1194,6 @@
             try {
               const currentCharacterId = window.app?.characterData?.getCurrentCharacterId();
               if (currentCharacterId && currentCharacterId !== characterId.toString()) {
-                await window.saveCurrentCharacter();
               }
             } catch (saveError) {
               console.warn('Could not save current character before loading new one:', saveError);
@@ -1226,7 +1217,6 @@
           }
         }
 
-        async duplicateCharacter(characterId) {
           try {
             this.updateStatus('Duplicating character...', '📋', 'saving');
             
@@ -1239,7 +1229,6 @@
               createdAt: new Date().toISOString()
             };
             
-            await window.zeviAPI.createCharacter(duplicatedData.name, duplicatedData, false);
             
             await this.loadCharactersList();
             this.updateStatus('Character duplicated successfully', '✅', 'success');
@@ -1249,7 +1238,6 @@
           }
         }
 
-        async deleteCharacter(characterId) {
           if (!confirm('Are you sure you want to delete this character? This action cannot be undone.')) {
             return;
           }
@@ -1257,7 +1245,6 @@
           try {
             this.updateStatus('Deleting character...', '🗑️', 'saving');
             
-            await window.zeviAPI.deleteCharacter(characterId);
             
             // If we deleted the current character, clear it
             if (characterId.toString() === this.currentCharacterId?.toString()) {
@@ -1278,7 +1265,6 @@
       window.characterManager = new CharacterManager();
 
       // Global functions for HTML onclick handlers
-      async function saveCurrentCharacter() {
         try {
           characterManager.updateStatus('Saving character...', '💾', 'saving');
           
@@ -1292,7 +1278,6 @@
             throw new Error('Failed to collect character data');
           }
           
-          await window.app.characterData.saveCharacterData(currentCharacterId, characterData, 'manual');
           
           // Update display immediately and set last saved timestamp
           localStorage.setItem(`zevi-character-${currentCharacterId}-lastSaved`, new Date().toISOString());
@@ -1316,8 +1301,6 @@
         }
       }
 
-      // Make saveCurrentCharacter available globally
-      window.saveCurrentCharacter = saveCurrentCharacter;
 
       function toggleAutoSave() {
         characterManager.isAutoSaveEnabled = !characterManager.isAutoSaveEnabled;
@@ -1341,7 +1324,6 @@
           try {
             const currentCharacterId = window.app?.characterData?.getCurrentCharacterId();
             if (currentCharacterId) {
-              await window.saveCurrentCharacter();
             }
           } catch (saveError) {
             console.warn('Could not save current character before creating new one:', saveError);
@@ -1357,7 +1339,6 @@
             hope: { current: 3, max: 6 }
           };
           
-          const response = await window.zeviAPI.createCharacter('New Character', defaultData, true);
           
           // Load the new character directly without saving current
           await window.app?.characterData?.loadCloudCharacter(response.character.id);
@@ -1801,10 +1782,8 @@
         <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
         
         <!-- Core Modules -->
-        <script src="core/CharacterState.js"></script>
         <script src="core/CharacterData.js"></script>
         <script src="core/UIManager.js"></script>
-        <script src="core/AutoSave.js"></script>
         <script src="core/AppController.js"></script>
 
         
@@ -1833,7 +1812,6 @@
   // Auto-save character data periodically
   setInterval(() => {
     if (window.characterManager && window.characterManager.currentCharacter) {
-      window.characterManager.saveCharacterData(window.characterManager.currentCharacter);
     }
   }, 30000); // Save every 30 seconds
   

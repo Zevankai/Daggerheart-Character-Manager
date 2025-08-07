@@ -9,15 +9,11 @@ let armorCircles = Array(4).fill({ active: false });
 
 function saveHPState() {
     // Trigger auto-save instead of localStorage
-  if (window.app?.characterData?.constructor?.saveCharacterData) {
-    window.app.characterData.constructor.saveCharacterData();
   }
 }
 
 function saveStressState() {
     // Trigger auto-save instead of localStorage
-  if (window.app?.characterData?.constructor?.saveCharacterData) {
-    window.app.characterData.constructor.saveCharacterData();
   }
 }
 
@@ -154,8 +150,6 @@ function updateDamageValue(element, type) {
         value = 0; // Default to 0 if input is empty or invalid
     }
           // Trigger auto-save instead of localStorage
-      if (window.app?.characterData?.constructor?.saveCharacterData) {
-        window.app.characterData.constructor.saveCharacterData();
       }
 }
 
@@ -233,8 +227,6 @@ window.removeArmorCircle = removeArmorCircle;
 
 function saveArmorState() {
           // Trigger auto-save instead of localStorage
-      if (window.app?.characterData?.constructor?.saveCharacterData) {
-        window.app.characterData.constructor.saveCharacterData();
       }
 }
 

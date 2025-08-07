@@ -29,8 +29,6 @@ function loadCharacterDetails() {
 function saveCharacterDetails() {
   // Save to localStorage
   // Trigger auto-save instead of localStorage
-  if (window.app?.characterData?.constructor?.saveCharacterData) {
-    window.app.characterData.constructor.saveCharacterData();
   }
 }
 

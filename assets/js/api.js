@@ -1,4 +1,5 @@
-// API Client for Zevi Character Sheet
+// Simple API Client - NO SAVE FUNCTIONALITY
+// Only handles authentication and basic character listing
 class ZeviAPI {
   constructor() {
     this.baseURL = this.getBaseURL();
@@ -48,32 +49,26 @@ class ZeviAPI {
 
     try {
       const response = await fetch(url, config);
-      const data = await response.json();
-
+      
       if (!response.ok) {
-        if (response.status === 401) {
-          // Token expired or invalid
-          this.setToken(null);
-          throw new Error('Authentication required. Please log in again.');
-        }
-        throw new Error(data.error || `HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
-
-      return data;
+      
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        return await response.json();
+      } else {
+        return await response.text();
+      }
     } catch (error) {
-      console.error('API request failed:', error);
+      console.error(`API request failed: ${endpoint}`, error);
       throw error;
     }
   }
 
-  // Authentication methods
-  async register(email, password, username) {
-    return await this.makeRequest('/auth/register', {
-      method: 'POST',
-      body: JSON.stringify({ email, password, username }),
-    });
-  }
-
+  // === AUTHENTICATION METHODS ===
+  
   async login(email, password) {
     const response = await this.makeRequest('/auth/login', {
       method: 'POST',
@@ -87,32 +82,36 @@ class ZeviAPI {
     return response;
   }
 
-  async forgotPassword(email) {
-    return await this.makeRequest('/auth/forgot-password', {
+  async register(email, password, username) {
+    const response = await this.makeRequest('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, password, username }),
     });
+    
+    if (response.token) {
+      this.setToken(response.token);
+    }
+    
+    return response;
   }
 
-  async resetPassword(token, password) {
-    return await this.makeRequest('/auth/reset-password', {
-      method: 'POST',
-      body: JSON.stringify({ token, password }),
-    });
-  }
-
-  logout() {
+  async logout() {
     this.setToken(null);
-    // Clear any cached user data
-    localStorage.removeItem('zevi-current-user');
+    // Also remove current character
     localStorage.removeItem('zevi-current-character-id');
+    localStorage.removeItem('zevi-current-user');
+  }
+
+  async getCurrentUser() {
+    return await this.makeRequest('/auth/me');
   }
 
   isLoggedIn() {
     return !!this.token;
   }
 
-  // Character methods
+  // === BASIC CHARACTER METHODS (READ ONLY) ===
+  
   async getCharacters() {
     return await this.makeRequest('/characters');
   }
@@ -121,266 +120,10 @@ class ZeviAPI {
     return await this.makeRequest(`/characters/${id}`);
   }
 
-  async createCharacter(name, characterData = {}, setAsActive = true) {
-    console.log('📝 API createCharacter called with:', { name, characterData, setAsActive });
-    
-    return await this.makeRequest('/characters', {
-      method: 'POST',
-      body: JSON.stringify({ name, characterData, setAsActive }),
-    });
-  }
-
-  async updateCharacter(id, updates) {
-    return await this.makeRequest(`/characters/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(updates),
-    });
-  }
-
-  async deleteCharacter(id) {
-    return await this.makeRequest(`/characters/${id}`, {
-      method: 'DELETE',
-    });
-  }
-
-  async shareCharacter(id, isShared) {
-    return await this.makeRequest(`/characters/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify({ isShared }),
-    });
-  }
-
-  async getSharedCharacter(token) {
-    return await this.makeRequest(`/characters/shared/${token}`);
-  }
-
-  // Active character management
   async getActiveCharacter() {
     return await this.makeRequest('/characters?action=active');
   }
-
-  async setActiveCharacter(characterId) {
-    return await this.makeRequest('/characters', {
-      method: 'POST',
-      body: JSON.stringify({ characterId, setActive: true }),
-    });
-  }
-
-  // Auto-save functionality
-  async autoSaveCharacter(characterId, characterData) {
-    try {
-      console.log('🔄 Auto-saving character:', characterId);
-      
-      const response = await this.makeRequest('/characters', {
-        method: 'POST',
-        body: JSON.stringify({ characterId, characterData }),
-      });
-      
-      console.log('✅ Auto-save successful:', response);
-      return response;
-    } catch (error) {
-      console.warn('Auto-save failed:', error);
-      // Fall back to localStorage for offline functionality
-      const backupKey = `zevi-character-backup-${characterId}`;
-      localStorage.setItem(backupKey, JSON.stringify({
-        characterData,
-        timestamp: new Date().toISOString(),
-        saved: false
-      }));
-      console.log('💾 Saved to localStorage backup');
-      throw error;
-    }
-  }
-
-  // Manual save (uses update endpoint)
-  async saveCharacter(characterId, characterData, characterName = null) {
-    try {
-      console.log('💾 Manually saving character:', characterId);
-      
-      const updates = { characterData };
-      if (characterName) {
-        updates.name = characterName;
-      }
-      
-      const response = await this.updateCharacter(characterId, updates);
-      console.log('✅ Manual save successful:', response);
-      
-      // Clear any backup since we saved successfully
-      localStorage.removeItem(`zevi-character-backup-${characterId}`);
-      
-      return response;
-    } catch (error) {
-      console.error('Manual save failed:', error);
-      throw error;
-    }
-  }
-
-  // Backup management
-  async syncBackups() {
-    if (!this.isLoggedIn()) return;
-    
-    const backupKeys = Object.keys(localStorage).filter(key => 
-      key.startsWith('zevi-character-backup-')
-    );
-    
-    for (const key of backupKeys) {
-      try {
-        const backup = JSON.parse(localStorage.getItem(key));
-        const characterId = key.replace('zevi-character-backup-', '');
-        
-        if (!backup.saved) {
-          await this.autoSaveCharacter(characterId, backup.characterData);
-          localStorage.removeItem(key);
-          console.log('✅ Synced backup for character:', characterId);
-        }
-      } catch (error) {
-        console.warn('Failed to sync backup:', key, error);
-      }
-    }
-  }
-
-  // Migration helper - convert localStorage data to API
-  async migrateLocalStorageData() {
-    if (!this.isLoggedIn()) {
-      throw new Error('Must be logged in to migrate data');
-    }
-
-    try {
-      // Check if there's any localStorage character data
-      const localStorageKeys = Object.keys(localStorage).filter(key => 
-        key.startsWith('zevi-') && 
-        !key.includes('auth-token') && 
-        !key.includes('current-user') &&
-        !key.includes('backup-') &&
-        !key.includes('theme') &&
-        !key.includes('color') &&
-        !key.includes('glass') &&
-        !key.includes('background')
-      );
-
-      if (localStorageKeys.length === 0) {
-        return { migrated: 0, message: 'No local data found to migrate' };
-      }
-
-      // Collect all localStorage data
-      const characterData = {};
-      localStorageKeys.forEach(key => {
-        try {
-          const value = localStorage.getItem(key);
-          if (value) {
-            characterData[key] = value;
-          }
-        } catch (e) {
-          console.warn(`Failed to read localStorage key: ${key}`, e);
-        }
-      });
-
-      // Create a new character with the migrated data
-      const characterName = characterData['zevi-character-name'] || 
-                           JSON.parse(characterData['zevi-character-details'] || '{}').personal?.name ||
-                           'Imported Character';
-
-      const newCharacter = await this.createCharacter(characterName, characterData, true);
-
-      // Clear localStorage after successful migration
-      localStorageKeys.forEach(key => localStorage.removeItem(key));
-
-      return { 
-        migrated: 1, 
-        character: newCharacter.character,
-        message: 'Local data successfully migrated to cloud storage' 
-      };
-    } catch (error) {
-      console.error('Migration failed:', error);
-      throw error;
-    }
-  }
-
-  // Testing methods for verifying database saves
-  async testDatabaseConnection() {
-    try {
-      const response = await this.makeRequest('/characters?action=test-connection');
-      return response;
-    } catch (error) {
-      console.error('Database test failed:', error);
-      throw error;
-    }
-  }
-
-  async testCharacterSave(testData = {}) {
-    try {
-      const response = await this.makeRequest('/characters?action=test-save', {
-        method: 'POST',
-        body: JSON.stringify({ testData })
-      });
-      return response;
-    } catch (error) {
-      console.error('Character save test failed:', error);
-      throw error;
-    }
-  }
-
-  async testUserCharacters() {
-    try {
-      const response = await this.makeRequest('/characters?action=test-characters');
-      return response;
-    } catch (error) {
-      console.error('User characters test failed:', error);
-      throw error;
-    }
-  }
-
-  async testDatabaseSchema() {
-    try {
-      const response = await this.makeRequest('/characters?action=test-schema');
-      return response;
-    } catch (error) {
-      console.error('Database schema test failed:', error);
-      throw error;
-    }
-  }
-
-  // Database migration
-  async runDatabaseMigration() {
-    try {
-      const response = await this.makeRequest('/migrate-db', {
-        method: 'POST'
-      });
-      return response;
-    } catch (error) {
-      console.error('Database migration failed:', error);
-      throw error;
-    }
-  }
-
-  // Delete all character data (admin/reset function)
-  async deleteAllCharacterData() {
-    try {
-      const response = await this.makeRequest('/characters?action=reset-all', {
-        method: 'DELETE'
-      });
-      return response;
-    } catch (error) {
-      console.error('Failed to delete character data:', error);
-      throw error;
-    }
-  }
-
-  async getCharacterSaveHistory(characterId) {
-    try {
-      const response = await this.makeRequest(`/characters/${characterId}/saves`);
-      return response;
-    } catch (error) {
-      console.error('Failed to get save history:', error);
-      throw error;
-    }
-  }
 }
 
-// Create global API instance
+// Create global instance
 window.zeviAPI = new ZeviAPI();
-
-// Export for module usage
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = ZeviAPI;
-}

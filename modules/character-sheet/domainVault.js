@@ -30,8 +30,6 @@ const savedData = null; // Don't load from localStorage
 if (!window.domainVaultData.equippedCards || window.domainVaultData.equippedCards.length !== 5) {
     window.domainVaultData.equippedCards = [null, null, null, null, null];
     // Trigger auto-save instead of localStorage
-    if (window.app?.characterData?.constructor?.saveCharacterData) {
-      window.app.characterData.constructor.saveCharacterData();
     }
 }
 
@@ -46,8 +44,6 @@ function saveDomainVaultData() {
     try {
         const dataString = JSON.stringify(window.domainVaultData);
         // Trigger auto-save instead of localStorage
-        if (window.app?.characterData?.constructor?.saveCharacterData) {
-          window.app.characterData.constructor.saveCharacterData();
         }
     } catch (error) {
         console.error('Error saving domain vault data:', error);

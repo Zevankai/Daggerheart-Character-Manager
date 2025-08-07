@@ -766,8 +766,6 @@ function initializeBackpackToggle() {
     }
     
     // Trigger auto-save to persist to database
-    if (window.app?.autoSave?.triggerSave) {
-      window.app.autoSave.triggerSave();
     }
     
     applyBackpackToggle(enabled);

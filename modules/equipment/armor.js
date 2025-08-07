@@ -64,8 +64,6 @@ function renderArmorCircles() {
 
             // Update active count and save
             // Trigger auto-save instead of localStorage
-    if (window.app?.characterData?.constructor?.saveCharacterData) {
-      window.app.characterData.constructor.saveCharacterData();
     }
             renderArmorCircles(); // Re-render to update UI
         });
@@ -90,8 +88,6 @@ function setupArmorTrackerButtons() {
             totalArmorCircles = Math.max(1, Math.min(totalArmorCircles, 10)); // Min 1, Max 10
             window.totalArmorCircles = totalArmorCircles;
             // Trigger auto-save instead of localStorage
-            if (window.app?.characterData?.constructor?.saveCharacterData) {
-              window.app.characterData.constructor.saveCharacterData();
             }
             renderArmorCircles();
         });
@@ -112,8 +108,6 @@ function setupArmorTrackerButtons() {
             totalArmorCircles = Math.max(1, Math.min(totalArmorCircles, 10)); // Min 1, Max 10
             window.totalArmorCircles = totalArmorCircles;
             // Trigger auto-save instead of localStorage
-            if (window.app?.characterData?.constructor?.saveCharacterData) {
-              window.app.characterData.constructor.saveCharacterData();
             }
             renderArmorCircles();
         });

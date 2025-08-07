@@ -103,8 +103,6 @@ class CharacterNameEditor {
             window.app.characterData.setCharacterSpecificValue('zevi-character-name-font-size', newSize + 'rem');
             
             // Trigger auto-save to persist to database
-            if (window.app?.autoSave?.triggerSave) {
-                window.app.autoSave.triggerSave();
             }
         }
     }

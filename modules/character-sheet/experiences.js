@@ -7,8 +7,6 @@ window.window.experiences = [];
 // Saves the current state of the window.experiences array to localStorage
 function saveExperiences() {
     // Trigger auto-save instead of localStorage
-  if (window.app?.characterData?.constructor?.saveCharacterData) {
-    window.app.characterData.constructor.saveCharacterData();
   }
 }
 

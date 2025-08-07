@@ -25,8 +25,6 @@ function renderHopeCircles() {
     if (currentHope < 0) currentHope = 0; // Prevent negative hope
 
     // Trigger auto-save instead of localStorage
-    if (window.app?.characterData?.constructor?.saveCharacterData) {
-        window.app.characterData.constructor.saveCharacterData();
     }
 
     // Create circles up to the currentMaxHope
@@ -59,8 +57,6 @@ function updateActiveHope(value) {
     if (newHope < 0) newHope = 0; // Ensure it doesn't go below zero
 
             // Trigger auto-save instead of localStorage
-        if (window.app?.characterData?.constructor?.saveCharacterData) {
-            window.app.characterData.constructor.saveCharacterData();
         }
     renderHopeCircles(); // Re-render to reflect changes
 }
@@ -75,8 +71,6 @@ function updateMaxHopeCircles(change) {
     if (newMaxHope > globalMaxHopeCircles) newMaxHope = globalMaxHopeCircles;
 
             // Trigger auto-save instead of localStorage
-        if (window.app?.characterData?.constructor?.saveCharacterData) {
-            window.app.characterData.constructor.saveCharacterData();
         }
     renderHopeCircles(); // Re-render to reflect changes in total circles
 }
