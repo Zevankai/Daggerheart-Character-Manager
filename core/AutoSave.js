@@ -56,7 +56,7 @@ class AutoSave {
         }
 
         try {
-            console.log('AutoSave: Saving character', currentCharacterId);
+            // Reduced logging for cleaner output
             
             // Collect current character data from character state manager
             const characterData = window.CharacterStateManager ? 
@@ -76,7 +76,7 @@ class AutoSave {
             const success = await this.characterData.saveCharacterData(currentCharacterId, characterData);
             
             if (success) {
-                console.log('AutoSave: Character saved successfully');
+                // Success - minimal logging
                 this.uiManager.showStatus('Auto-saved', 'success');
             } else {
                 console.error('AutoSave: Save failed');
@@ -93,18 +93,17 @@ class AutoSave {
     triggerSave() {
         if (!this.isEnabled) return;
         
-        console.log('AutoSave: Triggered save requested');
-        
-        // Clear any existing timeout
+        // Clear any existing timeout (silent debouncing)
         if (this.triggerSaveTimeout) {
             clearTimeout(this.triggerSaveTimeout);
         }
         
-        // Set a new timeout with debouncing
+        // Set a new timeout with longer debouncing to reduce spam
         this.triggerSaveTimeout = setTimeout(() => {
+            console.log('💾 Auto-saving after debounce...');
             this.performAutoSave();
             this.triggerSaveTimeout = null;
-        }, this.triggerSaveDelay);
+        }, 3000); // Increased from 2s to 3s
     }
 
     // Collect current character data from UI and localStorage
