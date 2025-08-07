@@ -63,13 +63,12 @@ class AutoSave {
                 window.CharacterStateManager.getCurrentCharacterData() : 
                 this.collectCurrentCharacterData();
             
-            // Debug: Log what we're saving
-            console.log('💾 AutoSave data to send:', {
+            // Debug: Log EXACT data being sent to server
+            console.log('💾 SENDING TO SERVER:', {
                 characterId: currentCharacterId,
-                hasData: !!characterData,
-                dataKeys: characterData ? Object.keys(characterData) : [],
                 hope: characterData?.hope,
-                hp: characterData?.hp
+                hp: characterData?.hp?.circles?.map(c => c.active),
+                hpActiveCount: characterData?.hp?.circles?.filter(c => c.active).length
             });
             
             // Save the data

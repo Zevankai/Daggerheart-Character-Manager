@@ -169,7 +169,12 @@ class CharacterState {
         if (!cloudData) return;
         
         // Merge cloud data into the state, preserving structure
-        console.log(`🔄 LOADING CHARACTER ${this.characterId} - Hope: ${cloudData.hope?.current}, HP: ${cloudData.hp?.circles?.filter(c => c.active).length}`);
+        console.log(`🔄 LOADING FROM SERVER:`, {
+            characterId: this.characterId,
+            hope: cloudData.hope,
+            hp: cloudData.hp?.circles?.map(c => c.active),
+            hpActiveCount: cloudData.hp?.circles?.filter(c => c.active).length
+        });
         
         this.data = { ...this.data, ...cloudData };
         
