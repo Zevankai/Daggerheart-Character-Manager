@@ -470,7 +470,7 @@ class CharacterState {
 
     // Collect data from global variables (SINGLE SOURCE OF TRUTH)
     collectFromGlobals() {
-        console.log(`✅ collectFromGlobals: Using globals as single source of truth`);
+        console.log(`✅ collectFromGlobals: hope=${window.currentHope}, hpCircles=${window.hpCircles?.filter(c => c.active).length}`);
         
         // Hope - use globals as source of truth
         if (window.currentHope !== undefined) {
