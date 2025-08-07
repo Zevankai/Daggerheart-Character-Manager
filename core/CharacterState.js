@@ -169,12 +169,7 @@ class CharacterState {
         if (!cloudData) return;
         
         // Merge cloud data into the state, preserving structure
-        console.log(`🔄 Updating character ${this.characterId} with cloud data:`, {
-            hope: cloudData.hope,
-            hp: cloudData.hp,
-            hasCircleData: !!(cloudData.hp?.circles),
-            fullCloudData: cloudData
-        });
+        console.log(`🔄 LOADING CHARACTER ${this.characterId} - Hope: ${cloudData.hope?.current}, HP: ${cloudData.hp?.circles?.filter(c => c.active).length}`);
         
         this.data = { ...this.data, ...cloudData };
         
@@ -273,7 +268,7 @@ class CharacterState {
         window.domainVaultData = { ...this.data.domainVault };
         window.effectsFeaturesData = { ...this.data.effectsFeatures };
         
-        console.log(`✅ Globals set: hope=${window.currentHope}, HP circles=${window.hpCircles?.length}`);
+        console.log(`✅ APPLIED CHARACTER ${this.characterId} - Hope: ${window.currentHope}, HP: ${window.hpCircles?.filter(c => c.active).length}`);
     }
 
     // Apply hope data directly to UI
@@ -410,11 +405,7 @@ class CharacterState {
 
     // Collect current data from UI and globals back into this character's folder
     collectFromUI() {
-        console.log(`📥 Collecting data into character ${this.characterId} folder...`);
-        
-        // Debug: Log what we had before
-        const beforeHope = this.data.hope.current;
-        const beforeHp = this.data.hp.circles.filter(c => c.active).length;
+        // Simplified logging - most debug disabled for clarity
         
         try {
             // Collect basic info from UI
@@ -432,29 +423,22 @@ class CharacterState {
             this.data.damage.minor = parseInt(this.getUIValue('#minor-damage-value', 'value')) || 1;
             this.data.damage.major = parseInt(this.getUIValue('#major-damage-value', 'value')) || 2;
             
-            // Collect hope data from UI (it's managed directly by character state now)
+            // Collect hope data from UI
             const hopeCircles = document.querySelectorAll('#hope-tracker .hope-circle');
             const activeHopeCircles = document.querySelectorAll('#hope-tracker .hope-circle.active');
-            console.log(`🔍 Hope collection: Found ${hopeCircles.length} total, ${activeHopeCircles.length} active`);
-            console.log(`🔍 Hope before collection: current=${this.data.hope.current}, max=${this.data.hope.max}`);
             
             if (hopeCircles.length > 0) {
                 this.data.hope.max = hopeCircles.length;
                 this.data.hope.current = activeHopeCircles.length;
-                console.log(`🔍 Hope after collection: current=${this.data.hope.current}, max=${this.data.hope.max}`);
             }
             
-            // Collect circle data from UI (it's managed directly by character state now) 
+            // Collect circle data from UI
             const hpCircles = document.querySelectorAll('#hp-tracker .hp-circle');
-            const activeHpCircles = document.querySelectorAll('#hp-tracker .hp-circle.active');
-            console.log(`🔍 HP collection: Found ${hpCircles.length} total, ${activeHpCircles.length} active`);
-            console.log(`🔍 HP before collection:`, this.data.hp.circles.map(c => c.active));
             
             if (hpCircles.length > 0) {
                 this.data.hp.circles = Array.from(hpCircles).map(circle => ({
                     active: circle.classList.contains('active')
                 }));
-                console.log(`🔍 HP after collection:`, this.data.hp.circles.map(c => c.active));
             }
             
             const stressCircles = document.querySelectorAll('#stress-tracker .stress-circle');
@@ -598,10 +582,7 @@ class CharacterStateManager {
             const currentState = this.getCharacterState(this.activeCharacterId);
             console.log(`💾 About to collect data from character ${this.activeCharacterId} before switching`);
             currentState.collectFromUI();
-            console.log(`💾 Collected data for character ${this.activeCharacterId}:`, {
-                hope: currentState.data.hope,
-                hp: currentState.data.hp
-            });
+                    console.log(`💾 SAVING CHARACTER ${this.activeCharacterId} - Hope: ${currentState.data.hope.current}, HP: ${currentState.data.hp.circles.filter(c => c.active).length}`);
             currentState.deactivate();
         }
         
