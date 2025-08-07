@@ -1,10 +1,10 @@
-// experiences.js
+// window.experiences.js
 
-// Retrieve experiences from localStorage or initialize as an empty array
+// Retrieve window.experiences from localStorage or initialize as an empty array
 // Initialize empty - will be populated when character loads from cloud
-let experiences = [];
+window.window.experiences = [];
 
-// Saves the current state of the experiences array to localStorage
+// Saves the current state of the window.experiences array to localStorage
 function saveExperiences() {
     // Trigger auto-save instead of localStorage
   if (window.app?.characterData?.constructor?.saveCharacterData) {
@@ -12,9 +12,9 @@ function saveExperiences() {
   }
 }
 
-// Renders the list of experiences as clickable buttons and manages visibility of detail view
+// Renders the list of window.experiences as clickable buttons and manages visibility of detail view
 function renderExperiences() {
-    const experiencesListContainer = document.getElementById('experiences-list-container');
+    const window.experiencesListContainer = document.getElementById('window.experiences-list-container');
     const experienceDetailContainer = document.getElementById('experience-detail-container');
     const createNewExperienceBtn = document.getElementById('show-create-experience-modal-btn');
 
@@ -22,28 +22,28 @@ function renderExperiences() {
     if (experienceDetailContainer) {
         experienceDetailContainer.style.display = 'none';
     }
-    if (experiencesListContainer) {
-        experiencesListContainer.style.display = 'flex'; // Use flex for button layout
-        experiencesListContainer.innerHTML = ''; // Clear existing buttons
+    if (window.experiencesListContainer) {
+        window.experiencesListContainer.style.display = 'flex'; // Use flex for button layout
+        window.experiencesListContainer.innerHTML = ''; // Clear existing buttons
     }
     if (createNewExperienceBtn) {
         createNewExperienceBtn.style.display = 'inline-block'; // Or 'block' depending on desired layout
     }
 
 
-    if (experiencesListContainer && experiences.length === 0) {
-        experiencesListContainer.innerHTML = '<p class="no-entries-message">No experiences added yet. Click "Create New Experience" to add one!</p>';
+    if (window.experiencesListContainer && window.experiences.length === 0) {
+        window.experiencesListContainer.innerHTML = '<p class="no-entries-message">No window.experiences added yet. Click "Create New Experience" to add one!</p>';
         return;
     }
 
     // Create a button for each stored experience
-    experiences.forEach((exp, index) => {
+    window.experiences.forEach((exp, index) => {
         const button = document.createElement('button');
         button.className = 'experience-button';
         button.textContent = exp.title;
         button.dataset.index = index; // Store index to easily retrieve data later
         button.addEventListener('click', () => showExperienceDetail(index));
-        experiencesListContainer.appendChild(button);
+        window.experiencesListContainer.appendChild(button);
     });
 }
 
@@ -91,7 +91,7 @@ function saveNewExperience() {
         modifier
     };
 
-    experiences.push(newExperience);
+    window.experiences.push(newExperience);
     saveExperiences(); // Save to localStorage
     renderExperiences(); // Re-render the list to show the new entry
     closeCreateExperienceModal(); // Close the modal
@@ -113,7 +113,7 @@ function saveNewExperience() {
 
 // Displays the detailed information for a specific experience
 function showExperienceDetail(index) {
-    const experience = experiences[index];
+    const experience = window.experiences[index];
     if (!experience) {
         console.error("Experience not found at index:", index);
         return;
@@ -122,7 +122,7 @@ function showExperienceDetail(index) {
     const detailTitle = document.getElementById('detail-experience-title');
     const detailDescription = document.getElementById('detail-experience-description');
     const detailModifier = document.getElementById('detail-experience-modifier');
-    const experiencesListContainer = document.getElementById('experiences-list-container');
+    const window.experiencesListContainer = document.getElementById('window.experiences-list-container');
     const createNewExperienceBtn = document.getElementById('show-create-experience-modal-btn');
     const experienceDetailContainer = document.getElementById('experience-detail-container');
 
@@ -135,7 +135,7 @@ function showExperienceDetail(index) {
     }
 
     // Hide the list and create button, show the detail view
-    if (experiencesListContainer) experiencesListContainer.style.display = 'none';
+    if (window.experiencesListContainer) window.experiencesListContainer.style.display = 'none';
     if (createNewExperienceBtn) createNewExperienceBtn.style.display = 'none';
     if (experienceDetailContainer) experienceDetailContainer.style.display = 'block';
 }
@@ -144,7 +144,7 @@ function showExperienceDetail(index) {
 function closeExperienceDetail() {
     const experienceDetailContainer = document.getElementById('experience-detail-container');
     if (experienceDetailContainer) experienceDetailContainer.style.display = 'none';
-    renderExperiences(); // Re-render to show the list of experiences and create button
+    renderExperiences(); // Re-render to show the list of window.experiences and create button
 }
 
 // Updates the modifier of an existing experience from its detail view
@@ -156,11 +156,11 @@ function updateExperienceModifier(element) {
     if (isNaN(newModifier) || newModifier < -2 || newModifier > 2) {
         if (window.showNotification) window.showNotification('Modifier must be between -2 and +2.', 'error');
         // Revert to old value if invalid
-        element.value = experiences[index].modifier;
+        element.value = window.experiences[index].modifier;
         return;
     }
 
-    experiences[index].modifier = newModifier;
+    window.experiences[index].modifier = newModifier;
     saveExperiences(); // Save the updated modifier
     if (window.showNotification) window.showNotification('Modifier updated!', 'success');
 }

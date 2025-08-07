@@ -8,7 +8,7 @@ const FEATURE_CARD_TYPES = ['Hope', 'Class', 'Subclass', 'Ancestry', 'Community'
 const DEFAULT_FEATURE_COLOR = '#6c5ce7';
 
 // Initialize effects and features data structure
-let effectsFeaturesData = {
+window.window.effectsFeaturesData = {
     cards: [],
     highlightedCards: [] // Array of card IDs that are highlighted (max 5)
 };
@@ -18,17 +18,17 @@ try {
     // Initialize with defaults - will be populated when character loads from cloud  
 const savedData = null; // Don't load from localStorage
     if (savedData) {
-        effectsFeaturesData = JSON.parse(savedData);
+        window.effectsFeaturesData = JSON.parse(savedData);
     }
 } catch (error) {
     console.error('Error loading effects and features data:', error);
-    effectsFeaturesData = { cards: [], highlightedCards: [] };
+    window.effectsFeaturesData = { cards: [], highlightedCards: [] };
 }
 
 // Save effects and features data to localStorage
 function saveEffectsFeaturesData() {
     try {
-        const dataString = JSON.stringify(effectsFeaturesData);
+        const dataString = JSON.stringify(window.effectsFeaturesData);
         // Trigger auto-save instead of localStorage
   if (window.app?.characterData?.constructor?.saveCharacterData) {
     window.app.characterData.constructor.saveCharacterData();
@@ -62,7 +62,7 @@ function renderEffectsFeatures() {
             </div>
             
             <!-- Highlighted Cards Section -->
-            <div class="highlighted-cards-section" id="highlighted-cards-section" style="margin-bottom: 30px; ${effectsFeaturesData.highlightedCards.length > 0 ? '' : 'display: none;'}">
+            <div class="highlighted-cards-section" id="highlighted-cards-section" style="margin-bottom: 30px; ${window.effectsFeaturesData.highlightedCards.length > 0 ? '' : 'display: none;'}">
                 <h4 style="color: var(--accent-color); margin-bottom: 15px;">Highlighted Features</h4>
                 <div class="highlighted-cards-grid" id="highlighted-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
                     ${renderHighlightedCards()}
@@ -168,8 +168,8 @@ function renderEffectsFeatures() {
 
 // Render highlighted cards section
 function renderHighlightedCards() {
-    return effectsFeaturesData.highlightedCards.map(cardId => {
-        const card = effectsFeaturesData.cards.find(c => c.id === cardId);
+    return window.effectsFeaturesData.highlightedCards.map(cardId => {
+        const card = window.effectsFeaturesData.cards.find(c => c.id === cardId);
         if (!card) return '';
         return renderFeatureCard(card, true);
     }).join('');
@@ -177,7 +177,7 @@ function renderHighlightedCards() {
 
 // Render cards by type
 function renderCardsByType(type) {
-    const cardsOfType = effectsFeaturesData.cards.filter(card => card.type === type);
+    const cardsOfType = window.effectsFeaturesData.cards.filter(card => card.type === type);
     if (cardsOfType.length === 0) return '';
     
     return `
@@ -474,7 +474,7 @@ async function saveNewFeature() {
         tokens
     };
 
-    effectsFeaturesData.cards.push(newFeature);
+    window.effectsFeaturesData.cards.push(newFeature);
     saveEffectsFeaturesData();
     
     // Re-render
@@ -495,7 +495,7 @@ async function saveNewFeature() {
 let editingFeatureId = null;
 
 function editFeature(featureId) {
-    const feature = effectsFeaturesData.cards.find(c => c.id === featureId);
+    const feature = window.effectsFeaturesData.cards.find(c => c.id === featureId);
     if (!feature) return;
 
     editingFeatureId = featureId;
@@ -521,7 +521,7 @@ function closeEditFeatureModal() {
 async function saveEditedFeature() {
     if (!editingFeatureId) return;
 
-    const featureIndex = effectsFeaturesData.cards.findIndex(c => c.id === editingFeatureId);
+    const featureIndex = window.effectsFeaturesData.cards.findIndex(c => c.id === editingFeatureId);
     if (featureIndex === -1) return;
 
     const name = document.getElementById('edit-feature-name').value.trim();
@@ -541,7 +541,7 @@ async function saveEditedFeature() {
 
     // Handle image upload (keep existing image if no new one is uploaded)
     const newImage = await handleFeatureImageUpload(imageFile);
-    const image = newImage || effectsFeaturesData.cards[featureIndex].image;
+    const image = newImage || window.effectsFeaturesData.cards[featureIndex].image;
     
     // Parse tokens
     let tokens = [];
@@ -553,8 +553,8 @@ async function saveEditedFeature() {
     }
 
     // Update feature
-    effectsFeaturesData.cards[featureIndex] = {
-        ...effectsFeaturesData.cards[featureIndex],
+    window.effectsFeaturesData.cards[featureIndex] = {
+        ...window.effectsFeaturesData.cards[featureIndex],
         name,
         description,
         type,
@@ -585,10 +585,10 @@ function deleteFeature() {
 
     if (confirm('Are you sure you want to delete this feature? This action cannot be undone.')) {
         // Remove from cards
-        effectsFeaturesData.cards = effectsFeaturesData.cards.filter(c => c.id !== editingFeatureId);
+        window.effectsFeaturesData.cards = window.effectsFeaturesData.cards.filter(c => c.id !== editingFeatureId);
         
         // Remove from highlighted cards
-        effectsFeaturesData.highlightedCards = effectsFeaturesData.highlightedCards.filter(id => id !== editingFeatureId);
+        window.effectsFeaturesData.highlightedCards = window.effectsFeaturesData.highlightedCards.filter(id => id !== editingFeatureId);
         
         saveEffectsFeaturesData();
         
@@ -609,20 +609,20 @@ function deleteFeature() {
 
 // Toggle highlight for a card
 function toggleHighlight(cardId) {
-    const isHighlighted = effectsFeaturesData.highlightedCards.includes(cardId);
+    const isHighlighted = window.effectsFeaturesData.highlightedCards.includes(cardId);
     
     if (isHighlighted) {
         // Remove highlight
-        effectsFeaturesData.highlightedCards = effectsFeaturesData.highlightedCards.filter(id => id !== cardId);
+        window.effectsFeaturesData.highlightedCards = window.effectsFeaturesData.highlightedCards.filter(id => id !== cardId);
     } else {
         // Add highlight (max 5)
-        if (effectsFeaturesData.highlightedCards.length >= 5) {
+        if (window.effectsFeaturesData.highlightedCards.length >= 5) {
             if (window.showNotification) {
                 window.showNotification('You can only highlight up to 5 cards. Remove a highlight first.', 'error');
             }
             return;
         }
-        effectsFeaturesData.highlightedCards.push(cardId);
+        window.effectsFeaturesData.highlightedCards.push(cardId);
     }
     
     saveEffectsFeaturesData();
@@ -637,7 +637,7 @@ function toggleHighlight(cardId) {
 
 // Update token value
 function updateTokenValue(cardId, tokenName, value) {
-    const card = effectsFeaturesData.cards.find(c => c.id === cardId);
+    const card = window.effectsFeaturesData.cards.find(c => c.id === cardId);
     if (!card || !card.tokens) return;
     
     const token = card.tokens.find(t => t.name === tokenName);

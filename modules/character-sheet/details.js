@@ -1,7 +1,7 @@
 // details.js
 
 // Character details structure
-let characterDetails = {
+window.window.characterDetails = {
   personal: {
       pronouns: '',
       nicknames: '',
@@ -22,7 +22,7 @@ let characterDetails = {
 function loadCharacterDetails() {
   // Load from localStorage
   // Initialize with defaults - will be populated when character loads from cloud
-  // characterDetails already has default structure
+  // window.characterDetails already has default structure
 }
 
 // Saves the current state of character details
@@ -47,19 +47,19 @@ function initializeDetailsTab() {
               <h3>Personal Descriptions</h3>
               <div class="detail-field">
                   <label for="pronouns-input">Pronouns:</label>
-                  <input type="text" id="pronouns-input" placeholder="they/them, she/her, he/him, etc." value="${characterDetails.personal.pronouns}">
+                  <input type="text" id="pronouns-input" placeholder="they/them, she/her, he/him, etc." value="${window.characterDetails.personal.pronouns}">
               </div>
               <div class="detail-field">
                   <label for="nicknames-input">Nicknames:</label>
-                  <input type="text" id="nicknames-input" placeholder="Known aliases, pet names, titles..." value="${characterDetails.personal.nicknames}">
+                  <input type="text" id="nicknames-input" placeholder="Known aliases, pet names, titles..." value="${window.characterDetails.personal.nicknames}">
               </div>
               <div class="detail-field">
                   <label for="personality-input">Personality & Behavior:</label>
-                  <textarea id="personality-input" rows="4" placeholder="Describe personality traits, mannerisms, habits, quirks...">${characterDetails.personal.personality}</textarea>
+                  <textarea id="personality-input" rows="4" placeholder="Describe personality traits, mannerisms, habits, quirks...">${window.characterDetails.personal.personality}</textarea>
               </div>
               <div class="detail-field">
                   <label for="moral-compass-input">Moral Compass:</label>
-                  <textarea id="moral-compass-input" rows="3" placeholder="Values, beliefs, ethical stance, what drives them...">${characterDetails.personal.moralCompass}</textarea>
+                  <textarea id="moral-compass-input" rows="3" placeholder="Values, beliefs, ethical stance, what drives them...">${window.characterDetails.personal.moralCompass}</textarea>
               </div>
           </div>
           
@@ -67,27 +67,27 @@ function initializeDetailsTab() {
               <h3>Physical Descriptions</h3>
               <div class="detail-field">
                   <label for="eye-color-input">Eye Color:</label>
-                  <input type="text" id="eye-color-input" placeholder="Brown, blue, hazel, heterochromia, etc." value="${characterDetails.physical.eyeColor}">
+                  <input type="text" id="eye-color-input" placeholder="Brown, blue, hazel, heterochromia, etc." value="${window.characterDetails.physical.eyeColor}">
               </div>
               <div class="detail-field">
                   <label for="height-input">Height:</label>
-                  <input type="text" id="height-input" placeholder="5'6\", tall, short, average, etc." value="${characterDetails.physical.height}">
+                  <input type="text" id="height-input" placeholder="5'6\", tall, short, average, etc." value="${window.characterDetails.physical.height}">
               </div>
               <div class="detail-field">
                   <label for="build-input">Build:</label>
-                  <input type="text" id="build-input" placeholder="Athletic, slender, stocky, muscular, etc." value="${characterDetails.physical.build}">
+                  <input type="text" id="build-input" placeholder="Athletic, slender, stocky, muscular, etc." value="${window.characterDetails.physical.build}">
               </div>
               <div class="detail-field">
                   <label for="hair-color-input">Hair Color:</label>
-                  <input type="text" id="hair-color-input" placeholder="Black, blonde, dyed purple, bald, etc." value="${characterDetails.physical.hairColor}">
+                  <input type="text" id="hair-color-input" placeholder="Black, blonde, dyed purple, bald, etc." value="${window.characterDetails.physical.hairColor}">
               </div>
               <div class="detail-field">
                   <label for="skin-tone-input">Skin Tone:</label>
-                  <input type="text" id="skin-tone-input" placeholder="Pale, olive, dark, freckled, etc." value="${characterDetails.physical.skinTone}">
+                  <input type="text" id="skin-tone-input" placeholder="Pale, olive, dark, freckled, etc." value="${window.characterDetails.physical.skinTone}">
               </div>
               <div class="detail-field">
                   <label for="distinguishing-features-input">Distinguishing Features:</label>
-                  <textarea id="distinguishing-features-input" rows="3" placeholder="Scars, tattoos, birthmarks, unique features...">${characterDetails.physical.distinguishingFeatures}</textarea>
+                  <textarea id="distinguishing-features-input" rows="3" placeholder="Scars, tattoos, birthmarks, unique features...">${window.characterDetails.physical.distinguishingFeatures}</textarea>
               </div>
           </div>
           
@@ -134,24 +134,24 @@ function setupDetailsEventListeners() {
   }
 }
 
-// Updates the characterDetails object with current form values
+// Updates the window.characterDetails object with current form values
 function updateCharacterDetails() {
-  characterDetails.personal.pronouns = document.getElementById('pronouns-input')?.value || '';
-  characterDetails.personal.nicknames = document.getElementById('nicknames-input')?.value || '';
-  characterDetails.personal.personality = document.getElementById('personality-input')?.value || '';
-  characterDetails.personal.moralCompass = document.getElementById('moral-compass-input')?.value || '';
+  window.characterDetails.personal.pronouns = document.getElementById('pronouns-input')?.value || '';
+  window.characterDetails.personal.nicknames = document.getElementById('nicknames-input')?.value || '';
+  window.characterDetails.personal.personality = document.getElementById('personality-input')?.value || '';
+  window.characterDetails.personal.moralCompass = document.getElementById('moral-compass-input')?.value || '';
   
-  characterDetails.physical.eyeColor = document.getElementById('eye-color-input')?.value || '';
-  characterDetails.physical.height = document.getElementById('height-input')?.value || '';
-  characterDetails.physical.build = document.getElementById('build-input')?.value || '';
-  characterDetails.physical.hairColor = document.getElementById('hair-color-input')?.value || '';
-  characterDetails.physical.skinTone = document.getElementById('skin-tone-input')?.value || '';
-  characterDetails.physical.distinguishingFeatures = document.getElementById('distinguishing-features-input')?.value || '';
+  window.characterDetails.physical.eyeColor = document.getElementById('eye-color-input')?.value || '';
+  window.characterDetails.physical.height = document.getElementById('height-input')?.value || '';
+  window.characterDetails.physical.build = document.getElementById('build-input')?.value || '';
+  window.characterDetails.physical.hairColor = document.getElementById('hair-color-input')?.value || '';
+  window.characterDetails.physical.skinTone = document.getElementById('skin-tone-input')?.value || '';
+  window.characterDetails.physical.distinguishingFeatures = document.getElementById('distinguishing-features-input')?.value || '';
 }
 
 // Clears all details and resets the form
 function clearAllDetails() {
-  characterDetails = {
+  window.characterDetails = {
       personal: {
           pronouns: '',
           nicknames: '',
@@ -205,7 +205,7 @@ function showClearConfirmation() {
 
 // Exports character details for backup/sharing
 function exportCharacterDetails() {
-  return JSON.stringify(characterDetails, null, 2);
+  return JSON.stringify(window.characterDetails, null, 2);
 }
 
 // Imports character details from JSON string
@@ -215,7 +215,7 @@ function importCharacterDetails(jsonString) {
       
       // Validate structure
       if (importedDetails.personal && importedDetails.physical) {
-          characterDetails = importedDetails;
+          window.characterDetails = importedDetails;
           saveCharacterDetails();
           initializeDetailsTab();
           return true;

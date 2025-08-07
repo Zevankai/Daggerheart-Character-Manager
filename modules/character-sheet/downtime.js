@@ -19,7 +19,7 @@ const restOptions = {
     ]
 };
 
-// Notification function, exposed globally as it's used by downtime and projects
+// Notification function, exposed globally as it's used by downtime and window.projects
 function showNotification(message, type = 'error') {
     const notificationArea = document.getElementById('downtime-notification-area');
     notificationArea.textContent = message;
@@ -96,7 +96,7 @@ function showRestSummary() {
     document.getElementById('rest-summary-area').style.display = 'block';
 
     document.getElementById('rest-options-list').style.display = 'none';
-    document.getElementById('long-rest-projects-container').style.display = 'none';
+    document.getElementById('long-rest-window.projects-container').style.display = 'none';
     document.getElementById('gm-notification').style.display = 'none';
     
     // Hide confirm and cancel buttons while summary is displayed
@@ -151,7 +151,7 @@ function startRest(type) {
             
             // Show/hide project section based on project checkbox for long rests
             if (checkbox.value === 'project' && type === 'long') {
-                const projectContainer = document.getElementById('long-rest-projects-container');
+                const projectContainer = document.getElementById('long-rest-window.projects-container');
                 if (checkbox.checked) {
                     projectContainer.style.display = 'block';
                     hideProjectViews(); // Reset project views when shown
@@ -168,7 +168,7 @@ function startRest(type) {
         ? 'On a short rest, the GM gains <strong>1d4 Fear.</strong>'
         : 'On a long rest, the GM gains Fear equal to <strong>1d4 + the number of PCs</strong>, and can advance a countdown.';
 
-    document.getElementById('long-rest-projects-container').style.display = type === 'long' ? 'block' : 'none';
+    document.getElementById('long-rest-window.projects-container').style.display = type === 'long' ? 'block' : 'none';
     document.getElementById('rest-options-container').style.display = 'block';
     document.getElementById('rest-summary-area').style.display = 'none';
     showNotification('Select your rest options.', 'info');
@@ -176,8 +176,8 @@ function startRest(type) {
 
 // New project management functions for rest interface
 function hideProjectViews() {
-    document.getElementById('completed-projects-view').style.display = 'none';
-    document.getElementById('active-projects-view').style.display = 'none';
+    document.getElementById('completed-window.projects-view').style.display = 'none';
+    document.getElementById('active-window.projects-view').style.display = 'none';
     document.getElementById('create-project-view').style.display = 'none';
     document.getElementById('selected-project-info').style.display = 'none';
     selectedProjectForRest = null;
@@ -185,11 +185,11 @@ function hideProjectViews() {
 
 function showCompletedProjects() {
     hideProjectViews();
-    const completedProjects = projects.filter(p => p.progress >= p.segments);
-    const completedProjectsList = document.getElementById('completed-projects-list');
+    const completedProjects = window.projects.filter(p => p.progress >= p.segments);
+    const completedProjectsList = document.getElementById('completed-window.projects-list');
     
     if (completedProjects.length === 0) {
-        completedProjectsList.innerHTML = '<p style="text-align: center; opacity: 0.7;">No completed projects yet.</p>';
+        completedProjectsList.innerHTML = '<p style="text-align: center; opacity: 0.7;">No completed window.projects yet.</p>';
     } else {
         completedProjectsList.innerHTML = completedProjects.map(project => `
             <div class="project-item completed">
@@ -207,16 +207,16 @@ function showCompletedProjects() {
         `).join('');
     }
     
-    document.getElementById('completed-projects-view').style.display = 'block';
+    document.getElementById('completed-window.projects-view').style.display = 'block';
 }
 
 function showActiveProjects() {
     hideProjectViews();
-    const activeProjects = projects.filter(p => p.progress < p.segments);
-    const activeProjectsList = document.getElementById('active-projects-list');
+    const activeProjects = window.projects.filter(p => p.progress < p.segments);
+    const activeProjectsList = document.getElementById('active-window.projects-list');
     
     if (activeProjects.length === 0) {
-        activeProjectsList.innerHTML = '<p style="text-align: center; opacity: 0.7;">No active projects. Create a new project to get started!</p>';
+        activeProjectsList.innerHTML = '<p style="text-align: center; opacity: 0.7;">No active window.projects. Create a new project to get started!</p>';
     } else {
         activeProjectsList.innerHTML = activeProjects.map(project => `
             <div class="project-item selectable" onclick="window.selectProjectForRest(${project.id})">
@@ -234,11 +234,11 @@ function showActiveProjects() {
         `).join('');
     }
     
-    document.getElementById('active-projects-view').style.display = 'block';
+    document.getElementById('active-window.projects-view').style.display = 'block';
 }
 
 function selectProjectForRest(projectId) {
-    const project = projects.find(p => p.id === projectId);
+    const project = window.projects.find(p => p.id === projectId);
     if (project) {
         selectedProjectForRest = project;
         document.getElementById('selected-project-name').textContent = project.name;
@@ -280,7 +280,7 @@ function createNewProject() {
         progress: 0
     };
     
-    projects.push(newProject);
+    window.projects.push(newProject);
     saveProjects();
     showNotification(`Project "${name}" created successfully!`, 'success');
     hideProjectViews();
@@ -393,13 +393,13 @@ function confirmRest() {
                     return;
                 }
 
-                const projectIndex = projects.findIndex(p => p.id === selectedProjectForRest.id);
+                const projectIndex = window.projects.findIndex(p => p.id === selectedProjectForRest.id);
                 if (projectIndex === -1) {
                     showNotification('Selected project not found.', 'error');
                     return;
                 }
 
-                const project = projects[projectIndex];
+                const project = window.projects[projectIndex];
                 if (project.progress < project.segments) {
                     project.progress++; // Advance progress by one segment
                     saveProjects(); // Save the updated project progress
@@ -471,16 +471,16 @@ function resetDowntimeView() {
 
 // --- PROJECT MANAGEMENT LOGIC ---
   // Initialize empty - will be populated when character loads from cloud
-  let projects = [];
+  window.window.projects = [];
 
-// Migrate existing projects to ensure they have IDs
-projects.forEach(project => {
+// Migrate existing window.projects to ensure they have IDs
+window.projects.forEach(project => {
     if (!project.id) {
         project.id = Date.now() + Math.random(); // Ensure unique IDs
     }
 });
-if (projects.length > 0) {
-    saveProjects(); // Save migrated projects
+if (window.projects.length > 0) {
+    saveProjects(); // Save migrated window.projects
 }
 
 
