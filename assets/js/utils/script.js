@@ -381,11 +381,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             if (targetPanelId === 'characters-tab-content') {
-                if (window.charactersPageManager && typeof window.charactersPageManager.refreshCharactersList === 'function') {
+                if (window.characterManager && typeof window.characterManager.loadCharactersList === 'function') {
                     console.log('Characters tab clicked - refreshing characters list');
-                    window.charactersPageManager.refreshCharactersList();
+                    window.characterManager.loadCharactersList();
                 } else {
-                    console.warn('charactersPageManager not found. Ensure characters.js is loaded.');
+                    console.log('CharacterManager not available yet.');
                 }
             }
         });
