@@ -123,6 +123,28 @@ class ZeviAPI {
   async getActiveCharacter() {
     return await this.makeRequest('/characters?action=active');
   }
+
+  // === SIMPLE CHARACTER SAVE/LOAD METHODS ===
+  
+  async createCharacter(name, characterData = {}) {
+    return await this.makeRequest('/characters', {
+      method: 'POST',
+      body: JSON.stringify({ name, characterData, setAsActive: true }),
+    });
+  }
+
+  async saveCharacter(characterId, characterData) {
+    return await this.makeRequest(`/characters/${characterId}`, {
+      method: 'PUT', 
+      body: JSON.stringify({ characterData }),
+    });
+  }
+
+  async deleteCharacter(id) {
+    return await this.makeRequest(`/characters/${id}`, {
+      method: 'DELETE',
+    });
+  }
 }
 
 // Create global instance
