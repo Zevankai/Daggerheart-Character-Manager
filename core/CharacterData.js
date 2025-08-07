@@ -517,7 +517,13 @@ class CharacterData {
         this.autoSaveDebounceTimer = setTimeout(async () => {
             try {
                 console.log('🔄 Triggering auto-save for character:', currentCharacterId);
-                const characterData = this.collectCurrentCharacterData();
+                
+                // Use CharacterStateManager if available, otherwise fall back to old method
+                const characterData = window.CharacterStateManager ? 
+                    window.CharacterStateManager.getCurrentCharacterData() : 
+                    this.collectCurrentCharacterData();
+                    
+                console.log('🔍 CharacterData auto-save using:', window.CharacterStateManager ? 'CharacterStateManager' : 'old collection');
                 await this.saveCharacterData(currentCharacterId, characterData, 'auto');
                 
                 // Update last saved timestamp for character manager display
