@@ -513,33 +513,19 @@ class CharacterData {
             clearTimeout(this.autoSaveDebounceTimer);
         }
         
-        // Set new timer for debounced save
-        this.autoSaveDebounceTimer = setTimeout(async () => {
-            try {
-                console.log('🔄 Triggering auto-save for character:', currentCharacterId);
-                
-                // Use CharacterStateManager if available, otherwise fall back to old method
-                const characterData = window.CharacterStateManager ? 
-                    window.CharacterStateManager.getCurrentCharacterData() : 
-                    this.collectCurrentCharacterData();
-                    
-                console.log('🔍 CharacterData auto-save using:', window.CharacterStateManager ? 'CharacterStateManager' : 'old collection');
-                await this.saveCharacterData(currentCharacterId, characterData, 'auto');
-                
-                // Update last saved timestamp for character manager display
-                localStorage.setItem(`zevi-character-${currentCharacterId}-lastSaved`, new Date().toISOString());
-                
-                // Show save indicator
-                if (window.app?.uiManager?.showStatus) {
-                    window.app.uiManager.showStatus('Auto-saved', 'success');
-                }
-            } catch (error) {
-                console.error('❌ Auto-save failed:', error);
-                if (window.app?.uiManager?.showStatus) {
-                    window.app.uiManager.showStatus('Auto-save failed', 'error');
-                }
-            }
-        }, 2000); // 2 second debounce
+        // DELEGATE TO AUTOSAVE CLASS TO AVOID CONFLICTS
+        console.log('🔄 CharacterData.triggerAutoSave → delegating to AutoSave class');
+        if (window.app?.autoSave?.triggerSave) {
+            window.app.autoSave.triggerSave();
+        }
+    }
+
+    // DISABLED VERSION: Use AutoSave class instead to avoid conflicts
+    async triggerAutoSaveOLD() {
+        // Redirect to the proper AutoSave system
+        if (window.app?.autoSave?.triggerSave) {
+            window.app.autoSave.triggerSave();
+        }
     }
 
     // Load character data

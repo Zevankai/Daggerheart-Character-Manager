@@ -141,12 +141,15 @@ class AppController {
         }
         
         try {
-            console.log('🔄 Performing auto-save for character:', currentCharacterId);
+            console.log('🔄 AppController auto-save → delegating to AutoSave class');
             
-            const characterData = this.characterData.collectCurrentCharacterData();
-            await this.characterData.saveCharacterData(currentCharacterId, characterData, 'auto');
+            // DELEGATE TO AUTOSAVE CLASS TO AVOID CONFLICTS
+            if (window.app?.autoSave?.triggerSave) {
+                window.app.autoSave.triggerSave();
+                return;
+            }
             
-            console.log('✅ Auto-save completed successfully');
+            console.log('✅ Auto-save delegation completed');
             
             // Update save indicator if available
             if (window.characterManager) {
