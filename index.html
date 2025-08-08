@@ -624,19 +624,19 @@
 
         
         <!-- Character Sheet Modules -->
-        <script src="modules/character-sheet/hpStress.js"></script>
-        <script src="modules/character-sheet/hope.js"></script>
-        <script src="modules/character-sheet/downtime.js"></script>
-        <script src="modules/character-sheet/journal.js"></script>
-        <script src="modules/character-sheet/experiences.js"></script>
-        <script src="modules/character-sheet/details.js"></script>
-        <script src="modules/character-sheet/domainVault.js"></script>
-        <script src="modules/character-sheet/effectsFeatures.js"></script>
-        <script src="modules/character-sheet/characterNameEditor.js"></script>
-        <script src="modules/character-sheet/settings.js"></script>
+        <script src="modules/character-sheet/hpStress.js" onload="console.log('✅ hpStress.js loaded')" onerror="console.error('❌ hpStress.js failed to load')"></script>
+        <script src="modules/character-sheet/hope.js" onload="console.log('✅ hope.js loaded')" onerror="console.error('❌ hope.js failed to load')"></script>
+        <script src="modules/character-sheet/downtime.js" onload="console.log('✅ downtime.js loaded')" onerror="console.error('❌ downtime.js failed to load')"></script>
+        <script src="modules/character-sheet/journal.js" onload="console.log('✅ journal.js loaded')" onerror="console.error('❌ journal.js failed to load')"></script>
+        <script src="modules/character-sheet/experiences.js" onload="console.log('✅ experiences.js loaded')" onerror="console.error('❌ experiences.js failed to load')"></script>
+        <script src="modules/character-sheet/details.js" onload="console.log('✅ details.js loaded')" onerror="console.error('❌ details.js failed to load')"></script>
+        <script src="modules/character-sheet/domainVault.js" onload="console.log('✅ domainVault.js loaded')" onerror="console.error('❌ domainVault.js failed to load')"></script>
+        <script src="modules/character-sheet/effectsFeatures.js" onload="console.log('✅ effectsFeatures.js loaded')" onerror="console.error('❌ effectsFeatures.js failed to load')"></script>
+        <script src="modules/character-sheet/characterNameEditor.js" onload="console.log('✅ characterNameEditor.js loaded')" onerror="console.error('❌ characterNameEditor.js failed to load')"></script>
+        <script src="modules/character-sheet/settings.js" onload="console.log('✅ settings.js loaded')" onerror="console.error('❌ settings.js failed to load')"></script>
         
         <!-- Equipment Modules -->
-        <script src="modules/equipment/equipment.js"></script>
+        <script src="modules/equipment/equipment.js" onload="console.log('✅ equipment.js loaded')" onerror="console.error('❌ equipment.js failed to load')"></script>
         
         <!-- Utilities -->
         <script src="assets/js/utils/script.js"></script>
@@ -715,6 +715,31 @@
       scripts.forEach((script, index) => {
         console.log(`  ${index + 1}. ${script.src} - loaded: ${script.readyState || 'unknown'}`);
       });
+      
+      // Test if we can manually load a module to see the error
+      console.log('🧪 Testing manual script load...');
+      fetch('/modules/character-sheet/domainVault.js')
+        .then(response => {
+          console.log('📡 Domain Vault fetch status:', response.status, response.statusText);
+          if (!response.ok) {
+            console.error('❌ Failed to fetch domain vault module:', response.status);
+          }
+          return response.text();
+        })
+        .then(scriptText => {
+          console.log('📄 Domain Vault script length:', scriptText.length);
+          console.log('🔍 Script starts with:', scriptText.substring(0, 100));
+          // Try to execute it manually to see if there are syntax errors
+          try {
+            eval(scriptText);
+            console.log('✅ Domain Vault script executed successfully');
+          } catch (error) {
+            console.error('❌ Domain Vault script execution failed:', error);
+          }
+        })
+        .catch(error => {
+          console.error('❌ Failed to load domain vault script:', error);
+        });
       
       if (window.initializeDomainVault) {
         try {
