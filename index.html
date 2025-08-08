@@ -880,7 +880,7 @@
       const defaultData = {
         name: name,
         subtitle: 'Community Ancestry Class (Subclass)', 
-        level: 1,
+        level: parseInt(document.getElementById('charLevel')?.textContent) || 1,
         hope: { current: 0, max: 6 },
         attributes: { might: 0, agility: 0, instinct: 0, presence: 0, knowledge: 0 },
         evasion: 10,
@@ -922,7 +922,7 @@
         // Basic character info
         name: document.querySelector('.character-name-editor')?.textContent || 'New Character',
         subtitle: document.querySelector('.subtitle')?.textContent || 'Community Ancestry Class (Subclass)',
-        level: parseInt(document.querySelector('.level')?.textContent) || 1,
+        level: parseInt(document.getElementById('charLevel')?.textContent) || 1,
         imageUrl: document.getElementById('charImage')?.src || '',
         
         // Ability scores

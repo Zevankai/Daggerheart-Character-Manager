@@ -29,7 +29,7 @@ class CharacterData {
         // Basic character info from UI
         data.name = this.getUIValue('.character-name-editor', 'textContent') || 'New Character';
         data.subtitle = this.getUIValue('.subtitle', 'textContent') || 'Community Ancestry Class (Subclass)';
-        data.level = parseInt(this.getUIValue('.level', 'textContent')) || 5;
+        data.level = parseInt(this.getUIValue('#charLevel', 'textContent')) || 1;
         data.imageUrl = this.getUIValue('.character-image', 'src') || '';
 
         // Parse subtitle into components
