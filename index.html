@@ -24,11 +24,11 @@
                 <div class="character-name-editor" contenteditable="true" data-placeholder="Character Name">Character Name</div>
                 <div class="subtitle" contenteditable="true">Community Ancestry Class (Subclass)</div>
     <div class="domain-row">
-     <span class="domain-badge" contenteditable="true">Domain 1</span>
+     <span class="domain-badge" id="domain1" contenteditable="true">Domain 1</span>
      <span class="domain-divider">||</span>
      <span class="level-display" id="charLevel" contenteditable="true">5</span>
      <span class="domain-divider">||</span>
-     <span class="domain-badge" contenteditable="true">Domain 2</span>
+     <span class="domain-badge" id="domain2" contenteditable="true">Domain 2</span>
     </div>
     
     <div class="hope-tracker-inline">
@@ -335,12 +335,15 @@
             const name = data.name || 'Unnamed Character';
             const level = data.level || 1;
             const details = data.subtitle || 'No class info';
+            const domain1 = data.domain1 || 'Domain 1';
+            const domain2 = data.domain2 || 'Domain 2';
             
             return `
               <div style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 20px;">
                 <div style="font-size: 1.2rem; font-weight: bold; margin-bottom: 10px;">${name}</div>
                 <div style="color: rgba(255,255,255,0.7); margin-bottom: 10px;">${details}</div>
-                <div style="color: rgba(255,255,255,0.6); margin-bottom: 15px;">Level ${level}</div>
+                <div style="color: rgba(255,255,255,0.6); margin-bottom: 8px;">Level ${level}</div>
+                <div style="color: rgba(255,255,255,0.5); margin-bottom: 15px; font-size: 0.9rem;">${domain1} || ${domain2}</div>
                 <div style="display: flex; gap: 8px; justify-content: center;">
                   <button onclick="loadCharacter(${char.id})" style="background: #4CAF50; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
                     📂 Load
@@ -881,6 +884,8 @@
         name: name,
         subtitle: 'Community Ancestry Class (Subclass)', 
         level: parseInt(document.getElementById('charLevel')?.textContent) || 1,
+        domain1: 'Domain 1',
+        domain2: 'Domain 2',
         hope: { current: 0, max: 6 },
         attributes: { might: 0, agility: 0, instinct: 0, presence: 0, knowledge: 0 },
         evasion: 10,
@@ -923,6 +928,8 @@
         name: document.querySelector('.character-name-editor')?.textContent || 'New Character',
         subtitle: document.querySelector('.subtitle')?.textContent || 'Community Ancestry Class (Subclass)',
         level: parseInt(document.getElementById('charLevel')?.textContent) || 1,
+        domain1: document.getElementById('domain1')?.textContent || 'Domain 1',
+        domain2: document.getElementById('domain2')?.textContent || 'Domain 2',
         imageUrl: document.getElementById('charImage')?.src || '',
         
         // Ability scores
@@ -992,7 +999,7 @@
     console.log('window.app.characterData exists:', !!window.app?.characterData);
     
     if (characterData) {
-      alert(`Character Sheet Debug:\n\nCharacter Name: ${characterName}\nLevel: ${characterData.level}\nSubtitle: ${characterData.subtitle}\nData Source: ${dataSource}\n\nData collection: SUCCESS\nReady to save: ${characterName && characterName !== 'Character Name' ? 'YES' : 'NO (enter character name first)'}`);
+      alert(`Character Sheet Debug:\n\nCharacter Name: ${characterName}\nLevel: ${characterData.level}\nSubtitle: ${characterData.subtitle}\nDomain 1: ${characterData.domain1}\nDomain 2: ${characterData.domain2}\nData Source: ${dataSource}\n\nData collection: SUCCESS\nReady to save: ${characterName && characterName !== 'Character Name' ? 'YES' : 'NO (enter character name first)'}`);
     } else {
       alert('❌ Failed to collect character data from sheet');
     }

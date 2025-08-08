@@ -70,6 +70,8 @@ class AppController {
             this.setUIValue('.character-name-editor', data.name || 'New Character', 'textContent');
             this.setUIValue('.subtitle', data.subtitle || 'Community Ancestry Class (Subclass)', 'textContent');
             this.setUIValue('#charLevel', data.level || 1, 'textContent');
+            this.setUIValue('#domain1', data.domain1 || 'Domain 1', 'textContent');
+            this.setUIValue('#domain2', data.domain2 || 'Domain 2', 'textContent');
             
             // Character image
             if (data.imageUrl) {
