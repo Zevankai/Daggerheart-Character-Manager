@@ -184,16 +184,16 @@
 
   <div class="tab-content-area">
    <div id="domain-vault-tab-content" class="tab-panel">
-    <p style="text-align: center;">Content for Domain Vault will go here.</p>
+    <!-- Domain Vault content will be populated by domainVault.js -->
    </div>
    <div id="effects-features-tab-content" class="tab-panel">
-    <p style="text-align: center;">Content for Effects & Features will go here.</p>
+    <!-- Effects & Features content will be populated by effectsFeatures.js -->
    </div>
    <div id="equipment-tab-content" class="tab-panel">
     <!-- Equipment content will be populated by equipment.js -->
    </div>
    <div id="details-tab-content" class="tab-panel">
-    <p style="text-align: center;">Content for Details will go here.</p>
+    <!-- Details content will be populated by details.js -->
    </div>
    <div id="experiences-tab-content" class="tab-panel">
     <button id="show-create-experience-modal-btn" class="button" onclick="window.showCreateExperienceModal()">Create New Experience</button>
@@ -695,6 +695,65 @@
     } catch (error) {
       console.error('❌ Failed to initialize app controller:', error);
     }
+    
+    // Initialize all tab modules
+    setTimeout(() => {
+      console.log('🎯 Initializing all tab modules...');
+      
+      if (window.initializeDomainVault) {
+        try {
+          window.initializeDomainVault();
+          console.log('✅ Domain Vault initialized');
+        } catch (error) {
+          console.error('❌ Domain Vault initialization failed:', error);
+        }
+      }
+      
+      if (window.initializeEffectsFeatures) {
+        try {
+          window.initializeEffectsFeatures();
+          console.log('✅ Effects & Features initialized');
+        } catch (error) {
+          console.error('❌ Effects & Features initialization failed:', error);
+        }
+      }
+      
+      if (window.initializeEquipment) {
+        try {
+          window.initializeEquipment();
+          console.log('✅ Equipment initialized');
+        } catch (error) {
+          console.error('❌ Equipment initialization failed:', error);
+        }
+      }
+      
+      if (window.initializeDetails) {
+        try {
+          window.initializeDetails();
+          console.log('✅ Details initialized');
+        } catch (error) {
+          console.error('❌ Details initialization failed:', error);
+        }
+      }
+      
+      if (window.renderExperiences) {
+        try {
+          window.renderExperiences();
+          console.log('✅ Experiences initialized');
+        } catch (error) {
+          console.error('❌ Experiences initialization failed:', error);
+        }
+      }
+      
+      if (window.renderJournalEntries) {
+        try {
+          window.renderJournalEntries();
+          console.log('✅ Journal initialized');
+        } catch (error) {
+          console.error('❌ Journal initialization failed:', error);
+        }
+      }
+    }, 500); // Small delay to ensure all modules are loaded
     
     console.log('Single character sheet ready');
   }
