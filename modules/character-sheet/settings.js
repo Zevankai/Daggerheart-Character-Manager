@@ -86,15 +86,25 @@ function updateAccentColorTransparencies(accentColor) {
 
 // ===== GLASSMORPHIC BACKGROUND TINT MANAGEMENT =====
 function initializeGlassColorPicker() {
+  console.log('🌈 initializeGlassColorPicker() called');
+  
   const glassColorPicker = document.getElementById('glassColorPicker');
   const glassColorPreview = document.getElementById('glassColorPreview');
   const glassOpacitySlider = document.getElementById('glassOpacitySlider');
   const glassOpacityValue = document.getElementById('glassOpacityValue');
   const resetGlassBtn = document.getElementById('resetGlassColor');
   
+  console.log('🌈 Glass elements found:', {
+    glassColorPicker: !!glassColorPicker,
+    glassColorPreview: !!glassColorPreview,
+    glassOpacitySlider: !!glassOpacitySlider,
+    glassOpacityValue: !!glassOpacityValue,
+    resetGlassBtn: !!resetGlassBtn
+  });
+  
   // Check if elements exist
   if (!glassColorPicker || !glassColorPreview || !glassOpacitySlider || !glassOpacityValue || !resetGlassBtn) {
-      console.error('Glass color picker elements not found');
+      console.error('🚨 Glass color picker elements not found - glassmorphic controls will not work!');
       return;
   }
   
@@ -149,6 +159,7 @@ function initializeGlassColorPicker() {
   
   // Handle color change
   glassColorPicker.addEventListener('input', (event) => {
+      console.log('🌈 Glass color picker changed!', event.target.value);
       const newColor = event.target.value;
       const opacity = parseFloat(glassOpacitySlider.value) / 100;
       changeGlassBackgroundColor(newColor, opacity);
@@ -157,12 +168,15 @@ function initializeGlassColorPicker() {
   
   // Handle opacity change
   glassOpacitySlider.addEventListener('input', (event) => {
+      console.log('🌈 Glass opacity slider changed!', event.target.value);
       const opacity = parseFloat(event.target.value) / 100;
       const color = glassColorPicker.value;
       glassOpacityValue.textContent = Math.round(opacity * 100) + '%';
       changeGlassBackgroundColor(color, opacity);
       updateGlassPreview(color, opacity);
   });
+  
+  console.log('🌈 Glass event listeners attached successfully!');
   
   // Handle reset to default
   resetGlassBtn.addEventListener('click', () => {
@@ -815,6 +829,8 @@ function applyBackpackToggle(enabled) {
 
 // ===== INITIALIZATION =====
 function initializeSettings() {
+  console.log('⚙️ initializeSettings() called');
+  
   initializeAccentColorPicker();
   initializeGlassColorPicker();
   initializeCharacterCode();
@@ -824,6 +840,8 @@ function initializeSettings() {
   
   // Apply saved custom colors on load
   applySavedCustomColors();
+  
+  console.log('⚙️ initializeSettings() completed');
 }
 
 function applySavedCustomColors() {
