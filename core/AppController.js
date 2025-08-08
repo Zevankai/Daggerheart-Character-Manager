@@ -103,6 +103,31 @@ class AppController {
                 console.log('🏞️ Background image cleared (character has none)');
             }
 
+            // Accent color settings
+            if (data.appearanceSettings) {
+                const accentColor = data.appearanceSettings.accentColor || '#ffd700';
+                
+                console.log('🎨 AppController loading accent color:', accentColor);
+                
+                // Apply accent color
+                this.applyAccentColor(accentColor);
+                
+                // Update UI controls
+                const accentColorPicker = document.getElementById('accentColorPicker');
+                const accentColorPreview = document.getElementById('accentColorPreview');
+                
+                if (accentColorPicker) {
+                    accentColorPicker.value = accentColor;
+                    console.log('🎨 Updated accentColorPicker to:', accentColor);
+                }
+                if (accentColorPreview) {
+                    accentColorPreview.style.backgroundColor = accentColor;
+                    console.log('🎨 Updated accentColorPreview to:', accentColor);
+                }
+                
+                console.log('🎨 Accent color applied:', accentColor);
+            }
+
             // Glassmorphic settings (opacity only)
             if (data.appearanceSettings) {
                 const glassOpacity = data.appearanceSettings.glassOpacity || 10;
@@ -225,6 +250,25 @@ class AppController {
             console.log('✅ All modules re-rendered');
         } catch (error) {
             console.error('Error re-rendering modules:', error);
+        }
+    }
+
+    // Apply accent color
+    applyAccentColor(accentColor) {
+        try {
+            console.log('🎨 AppController.applyAccentColor called:', accentColor);
+            
+            const root = document.documentElement;
+            
+            // Apply accent color CSS variable
+            root.style.setProperty('--accent-color', accentColor);
+            
+            // Verify it was applied
+            const appliedColor = getComputedStyle(root).getPropertyValue('--accent-color').trim();
+            console.log('🎨 AppController accent color CSS variable is now:', appliedColor);
+            
+        } catch (error) {
+            console.error('Error applying accent color:', error);
         }
     }
 
