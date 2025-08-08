@@ -718,6 +718,61 @@
 
   // === SIMPLE SAVE/LOAD FUNCTIONS ===
 
+  // Compress image data to reduce payload size
+  function compressImageData(imageUrl, maxWidth = 800, quality = 0.8) {
+    return new Promise((resolve) => {
+      if (!imageUrl || !imageUrl.startsWith('data:image/')) {
+        resolve(imageUrl); // Not a base64 image, return as-is
+        return;
+      }
+
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = function() {
+        // Calculate new dimensions
+        let { width, height } = img;
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Draw and compress
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressedUrl = canvas.toDataURL('image/jpeg', quality);
+        
+        console.log(`🖼️ Image compressed: ${Math.round(imageUrl.length / 1024)}KB → ${Math.round(compressedUrl.length / 1024)}KB`);
+        resolve(compressedUrl);
+      };
+      
+      img.onerror = () => resolve(imageUrl); // Fallback to original on error
+      img.src = imageUrl;
+    });
+  }
+
+  // Check and warn about payload size
+  function checkPayloadSize(data) {
+    const jsonString = JSON.stringify(data);
+    const sizeKB = Math.round(jsonString.length / 1024);
+    
+    console.log(`📦 Character data size: ${sizeKB}KB`);
+    
+    if (sizeKB > 5000) { // 5MB warning
+      alert(`⚠️ Warning: Character data is ${sizeKB}KB. This might be too large to save. Consider removing large images.`);
+      return false;
+    }
+    
+    if (sizeKB > 1000) { // 1MB info
+      console.warn(`⚠️ Large payload: ${sizeKB}KB - consider optimizing images`);
+    }
+    
+    return true;
+  }
+
   // Simple save character function
   async function saveCharacter() {
     const saveBtn = document.getElementById('save-character-btn');
@@ -744,6 +799,32 @@
       
       if (!characterData) {
         alert('❌ Failed to collect character data from sheet');
+        return;
+      }
+
+      // Compress images to reduce payload size
+      saveBtn.disabled = true;
+      saveBtn.textContent = '🔄 Optimizing...';
+      
+      try {
+        if (characterData.imageUrl) {
+          console.log('🖼️ Compressing character image...');
+          characterData.imageUrl = await compressImageData(characterData.imageUrl);
+        }
+        
+        if (characterData.appearanceSettings?.backgroundImage) {
+          console.log('🖼️ Compressing background image...');
+          characterData.appearanceSettings.backgroundImage = await compressImageData(characterData.appearanceSettings.backgroundImage);
+        }
+      } catch (error) {
+        console.error('❌ Image compression failed:', error);
+        // Continue anyway - compression is optional
+      }
+
+      // Check payload size
+      if (!checkPayloadSize(characterData)) {
+        saveBtn.textContent = '💾 Save Character';
+        saveBtn.disabled = false;
         return;
       }
 

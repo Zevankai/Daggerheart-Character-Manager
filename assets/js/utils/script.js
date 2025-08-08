@@ -33,6 +33,35 @@ function debugCharacterData() {
 // Make debug function globally available
 window.debugCharacterData = debugCharacterData;
 
+// Image compression utility
+function compressImageForUpload(imageUrl, maxWidth = 600, quality = 0.8) {
+    return new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = function() {
+            // Calculate new dimensions
+            let { width, height } = img;
+            if (width > maxWidth) {
+                height = (height * maxWidth) / width;
+                width = maxWidth;
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            // Draw and compress
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressedUrl = canvas.toDataURL('image/jpeg', quality);
+            resolve(compressedUrl);
+        };
+        
+        img.onerror = () => resolve(imageUrl); // Fallback to original
+        img.src = imageUrl;
+    });
+}
+
 // Image upload with localStorage save system
 function uploadCharacterImage(event) {
     console.log('📸 uploadCharacterImage called', event);
@@ -46,8 +75,22 @@ function uploadCharacterImage(event) {
     console.log('📸 File selected:', file.name, file.type, file.size);
 
     const reader = new FileReader();
-    reader.onload = function(e) {
-        const imageUrl = e.target.result;
+    reader.onload = async function(e) {
+        let imageUrl = e.target.result;
+        
+        // Compress large images (max 600px width, 80% quality)
+        try {
+            const originalSize = Math.round(imageUrl.length / 1024);
+            if (originalSize > 500) { // Only compress if > 500KB
+                console.log(`🔄 Compressing large image (${originalSize}KB)...`);
+                imageUrl = await compressImageForUpload(imageUrl, 600, 0.8);
+                const newSize = Math.round(imageUrl.length / 1024);
+                console.log(`✅ Image compressed: ${originalSize}KB → ${newSize}KB`);
+            }
+        } catch (error) {
+            console.error('Image compression failed:', error);
+            // Continue with original image
+        }
         
         // Update the character image display
         const charImage = document.querySelector('#charImage');
@@ -141,8 +184,22 @@ function uploadBackground(event) {
     console.log('🏞️ Background file selected:', file.name, file.type, file.size);
 
     const reader = new FileReader();
-    reader.onload = function(){
-        const backgroundImageUrl = reader.result;
+    reader.onload = async function(){
+        let backgroundImageUrl = reader.result;
+        
+        // Compress large background images
+        try {
+            const originalSize = Math.round(backgroundImageUrl.length / 1024);
+            if (originalSize > 800) { // Only compress if > 800KB
+                console.log(`🔄 Compressing large background (${originalSize}KB)...`);
+                backgroundImageUrl = await compressImageForUpload(backgroundImageUrl, 1200, 0.8);
+                const newSize = Math.round(backgroundImageUrl.length / 1024);
+                console.log(`✅ Background compressed: ${originalSize}KB → ${newSize}KB`);
+            }
+        } catch (error) {
+            console.error('Background compression failed:', error);
+            // Continue with original image
+        }
         
         // Apply background image immediately
         document.body.style.backgroundImage = `url('${backgroundImageUrl}')`;
