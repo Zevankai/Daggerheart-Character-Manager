@@ -53,9 +53,13 @@
      💾 Save Character
     </button>
     <br>
-    <button onclick="debugCurrentCharacter()" style="margin-top: 10px; padding: 5px 10px; background: #666; color: white; border: none; border-radius: 4px; font-size: 0.8rem;">
-     🔍 Check Character Sheet
-    </button>
+                     <button onclick="debugCurrentCharacter()" style="margin-top: 10px; padding: 5px 10px; background: #666; color: white; border: none; border-radius: 4px; font-size: 0.8rem;">
+                  🔍 Check Character Sheet
+                 </button>
+                 <br>
+                 <button onclick="testDatabaseSave()" style="margin-top: 10px; padding: 5px 10px; background: #4CAF50; color: white; border: none; border-radius: 4px; font-size: 0.8rem;">
+                  🧪 Test Database Save
+                 </button>
    </div>
    
    <div class="header-bottom-center">
@@ -858,13 +862,17 @@
           // Update existing character
           characterId = existingCharacter.id;
           console.log('📝 Updating existing character:', characterId, characterName);
-          await window.zeviAPI.saveCharacter(characterId, characterData);
+          console.log('📤 Sending character data to API:', Object.keys(characterData));
+          const updateResponse = await window.zeviAPI.saveCharacter(characterId, characterData);
+          console.log('✅ Character updated successfully:', updateResponse);
         } else {
           // Create new character
           console.log('➕ Creating new character:', characterName);
+          console.log('📤 Sending character data to API:', Object.keys(characterData));
           const createResponse = await window.zeviAPI.createCharacter(characterName, characterData);
           characterId = createResponse.character.id;
           console.log('✅ New character created with ID:', characterId);
+          console.log('✅ Create response:', createResponse);
         }
       } catch (error) {
         console.error('❌ Error during save/create:', error);
@@ -944,8 +952,42 @@
     }
   }
 
-  // Simple create new character function
-  async function createNewCharacter() {
+          // Test database save function
+        async function testDatabaseSave() {
+          try {
+            if (!window.zeviAPI || !window.zeviAPI.isLoggedIn()) {
+              alert('❌ Please log in first');
+              return;
+            }
+            
+            console.log('🧪 Testing database save...');
+            
+            // Test data
+            const testData = {
+              name: 'Test Character ' + Date.now(),
+              level: 1,
+              attributes: { might: 1, agility: 2, instinct: 3, presence: 4, knowledge: 5 },
+              hope: { current: 2, max: 6 }
+            };
+            
+            // Create test character
+            const response = await window.zeviAPI.createCharacter(testData.name, testData);
+            console.log('✅ Test character created:', response);
+            
+            // Verify it was saved by fetching it back
+            const fetchResponse = await window.zeviAPI.getCharacter(response.character.id);
+            console.log('✅ Test character retrieved:', fetchResponse);
+            
+            alert(`✅ Database test successful!\nCreated: ${testData.name}\nID: ${response.character.id}`);
+            
+          } catch (error) {
+            console.error('❌ Database test failed:', error);
+            alert(`❌ Database test failed: ${error.message}`);
+          }
+        }
+
+        // Simple create new character function
+        async function createNewCharacter() {
     try {
       console.log('➕ Creating new character');
 
@@ -1100,11 +1142,12 @@
     }
   }
 
-  // Make functions globally available
-  window.saveCharacter = saveCharacter;
-  window.loadCharacter = loadCharacter;
-  window.createNewCharacter = createNewCharacter;
-  window.debugCurrentCharacter = debugCurrentCharacter;
+          // Make functions globally available
+        window.saveCharacter = saveCharacter;
+        window.loadCharacter = loadCharacter;
+        window.createNewCharacter = createNewCharacter;
+        window.debugCurrentCharacter = debugCurrentCharacter;
+        window.testDatabaseSave = testDatabaseSave;
 
  </script>
 </html>
