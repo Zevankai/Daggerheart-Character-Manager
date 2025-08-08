@@ -12,7 +12,7 @@ console.log('Equipment.js file loaded successfully');
 
 
 // ===== EQUIPMENT DATA STRUCTURE =====
-let equipmentData = {
+window.equipmentData = {
     // Equipped items (visual slots on character silhouette)
     equipped: {
         primaryWeapon: null,    // Left hand
@@ -125,7 +125,7 @@ function calculateEncumbrance() {
     let totalWeight = 0;
     
     // Calculate weight of UNEQUIPPED items only
-    Object.values(equipmentData.inventory).forEach(categoryItems => {
+    Object.values(window.equipmentData.inventory).forEach(categoryItems => {
         categoryItems.forEach(item => {
             if (!isItemEquipped(item, item.type)) {
                 totalWeight += encumbranceWeights[item.type] || 1;
@@ -137,12 +137,12 @@ function calculateEncumbrance() {
 }
 
 function isEncumbered() {
-    const selectedBag = bagTypes[equipmentData.selectedBag] || bagTypes['Standard Backpack'];
+    const selectedBag = bagTypes[window.equipmentData.selectedBag] || bagTypes['Standard Backpack'];
     return calculateEncumbrance() > selectedBag.capacity;
 }
 
 function getMaxCapacity() {
-    const selectedBag = bagTypes[equipmentData.selectedBag] || bagTypes['Standard Backpack'];
+    const selectedBag = bagTypes[window.equipmentData.selectedBag] || bagTypes['Standard Backpack'];
     return selectedBag.capacity;
 }
 
@@ -157,7 +157,7 @@ function getItemCategory(itemType) {
 
 function getAllItems() {
     let allItems = [];
-    Object.values(equipmentData.inventory).forEach(categoryItems => {
+    Object.values(window.equipmentData.inventory).forEach(categoryItems => {
         allItems = allItems.concat(categoryItems);
     });
     return allItems;
@@ -203,9 +203,9 @@ function renderEquipmentOverview() {
     
     const encumbrance = calculateEncumbrance();
     const isOverEncumbered = isEncumbered();
-    const hasItems = Object.values(equipmentData.inventory).some(categoryItems => categoryItems.length > 0);
+    const hasItems = Object.values(window.equipmentData.inventory).some(categoryItems => categoryItems.length > 0);
     console.log('Encumbrance calculated:', encumbrance, 'Over encumbered:', isOverEncumbered, 'Has items:', hasItems);
-    console.log('Equipment inventory:', equipmentData.inventory);
+    console.log('Equipment inventory:', window.equipmentData.inventory);
     
     try {
         const overviewContent = renderOverviewContent();
@@ -226,13 +226,13 @@ function renderEquipmentOverview() {
                     <label for="bag-select">Bag Type:</label>
                     <select id="bag-select" onchange="changeBagType(this.value)">
                         ${Object.keys(bagTypes).map(bagName => 
-                            `<option value="${bagName}" ${equipmentData.selectedBag === bagName ? 'selected' : ''}>${bagName}</option>`
+                            `<option value="${bagName}" ${window.equipmentData.selectedBag === bagName ? 'selected' : ''}>${bagName}</option>`
                         ).join('')}
                     </select>
                     <div class="bag-info">
                         <span class="bag-capacity">Capacity: ${getMaxCapacity()} units</span>
-                        <span class="bag-consumables">Belt Slots: ${bagTypes[equipmentData.selectedBag].consumableSlots}</span>
-                        ${bagTypes[equipmentData.selectedBag].bonus ? `<span class="bag-bonus">${bagTypes[equipmentData.selectedBag].bonus}</span>` : ''}
+                        <span class="bag-consumables">Belt Slots: ${bagTypes[window.equipmentData.selectedBag].consumableSlots}</span>
+                        ${bagTypes[window.equipmentData.selectedBag].bonus ? `<span class="bag-bonus">${bagTypes[window.equipmentData.selectedBag].bonus}</span>` : ''}
                     </div>
                 </div>
                     <div class="equipment-nav">
@@ -272,13 +272,13 @@ function renderOverviewContent() {
     console.log('renderOverviewContent called');
     
     // Safety checks
-    if (!equipmentData || !equipmentData.equipped || !equipmentData.gold) {
+    if (!equipmentData || !window.equipmentData.equipped || !window.equipmentData.gold) {
         console.error('Equipment data is not properly initialized');
         return '<div><p>Equipment data not loaded properly</p></div>';
     }
     
-    const equipped = equipmentData.equipped;
-    const gold = equipmentData.gold;
+    const equipped = window.equipmentData.equipped;
+    const gold = window.equipmentData.gold;
     
     console.log('Equipped items:', equipped);
     console.log('Gold data:', gold);
@@ -362,7 +362,7 @@ function renderOverviewContent() {
                     <div class="equipment-category">
                         <h4>🎒 Belt & Consumables</h4>
                         <div class="belt-container">
-                            <div class="slot-label">Belt Items (${equipped.belt.filter(b => b).length}/${bagTypes[equipmentData.selectedBag].consumableSlots})</div>
+                            <div class="slot-label">Belt Items (${equipped.belt.filter(b => b).length}/${bagTypes[window.equipmentData.selectedBag].consumableSlots})</div>
                             <div class="belt-slots">
                                 ${equipped.belt.map((item, i) => `
                                     <div class="equipment-slot belt-slot ${item ? 'filled' : 'empty'}" data-slot="belt" data-index="${i}">
@@ -412,11 +412,11 @@ function renderInventorySection() {
             <div class="inventory-header">
                 <div class="search-controls">
                     <input type="text" id="item-search" placeholder="Search items..." 
-                           value="${equipmentData.searchTerm}" onchange="updateSearch(this.value)">
+                           value="${window.equipmentData.searchTerm}" onchange="updateSearch(this.value)">
                     <select id="category-filter" onchange="updateCategoryFilter(this.value)">
                         <option value="All">All Categories</option>
                         ${Object.keys(itemCategories).map(category => 
-                            `<option value="${category}" ${equipmentData.selectedCategory === category ? 'selected' : ''}>${category}</option>`
+                            `<option value="${category}" ${window.equipmentData.selectedCategory === category ? 'selected' : ''}>${category}</option>`
                         ).join('')}
                     </select>
                     <button class="add-item-btn" onclick="showAddItemModal()">+ Add Item</button>
@@ -431,16 +431,16 @@ function renderInventorySection() {
 }
 
 function renderInventoryCategories() {
-    const categories = equipmentData.selectedCategory === 'All' ? 
-        Object.keys(itemCategories) : [equipmentData.selectedCategory];
+    const categories = window.equipmentData.selectedCategory === 'All' ? 
+        Object.keys(itemCategories) : [window.equipmentData.selectedCategory];
     
     return categories.map(category => {
-        const items = equipmentData.inventory[category] || [];
-        const filteredItems = equipmentData.searchTerm ? 
+        const items = window.equipmentData.inventory[category] || [];
+        const filteredItems = window.equipmentData.searchTerm ? 
             items.filter(item => 
-                item.name.toLowerCase().includes(equipmentData.searchTerm.toLowerCase()) ||
-                (item.description && item.description.toLowerCase().includes(equipmentData.searchTerm.toLowerCase())) ||
-                (item.features && item.features.toLowerCase().includes(equipmentData.searchTerm.toLowerCase()))
+                item.name.toLowerCase().includes(window.equipmentData.searchTerm.toLowerCase()) ||
+                (item.description && item.description.toLowerCase().includes(window.equipmentData.searchTerm.toLowerCase())) ||
+                (item.features && item.features.toLowerCase().includes(window.equipmentData.searchTerm.toLowerCase()))
             ) : items;
         
         return `
@@ -486,7 +486,7 @@ function renderCompactItemCard(item, category, index) {
 
 // Search and filter functions
 function updateSearch(searchTerm) {
-    equipmentData.searchTerm = searchTerm;
+    window.equipmentData.searchTerm = searchTerm;
     saveEquipmentData();
     if (document.querySelector('.inventory-section')) {
         document.querySelector('.inventory-content').innerHTML = renderInventoryCategories();
@@ -494,7 +494,7 @@ function updateSearch(searchTerm) {
 }
 
 function updateCategoryFilter(category) {
-    equipmentData.selectedCategory = category;
+    window.equipmentData.selectedCategory = category;
     saveEquipmentData();
     if (document.querySelector('.inventory-section')) {
         document.querySelector('.inventory-content').innerHTML = renderInventoryCategories();
@@ -503,8 +503,8 @@ function updateCategoryFilter(category) {
 
 // New unequip functions for the improved interface
 function unequipSpecificItem(slot) {
-    if (equipmentData.equipped[slot]) {
-        equipmentData.equipped[slot] = null;
+    if (window.equipmentData.equipped[slot]) {
+        window.equipmentData.equipped[slot] = null;
         saveEquipmentData();
         updateActiveWeaponsAndArmor();
         updateEncumbranceDisplay();
@@ -518,8 +518,8 @@ function unequipSpecificItem(slot) {
 }
 
 function unequipJewelry(index) {
-    if (equipmentData.equipped.jewelry[index]) {
-        equipmentData.equipped.jewelry[index] = null;
+    if (window.equipmentData.equipped.jewelry[index]) {
+        window.equipmentData.equipped.jewelry[index] = null;
         saveEquipmentData();
         updateActiveWeaponsAndArmor();
         updateEncumbranceDisplay();
@@ -533,8 +533,8 @@ function unequipJewelry(index) {
 }
 
 function unequipBeltItem(index) {
-    if (equipmentData.equipped.belt[index]) {
-        equipmentData.equipped.belt[index] = null;
+    if (window.equipmentData.equipped.belt[index]) {
+        window.equipmentData.equipped.belt[index] = null;
         saveEquipmentData();
         updateActiveWeaponsAndArmor();
         updateEncumbranceDisplay();
@@ -548,26 +548,26 @@ function unequipBeltItem(index) {
 }
 
 function changeBagType(bagName) {
-    const oldBag = bagTypes[equipmentData.selectedBag];
+    const oldBag = bagTypes[window.equipmentData.selectedBag];
     const newBag = bagTypes[bagName];
     
     // If new bag has fewer belt slots, unequip excess items
     if (newBag.consumableSlots < oldBag.consumableSlots) {
-        for (let i = newBag.consumableSlots; i < equipmentData.equipped.belt.length; i++) {
-            equipmentData.equipped.belt[i] = null;
+        for (let i = newBag.consumableSlots; i < window.equipmentData.equipped.belt.length; i++) {
+            window.equipmentData.equipped.belt[i] = null;
         }
     }
     
     // Resize belt array to match new bag's consumable slots
-    equipmentData.equipped.belt = Array(newBag.consumableSlots).fill(null);
+    window.equipmentData.equipped.belt = Array(newBag.consumableSlots).fill(null);
     
     // Copy over existing items up to the new limit
-    const currentBelt = equipmentData.equipped.belt.slice();
+    const currentBelt = window.equipmentData.equipped.belt.slice();
     for (let i = 0; i < Math.min(newBag.consumableSlots, currentBelt.length); i++) {
-        equipmentData.equipped.belt[i] = currentBelt[i];
+        window.equipmentData.equipped.belt[i] = currentBelt[i];
     }
     
-    equipmentData.selectedBag = bagName;
+    window.equipmentData.selectedBag = bagName;
     saveEquipmentData();
     updateEncumbranceDisplay();
     
@@ -582,7 +582,7 @@ function changeBagType(bagName) {
 function updateBagInfo() {
     const bagInfo = document.querySelector('.bag-info');
     if (bagInfo) {
-        const selectedBag = bagTypes[equipmentData.selectedBag];
+        const selectedBag = bagTypes[window.equipmentData.selectedBag];
         bagInfo.innerHTML = `
             <span class="bag-capacity">Capacity: ${selectedBag.capacity} units</span>
             <span class="bag-consumables">Belt Slots: ${selectedBag.consumableSlots}</span>
@@ -593,11 +593,11 @@ function updateBagInfo() {
 
 function dropItem(category, index) {
     if (confirm('Are you sure you want to drop this item? It will be lost forever.')) {
-        const item = equipmentData.inventory[category][index];
+        const item = window.equipmentData.inventory[category][index];
         
         // Auto-unequip the item if it's equipped
         if (isItemEquipped(item, item.type)) {
-            const equipped = equipmentData.equipped;
+            const equipped = window.equipmentData.equipped;
             
             if (item.type === 'weapon') {
                 if (equipped.primaryWeapon && equipped.primaryWeapon.id === item.id) {
@@ -625,7 +625,7 @@ function dropItem(category, index) {
         }
         
         // Remove from inventory
-        equipmentData.inventory[category].splice(index, 1);
+        window.equipmentData.inventory[category].splice(index, 1);
         saveEquipmentData();
         updateActiveWeaponsAndArmor();
         updateEncumbranceDisplay();
@@ -637,7 +637,7 @@ function dropItem(category, index) {
 }
 
 function sellItem(category, index) {
-    const item = equipmentData.inventory[category][index];
+    const item = window.equipmentData.inventory[category][index];
     const goldAmount = prompt(`How much gold did you sell "${item.name}" for?`, '1');
     
     if (goldAmount !== null && !isNaN(goldAmount) && parseInt(goldAmount) >= 0) {
@@ -645,7 +645,7 @@ function sellItem(category, index) {
         
         // Auto-unequip the item if it's equipped
         if (isItemEquipped(item, item.type)) {
-            const equipped = equipmentData.equipped;
+            const equipped = window.equipmentData.equipped;
             
             if (item.type === 'weapon') {
                 if (equipped.primaryWeapon && equipped.primaryWeapon.id === item.id) {
@@ -673,20 +673,20 @@ function sellItem(category, index) {
         }
         
         // Add gold to inventory
-        let currentGold = equipmentData.gold.coins + gold;
+        let currentGold = window.equipmentData.gold.coins + gold;
         
         // Convert coins to pouches/chests as needed
-        equipmentData.gold.coins = currentGold % 10;
+        window.equipmentData.gold.coins = currentGold % 10;
         const extraPouches = Math.floor(currentGold / 10);
         
-        let totalPouches = equipmentData.gold.pouches + extraPouches;
-        equipmentData.gold.pouches = totalPouches % 10;
+        let totalPouches = window.equipmentData.gold.pouches + extraPouches;
+        window.equipmentData.gold.pouches = totalPouches % 10;
         const extraChests = Math.floor(totalPouches / 10);
         
-        equipmentData.gold.chest = Math.min(1, equipmentData.gold.chest + extraChests);
+        window.equipmentData.gold.chest = Math.min(1, window.equipmentData.gold.chest + extraChests);
         
         // Remove from inventory
-        equipmentData.inventory[category].splice(index, 1);
+        window.equipmentData.inventory[category].splice(index, 1);
         saveEquipmentData();
         updateActiveWeaponsAndArmor();
         updateEncumbranceDisplay();
@@ -703,7 +703,7 @@ function sellItem(category, index) {
 
 // ===== GOLD TRACKER SECTION =====
 function renderGoldSection() {
-    const gold = equipmentData.gold;
+    const gold = window.equipmentData.gold;
     
     return `
         <div class="gold-section">
@@ -944,10 +944,10 @@ function addNewItem() {
     
     // Add to appropriate category
     const category = getItemCategory(type);
-    if (!equipmentData.inventory[category]) {
-        equipmentData.inventory[category] = [];
+    if (!window.equipmentData.inventory[category]) {
+        window.equipmentData.inventory[category] = [];
     }
-    equipmentData.inventory[category].push(newItem);
+    window.equipmentData.inventory[category].push(newItem);
     saveEquipmentData();
     
     // Refresh current section and update encumbrance
@@ -959,7 +959,7 @@ function addNewItem() {
 }
 
 function isItemEquipped(item, type) {
-    const equipped = equipmentData.equipped;
+    const equipped = window.equipmentData.equipped;
     
     // Check if item is equipped by comparing IDs
     if (type === 'weapon') {
@@ -982,8 +982,8 @@ function isItemEquipped(item, type) {
 function unequipItem(type, index) {
     // Find the item in the appropriate category
     const category = getItemCategory(type);
-    const item = equipmentData.inventory[category][index];
-    const equipped = equipmentData.equipped;
+    const item = window.equipmentData.inventory[category][index];
+    const equipped = window.equipmentData.equipped;
     
     // Remove item from equipped slots
     if (type === 'weapon') {
@@ -1022,7 +1022,7 @@ function unequipItem(type, index) {
 function equipItem(type, index) {
     // Find the item in the appropriate category
     const category = getItemCategory(type);
-    const item = equipmentData.inventory[category][index];
+    const item = window.equipmentData.inventory[category][index];
     
     // Check if item is already equipped
     if (isItemEquipped(item, type)) {
@@ -1035,32 +1035,32 @@ function equipItem(type, index) {
         showWeaponSlotModal(item);
     } else if (type === 'jewelry') {
         // Find empty jewelry slot
-        const emptySlot = equipmentData.equipped.jewelry.findIndex(slot => !slot);
+        const emptySlot = window.equipmentData.equipped.jewelry.findIndex(slot => !slot);
         if (emptySlot !== -1) {
-            equipmentData.equipped.jewelry[emptySlot] = item;
+            window.equipmentData.equipped.jewelry[emptySlot] = item;
         } else {
             alert('All jewelry slots are full. Unequip an item first.');
             return;
         }
     } else if (type === 'armor') {
         // Check if armor slot is already occupied
-        if (equipmentData.equipped.armor) {
+        if (window.equipmentData.equipped.armor) {
             alert('You already have armor equipped. Unequip it first.');
             return;
         }
-        equipmentData.equipped.armor = item;
+        window.equipmentData.equipped.armor = item;
     } else if (type === 'clothing') {
         // Check if clothing slot is already occupied
-        if (equipmentData.equipped.clothing) {
+        if (window.equipmentData.equipped.clothing) {
             alert('You already have clothing equipped. Unequip it first.');
             return;
         }
-        equipmentData.equipped.clothing = item;
+        window.equipmentData.equipped.clothing = item;
     } else {
         // For all other items (consumables, quest items, etc.) - use belt slots
-        const emptySlot = equipmentData.equipped.belt.findIndex(slot => !slot);
+        const emptySlot = window.equipmentData.equipped.belt.findIndex(slot => !slot);
         if (emptySlot !== -1) {
-            equipmentData.equipped.belt[emptySlot] = item;
+            window.equipmentData.equipped.belt[emptySlot] = item;
         } else {
             alert('All belt slots are full. Unequip an item first.');
             return;
@@ -1110,12 +1110,12 @@ function equipWeaponToSlot(slot, weapon) {
     }
     
     // Check if slot is already occupied
-    if (equipmentData.equipped[slot]) {
+    if (window.equipmentData.equipped[slot]) {
         alert(`You already have a ${slot.replace('Weapon', ' weapon')} equipped. Unequip it first.`);
         return;
     }
     
-    equipmentData.equipped[slot] = weapon;
+    window.equipmentData.equipped[slot] = weapon;
     saveEquipmentData();
     updateActiveWeaponsAndArmor();
     updateEncumbranceDisplay();
@@ -1129,7 +1129,7 @@ function equipWeaponToSlot(slot, weapon) {
 }
 
 function editItem(category, index) {
-    const item = equipmentData.inventory[category][index];
+    const item = window.equipmentData.inventory[category][index];
     
     // Show edit modal with pre-filled values
     const modal = document.createElement('div');
@@ -1209,11 +1209,11 @@ function editItem(category, index) {
 
 function deleteItem(category, index) {
     if (confirm('Are you sure you want to delete this item?')) {
-        const item = equipmentData.inventory[category][index];
+        const item = window.equipmentData.inventory[category][index];
         
         // Auto-unequip the item if it's equipped
         if (isItemEquipped(item, item.type)) {
-            const equipped = equipmentData.equipped;
+            const equipped = window.equipmentData.equipped;
             
             if (item.type === 'weapon') {
                 if (equipped.primaryWeapon && equipped.primaryWeapon.id === item.id) {
@@ -1241,7 +1241,7 @@ function deleteItem(category, index) {
         }
         
         // Remove from inventory
-        equipmentData.inventory[category].splice(index, 1);
+        window.equipmentData.inventory[category].splice(index, 1);
         saveEquipmentData();
         updateActiveWeaponsAndArmor();
         updateEncumbranceDisplay();
@@ -1254,38 +1254,38 @@ function deleteItem(category, index) {
 
 // ===== GOLD MANAGEMENT =====
 function setGoldAmount(type, amount) {
-    const currentAmount = equipmentData.gold[type];
+    const currentAmount = window.equipmentData.gold[type];
     
     if (amount <= currentAmount) {
         // Decreasing
-        equipmentData.gold[type] = amount - 1;
+        window.equipmentData.gold[type] = amount - 1;
     } else {
         // Increasing
-        equipmentData.gold[type] = amount;
+        window.equipmentData.gold[type] = amount;
         
         // Handle automatic conversions
-        if (type === 'coins' && equipmentData.gold.coins === 10) {
+        if (type === 'coins' && window.equipmentData.gold.coins === 10) {
             // Always try to auto-convert, but only if pouches can be filled
-            if (equipmentData.gold.pouches < 10) {
-                equipmentData.gold.coins = 0;
-                equipmentData.gold.pouches = Math.min(equipmentData.gold.pouches + 1, 10);
+            if (window.equipmentData.gold.pouches < 10) {
+                window.equipmentData.gold.coins = 0;
+                window.equipmentData.gold.pouches = Math.min(window.equipmentData.gold.pouches + 1, 10);
             }
             // If pouches are full (10/10), allow 10th coin to stay filled
         }
         
-        if (type === 'pouches' && equipmentData.gold.pouches === 10) {
+        if (type === 'pouches' && window.equipmentData.gold.pouches === 10) {
             // Always try to auto-convert, but only if chest can be filled
-            if (equipmentData.gold.chest < 1) {
-                equipmentData.gold.pouches = 0;
-                equipmentData.gold.chest = 1;
+            if (window.equipmentData.gold.chest < 1) {
+                window.equipmentData.gold.pouches = 0;
+                window.equipmentData.gold.chest = 1;
             }
             // If chest is full (1/1), allow 10th pouch to stay filled
         }
     }
     
     // Adjust equipped pouches if necessary
-    if (equipmentData.gold.equippedPouches > equipmentData.gold.pouches) {
-        equipmentData.gold.equippedPouches = equipmentData.gold.pouches;
+    if (window.equipmentData.gold.equippedPouches > window.equipmentData.gold.pouches) {
+        window.equipmentData.gold.equippedPouches = window.equipmentData.gold.pouches;
     }
     
     saveEquipmentData();
@@ -1293,16 +1293,16 @@ function setGoldAmount(type, amount) {
 }
 
 function adjustEquippedPouches(change) {
-    const newAmount = equipmentData.gold.equippedPouches + change;
-    if (newAmount >= 0 && newAmount <= 2 && newAmount <= equipmentData.gold.pouches) {
-        equipmentData.gold.equippedPouches = newAmount;
+    const newAmount = window.equipmentData.gold.equippedPouches + change;
+    if (newAmount >= 0 && newAmount <= 2 && newAmount <= window.equipmentData.gold.pouches) {
+        window.equipmentData.gold.equippedPouches = newAmount;
         saveEquipmentData();
         switchEquipmentSection('gold');
     }
 }
 
 function addBank() {
-    equipmentData.gold.banks.push({
+    window.equipmentData.gold.banks.push({
         location: '',
         chests: 0
     });
@@ -1311,20 +1311,20 @@ function addBank() {
 }
 
 function removeBank(index) {
-    equipmentData.gold.banks.splice(index, 1);
+    window.equipmentData.gold.banks.splice(index, 1);
     saveEquipmentData();
     switchEquipmentSection('gold');
 }
 
 function updateBankLocation(index, location) {
-    equipmentData.gold.banks[index].location = location;
+    window.equipmentData.gold.banks[index].location = location;
     saveEquipmentData();
 }
 
 function adjustBankChests(index, change) {
-    const newAmount = equipmentData.gold.banks[index].chests + change;
+    const newAmount = window.equipmentData.gold.banks[index].chests + change;
     if (newAmount >= 0) {
-        equipmentData.gold.banks[index].chests = newAmount;
+        window.equipmentData.gold.banks[index].chests = newAmount;
         saveEquipmentData();
         switchEquipmentSection('gold');
     }
@@ -1347,7 +1347,7 @@ function updateEncumbranceWarning() {
     if (mainWarning) {
         const encumbrance = calculateEncumbrance();
         const maxCapacity = getMaxCapacity();
-        const hasItems = Object.values(equipmentData.inventory).some(categoryItems => categoryItems.length > 0);
+        const hasItems = Object.values(window.equipmentData.inventory).some(categoryItems => categoryItems.length > 0);
         const isOverEncumbered = isEncumbered();
         
         console.log(`🎒 Encumbrance Check: ${encumbrance}/${maxCapacity}, HasItems: ${hasItems}, OverEncumbered: ${isOverEncumbered}`);
@@ -1411,8 +1411,8 @@ function updateActiveWeaponsDisplay() {
     
     let weaponsHTML = '';
     
-    if (equipmentData.equipped.primaryWeapon) {
-        const weapon = equipmentData.equipped.primaryWeapon;
+    if (window.equipmentData.equipped.primaryWeapon) {
+        const weapon = window.equipmentData.equipped.primaryWeapon;
         weaponsHTML += `
             <div class="active-weapon">
                 <h4>Primary: ${weapon.name}</h4>
@@ -1423,8 +1423,8 @@ function updateActiveWeaponsDisplay() {
         `;
     }
     
-    if (equipmentData.equipped.secondaryWeapon) {
-        const weapon = equipmentData.equipped.secondaryWeapon;
+    if (window.equipmentData.equipped.secondaryWeapon) {
+        const weapon = window.equipmentData.equipped.secondaryWeapon;
         weaponsHTML += `
             <div class="active-weapon">
                 <h4>Secondary: ${weapon.name}</h4>
@@ -1435,7 +1435,7 @@ function updateActiveWeaponsDisplay() {
         `;
     }
     
-    if (!equipmentData.equipped.primaryWeapon && !equipmentData.equipped.secondaryWeapon) {
+    if (!window.equipmentData.equipped.primaryWeapon && !window.equipmentData.equipped.secondaryWeapon) {
         weaponsHTML += '<p class="no-equipped-weapons">No weapons equipped</p>';
     }
     
@@ -1457,8 +1457,8 @@ function updateActiveArmorDisplay() {
     // Update equipped armor and clothing display, leaving armor circles intact
     let equippedHTML = '';
     
-    if (equipmentData.equipped.armor) {
-        const armor = equipmentData.equipped.armor;
+    if (window.equipmentData.equipped.armor) {
+        const armor = window.equipmentData.equipped.armor;
         equippedHTML += `
             <div class="equipped-armor-info">
                 <h4>Armor: ${armor.name}</h4>
@@ -1468,8 +1468,8 @@ function updateActiveArmorDisplay() {
         `;
     }
     
-    if (equipmentData.equipped.clothing) {
-        const clothing = equipmentData.equipped.clothing;
+    if (window.equipmentData.equipped.clothing) {
+        const clothing = window.equipmentData.equipped.clothing;
         equippedHTML += `
             <div class="equipped-armor-info">
                 <h4>Clothing: ${clothing.name}</h4>
@@ -1493,14 +1493,16 @@ function closeModal(button) {
 
 function saveEquipmentData() {
     // Save to localStorage
-    localStorage.setItem('zevi-equipment', JSON.stringify(equipmentData));
+    // Trigger auto-save instead of localStorage
+  }
 }
 
 function loadEquipmentData() {
     console.log('Loading equipment data...');
     
     // Load from localStorage
-    const saved = localStorage.getItem('zevi-equipment');
+    // Initialize with defaults - will be populated when character loads from cloud
+  const saved = null; // Don't load from localStorage
     console.log('Saved data from localStorage:', saved);
     
     if (saved) {
@@ -1517,12 +1519,12 @@ function loadEquipmentData() {
     }
     
     // Ensure all required properties exist (for backward compatibility)
-    if (!equipmentData.equipped) {
-        equipmentData.equipped = {};
+    if (!window.equipmentData.equipped) {
+        window.equipmentData.equipped = {};
     }
     
     // Reset equipped items to ensure clean state
-    equipmentData.equipped = {
+    window.equipmentData.equipped = {
         primaryWeapon: null,
         secondaryWeapon: null,
         armor: null,
@@ -1532,7 +1534,7 @@ function loadEquipmentData() {
     };
     
     // Clear any old inventory data to start fresh
-    equipmentData.inventory = {
+    window.equipmentData.inventory = {
         'Gear': [],
         'Utility': [],
         'Quest': [],
@@ -1543,19 +1545,19 @@ function loadEquipmentData() {
     console.log('Equipment data after initialization:', equipmentData);
     
     // Ensure inventory categories exist
-    if (!equipmentData.inventory) {
-        equipmentData.inventory = {};
+    if (!window.equipmentData.inventory) {
+        window.equipmentData.inventory = {};
     }
     const requiredCategories = ['Gear', 'Utility', 'Quest', 'Crafting', 'Personal'];
     requiredCategories.forEach(category => {
-        if (!equipmentData.inventory[category]) {
-            equipmentData.inventory[category] = [];
+        if (!window.equipmentData.inventory[category]) {
+            window.equipmentData.inventory[category] = [];
         }
     });
     
     // Ensure gold data exists
-    if (!equipmentData.gold) {
-        equipmentData.gold = {
+    if (!window.equipmentData.gold) {
+        window.equipmentData.gold = {
             coins: 0,
             pouches: 0,
             chest: 0,

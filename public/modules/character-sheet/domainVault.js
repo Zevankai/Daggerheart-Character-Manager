@@ -3,14 +3,15 @@
 console.log('🎴 DomainVault.js loaded successfully!');
 
 // Retrieve domain vault data from localStorage or initialize with defaults
-let domainVaultData;
+// window.domainVaultData will be initialized below
 try {
-    const savedData = localStorage.getItem('zevi-domain-vault');
+    // Initialize with defaults - will be populated when character loads from cloud
+const savedData = null; // Don't load from localStorage
     if (savedData) {
-        domainVaultData = JSON.parse(savedData);
-        console.log('Loaded domain vault data. Cards count:', domainVaultData.cards?.length || 0);
+        window.domainVaultData = JSON.parse(savedData);
+        console.log('Loaded domain vault data. Cards count:', window.domainVaultData.cards?.length || 0);
     } else {
-        domainVaultData = {
+        window.domainVaultData = {
             cards: [],
             equippedCards: [null, null, null, null, null] // 5 equipped slots
         };
@@ -18,7 +19,7 @@ try {
     }
 } catch (error) {
     console.error('Error loading domain vault data:', error);
-    domainVaultData = {
+    window.domainVaultData = {
         cards: [],
         equippedCards: [null, null, null, null, null] // 5 equipped slots
     };
@@ -26,9 +27,10 @@ try {
 }
 
 // Ensure equipped cards array always has exactly 5 slots
-if (!domainVaultData.equippedCards || domainVaultData.equippedCards.length !== 5) {
-    domainVaultData.equippedCards = [null, null, null, null, null];
-    localStorage.setItem('zevi-domain-vault', JSON.stringify(domainVaultData));
+if (!window.domainVaultData.equippedCards || window.domainVaultData.equippedCards.length !== 5) {
+    window.domainVaultData.equippedCards = [null, null, null, null, null];
+    // Trigger auto-save instead of localStorage
+    }
 }
 
 // Card types available for selection
@@ -40,8 +42,9 @@ const DEFAULT_COLOR = '#3498db';
 // Save domain vault data to localStorage
 function saveDomainVaultData() {
     try {
-        const dataString = JSON.stringify(domainVaultData);
-        localStorage.setItem('zevi-domain-vault', dataString);
+        const dataString = JSON.stringify(window.domainVaultData);
+        // Trigger auto-save instead of localStorage
+        }
     } catch (error) {
         console.error('Error saving domain vault data:', error);
     }
@@ -316,8 +319,8 @@ function renderDomainVault() {
 
 // Render equipped card slots
 function renderEquippedSlots() {
-    return domainVaultData.equippedCards.map((cardId, index) => {
-        const card = cardId ? domainVaultData.cards.find(c => c.id === cardId) : null;
+    return window.domainVaultData.equippedCards.map((cardId, index) => {
+        const card = cardId ? window.domainVaultData.cards.find(c => c.id === cardId) : null;
         return `
             <div class="equipped-slot" data-slot-index="${index}">
                 ${card ? renderCard(card, true) : '<div class="empty-equipped-slot">Empty Slot</div>'}
@@ -328,12 +331,12 @@ function renderEquippedSlots() {
 
 // Render all cards in the collection
 function renderCards() {
-    if (domainVaultData.cards.length === 0) {
+    if (window.domainVaultData.cards.length === 0) {
         return '<div class="no-cards-message">No cards created yet. Click "Create New Card" to get started!</div>';
     }
 
-    return domainVaultData.cards.map(card => {
-        const isEquipped = domainVaultData.equippedCards.includes(card.id);
+    return window.domainVaultData.cards.map(card => {
+        const isEquipped = window.domainVaultData.equippedCards.includes(card.id);
         return `<div class="card-wrapper ${isEquipped ? 'equipped' : ''}">${renderCard(card, false)}</div>`;
     }).join('');
 }
@@ -470,7 +473,7 @@ function handleEquippedCardReorder(evt) {
         return cardElement ? cardElement.dataset.cardId : null;
     });
     
-    domainVaultData.equippedCards = newOrder;
+    window.domainVaultData.equippedCards = newOrder;
     saveDomainVaultData();
     renderEquippedSlots();
 }
@@ -481,9 +484,9 @@ function handleCardUnequip(evt) {
     const cardId = cardElement.querySelector('.domain-card').dataset.cardId;
     
     // Remove from equipped cards
-    const equippedIndex = domainVaultData.equippedCards.indexOf(cardId);
+    const equippedIndex = window.domainVaultData.equippedCards.indexOf(cardId);
     if (equippedIndex !== -1) {
-        domainVaultData.equippedCards[equippedIndex] = null;
+        window.domainVaultData.equippedCards[equippedIndex] = null;
         saveDomainVaultData();
     }
     
@@ -506,19 +509,19 @@ function equipCardToSlot(cardId, slotIndex) {
     }
     
     // Check if card is already equipped
-    const currentEquippedIndex = domainVaultData.equippedCards.indexOf(cardId);
+    const currentEquippedIndex = window.domainVaultData.equippedCards.indexOf(cardId);
     if (currentEquippedIndex !== -1) {
         // Move from current slot to new slot
-        domainVaultData.equippedCards[currentEquippedIndex] = null;
+        window.domainVaultData.equippedCards[currentEquippedIndex] = null;
     }
     
     // If slot is occupied, unequip the current card
-    if (domainVaultData.equippedCards[slotIndex]) {
-        domainVaultData.equippedCards[slotIndex] = null;
+    if (window.domainVaultData.equippedCards[slotIndex]) {
+        window.domainVaultData.equippedCards[slotIndex] = null;
     }
     
     // Equip the new card
-    domainVaultData.equippedCards[slotIndex] = cardId;
+    window.domainVaultData.equippedCards[slotIndex] = cardId;
     saveDomainVaultData();
     
     // Re-render both sections
@@ -530,7 +533,7 @@ function equipCardToSlot(cardId, slotIndex) {
 
 // Quick equip card to first available slot
 function quickEquipCard(cardId) {
-    const firstEmptySlot = domainVaultData.equippedCards.findIndex(slot => slot === null);
+    const firstEmptySlot = window.domainVaultData.equippedCards.findIndex(slot => slot === null);
     if (firstEmptySlot !== -1) {
         equipCardToSlot(cardId, firstEmptySlot);
     } else {
@@ -543,9 +546,9 @@ function quickEquipCard(cardId) {
 
 // Unequip card
 function unequipCard(cardId) {
-    const equippedIndex = domainVaultData.equippedCards.indexOf(cardId);
+    const equippedIndex = window.domainVaultData.equippedCards.indexOf(cardId);
     if (equippedIndex !== -1) {
-        domainVaultData.equippedCards[equippedIndex] = null;
+        window.domainVaultData.equippedCards[equippedIndex] = null;
         saveDomainVaultData();
         
         // Re-render both sections
@@ -868,7 +871,7 @@ async function saveNewCard() {
         cropData: cleanCropData
     };
 
-    domainVaultData.cards.push(newCard);
+    window.domainVaultData.cards.push(newCard);
     saveDomainVaultData();
     
     // Re-render cards
@@ -887,7 +890,7 @@ let editingCardId = null;
 
 // Edit card
 function editCard(cardId) {
-    const card = domainVaultData.cards.find(c => c.id === cardId);
+    const card = window.domainVaultData.cards.find(c => c.id === cardId);
     if (!card) return;
 
     editingCardId = cardId;
@@ -925,7 +928,7 @@ function closeEditCardModal() {
 async function saveEditedCard() {
     if (!editingCardId) return;
 
-    const cardIndex = domainVaultData.cards.findIndex(c => c.id === editingCardId);
+    const cardIndex = window.domainVaultData.cards.findIndex(c => c.id === editingCardId);
     if (cardIndex === -1) return;
 
     const name = document.getElementById('edit-card-name').value.trim();
@@ -947,11 +950,11 @@ async function saveEditedCard() {
 
     // Handle image upload (keep existing image if no new one is uploaded)
     const newImage = await handleImageUpload(imageFile);
-    const image = newImage || domainVaultData.cards[cardIndex].image;
+    const image = newImage || window.domainVaultData.cards[cardIndex].image;
     
     // Get crop data (keep existing if no new image)
     const newCropData = window.editCardCropFunction ? window.editCardCropFunction() : null;
-    const cropData = newImage ? newCropData : domainVaultData.cards[cardIndex].cropData;
+    const cropData = newImage ? newCropData : window.domainVaultData.cards[cardIndex].cropData;
     
     // Clean up crop data - only keep if it's meaningful
     let cleanCropData = null;
@@ -961,8 +964,8 @@ async function saveEditedCard() {
     }
 
     // Update card
-    domainVaultData.cards[cardIndex] = {
-        ...domainVaultData.cards[cardIndex],
+    window.domainVaultData.cards[cardIndex] = {
+        ...window.domainVaultData.cards[cardIndex],
         name,
         description,
         domain,
@@ -998,12 +1001,12 @@ function deleteCard() {
     }
 
     // Remove from cards array
-    domainVaultData.cards = domainVaultData.cards.filter(c => c.id !== editingCardId);
+    window.domainVaultData.cards = window.domainVaultData.cards.filter(c => c.id !== editingCardId);
     
     // Remove from equipped cards if equipped
-    const equippedIndex = domainVaultData.equippedCards.indexOf(editingCardId);
+    const equippedIndex = window.domainVaultData.equippedCards.indexOf(editingCardId);
     if (equippedIndex !== -1) {
-        domainVaultData.equippedCards[equippedIndex] = null;
+        window.domainVaultData.equippedCards[equippedIndex] = null;
     }
 
     saveDomainVaultData();
@@ -1023,7 +1026,7 @@ function deleteCard() {
 
 // Expand card to full view
 function expandCard(cardId) {
-    const card = domainVaultData.cards.find(c => c.id === cardId);
+    const card = window.domainVaultData.cards.find(c => c.id === cardId);
     if (!card) return;
 
     // Create expanded card overlay
@@ -1195,7 +1198,7 @@ function showDeleteCardsModal() {
     selectedCardsForDeletion.clear();
     
     // Populate cards list
-    cardsList.innerHTML = domainVaultData.cards.map(card => `
+    cardsList.innerHTML = window.domainVaultData.cards.map(card => `
         <div style="display: flex; align-items: center; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; margin-bottom: 8px; background: rgba(255, 255, 255, 0.05);">
             <input type="checkbox" id="delete-${card.id}" style="margin-right: 12px; transform: scale(1.2);" onchange="toggleCardSelection('${card.id}')">
             <div style="flex: 1;">
@@ -1248,10 +1251,10 @@ function confirmDeleteCards() {
     
     if (confirm(`Are you sure you want to delete ${selectedCardsForDeletion.size} card(s)? This action cannot be undone.`)) {
         // Remove cards from collection
-        domainVaultData.cards = domainVaultData.cards.filter(card => !selectedCardsForDeletion.has(card.id));
+        window.domainVaultData.cards = window.domainVaultData.cards.filter(card => !selectedCardsForDeletion.has(card.id));
         
         // Replace deleted equipped cards with null to preserve slot positions
-        domainVaultData.equippedCards = domainVaultData.equippedCards.map(cardId => 
+        window.domainVaultData.equippedCards = window.domainVaultData.equippedCards.map(cardId => 
             selectedCardsForDeletion.has(cardId) ? null : cardId
         );
         

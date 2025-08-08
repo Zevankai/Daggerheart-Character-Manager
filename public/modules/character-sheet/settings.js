@@ -5,11 +5,26 @@
 // 3. Character data deletion
 // 4. Account deletion
 
+console.log('🔍 GLASSMORPHIC DEBUG: settings.js file loaded and executing!');
+
 // ===== ACCENT COLOR THEME MANAGEMENT =====
 function initializeAccentColorPicker() {
+  console.log('🎨 initializeAccentColorPicker() called');
+  
   const accentColorPicker = document.getElementById('accentColorPicker');
   const accentColorPreview = document.getElementById('accentColorPreview');
   const resetAccentBtn = document.getElementById('resetAccentColor');
+  
+  console.log('🎨 Accent color elements found:', {
+    accentColorPicker: !!accentColorPicker,
+    accentColorPreview: !!accentColorPreview,
+    resetAccentBtn: !!resetAccentBtn
+  });
+  
+  if (!accentColorPicker || !accentColorPreview || !resetAccentBtn) {
+    console.error('🚨 Accent color picker elements not found - accent controls will not work!');
+    return;
+  }
   
   // Load current accent color - prioritize saved custom color
   const savedAccentBase = localStorage.getItem('zevi-custom-accent-base');
@@ -35,6 +50,7 @@ function initializeAccentColorPicker() {
   
   // Handle color change
   accentColorPicker.addEventListener('input', (event) => {
+      console.log('🎨 Accent color picker changed!', event.target.value);
       const newColor = event.target.value;
       changeAccentColor(newColor);
       accentColorPreview.style.backgroundColor = newColor;
@@ -42,11 +58,14 @@ function initializeAccentColorPicker() {
   
   // Handle reset to default
   resetAccentBtn.addEventListener('click', () => {
+      console.log('🎨 Accent color reset clicked!');
       const defaultColor = '#ffd700'; // Default yellow
       changeAccentColor(defaultColor);
       accentColorPicker.value = defaultColor;
       accentColorPreview.style.backgroundColor = defaultColor;
   });
+  
+  console.log('🎨 Accent color event listeners attached successfully!');
 }
 
 function changeAccentColor(newColor) {
@@ -84,94 +103,91 @@ function updateAccentColorTransparencies(accentColor) {
   root.style.setProperty('--accent-color-80', `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)`);
 }
 
-// ===== GLASSMORPHIC BACKGROUND TINT MANAGEMENT =====
-function initializeGlassColorPicker() {
-  const glassColorPicker = document.getElementById('glassColorPicker');
-  const glassColorPreview = document.getElementById('glassColorPreview');
+// ===== GLASSMORPHIC BACKGROUND OPACITY MANAGEMENT =====
+function initializeGlassOpacitySlider() {
+  console.log('🌈 initializeGlassOpacitySlider() called');
+  
   const glassOpacitySlider = document.getElementById('glassOpacitySlider');
   const glassOpacityValue = document.getElementById('glassOpacityValue');
-  const resetGlassBtn = document.getElementById('resetGlassColor');
+  
+  console.log('🌈 Glass elements found:', {
+    glassOpacitySlider: !!glassOpacitySlider,
+    glassOpacityValue: !!glassOpacityValue
+  });
   
   // Check if elements exist
-  if (!glassColorPicker || !glassColorPreview || !glassOpacitySlider || !glassOpacityValue || !resetGlassBtn) {
-      console.error('Glass color picker elements not found');
+  if (!glassOpacitySlider || !glassOpacityValue) {
+      console.error('🚨 Glass opacity slider elements not found - glassmorphic controls will not work!');
       return;
   }
   
-  // Check if required functions exist
-  if (typeof hexToRgb !== 'function' || typeof rgbToHex !== 'function') {
-      console.error('Required color conversion functions not found');
-      return;
-  }
-  
-  // Load saved values first, then use computed values as fallback
-  const savedGlassColor = localStorage.getItem('zevi-glass-color');
-  const savedGlassOpacity = localStorage.getItem('zevi-glass-opacity');
-  
-  let currentColor = '#ffffff';
-  let currentOpacity = 0.1;
-  
-  if (savedGlassColor && savedGlassOpacity) {
-      // Use saved values
-      currentColor = savedGlassColor;
-      currentOpacity = parseFloat(savedGlassOpacity);
+  // Load saved opacity value
+  let savedGlassOpacity;
+  if (window.app?.characterData?.getCharacterSpecificValue) {
+      savedGlassOpacity = window.app.characterData.getCharacterSpecificValue('zevi-glass-opacity');
   } else {
-      // Parse current computed style as fallback
-      const root = document.documentElement;
-      const currentGlassColor = getComputedStyle(root).getPropertyValue('--glass-background-color').trim();
-      
-      // Enhanced regex pattern for RGBA parsing
-      const rgbaMatch = currentGlassColor.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d\.]+))?\s*\)/);
-      
-      if (rgbaMatch) {
-          const r = parseInt(rgbaMatch[1]);
-          const g = parseInt(rgbaMatch[2]);
-          const b = parseInt(rgbaMatch[3]);
-          currentOpacity = rgbaMatch[4] ? parseFloat(rgbaMatch[4]) : 0.1;
-          currentColor = rgbToHex(`rgb(${r}, ${g}, ${b})`);
-      }
+      savedGlassOpacity = localStorage.getItem('zevi-glass-opacity');
   }
   
-  // Set initial values
-  glassColorPicker.value = currentColor;
-  glassOpacitySlider.value = Math.round(currentOpacity * 100);
-  glassOpacityValue.textContent = Math.round(currentOpacity * 100) + '%';
-  updateGlassPreview(currentColor, currentOpacity);
+  // Use saved opacity or default to 10%
+  let currentOpacity = savedGlassOpacity ? parseFloat(savedGlassOpacity) : 10;
   
-  // Apply the current values to make sure they're set
-  changeGlassBackgroundColor(currentColor, currentOpacity);
+  // Set initial values (fixed white color)
+  glassOpacitySlider.value = currentOpacity;
+  glassOpacityValue.textContent = Math.round(currentOpacity) + '%';
   
-  // Handle color change
-  glassColorPicker.addEventListener('input', (event) => {
-      const newColor = event.target.value;
-      const opacity = parseFloat(glassOpacitySlider.value) / 100;
-      changeGlassBackgroundColor(newColor, opacity);
-      updateGlassPreview(newColor, opacity);
-  });
+  // Apply the current values
+  changeGlassBackgroundOpacity(currentOpacity);
   
   // Handle opacity change
   glassOpacitySlider.addEventListener('input', (event) => {
-      const opacity = parseFloat(event.target.value) / 100;
-      const color = glassColorPicker.value;
-      glassOpacityValue.textContent = Math.round(opacity * 100) + '%';
-      changeGlassBackgroundColor(color, opacity);
-      updateGlassPreview(color, opacity);
+      console.log('🌈 Glass opacity slider changed!', event.target.value);
+      const opacity = parseFloat(event.target.value);
+      glassOpacityValue.textContent = Math.round(opacity) + '%';
+      changeGlassBackgroundOpacity(opacity);
   });
   
-  // Handle reset to default
-  resetGlassBtn.addEventListener('click', () => {
-      const defaultColor = '#ffffff';
-      const defaultOpacity = 0.1;
-      changeGlassBackgroundColor(defaultColor, defaultOpacity);
-      glassColorPicker.value = defaultColor;
-      glassOpacitySlider.value = defaultOpacity * 100;
-      glassOpacityValue.textContent = Math.round(defaultOpacity * 100) + '%';
-      updateGlassPreview(defaultColor, defaultOpacity);
-  });
+  console.log('🌈 Glass opacity slider initialized successfully!');
+}
+
+// Simple function to change glass opacity (fixed white color)
+function changeGlassBackgroundOpacity(opacity) {
+  try {
+    console.log('🌈 changeGlassBackgroundOpacity called:', opacity);
+    
+    const root = document.documentElement;
+    
+    // Fixed white color with variable opacity
+    const opacityDecimal = opacity / 100;
+    const rgbaColor = `rgba(255, 255, 255, ${opacityDecimal})`;
+    
+    console.log('🌈 Setting CSS variable --glass-background-color to:', rgbaColor);
+    
+    root.style.setProperty('--glass-background-color', rgbaColor);
+    
+    // Verify it was applied
+    const appliedColor = getComputedStyle(root).getPropertyValue('--glass-background-color').trim();
+    console.log('🌈 CSS variable is now:', appliedColor);
+    
+    // Save to character-specific storage
+    if (window.app?.characterData?.setCharacterSpecificValue) {
+        window.app.characterData.setCharacterSpecificValue('zevi-glass-color', '#ffffff');
+        window.app.characterData.setCharacterSpecificValue('zevi-glass-opacity', opacity.toString());
+        console.log('🌈 Saved to character-specific storage');
+    } else {
+        localStorage.setItem('zevi-glass-color', '#ffffff');
+        localStorage.setItem('zevi-glass-opacity', opacity.toString());
+        console.log('🌈 Saved to localStorage');
+    }
+  } catch (error) {
+    console.error('Error changing glass background opacity:', error);
+  }
 }
 
 function changeGlassBackgroundColor(hexColor, opacity) {
   try {
+    console.log('🌈 changeGlassBackgroundColor called:', { hexColor, opacity });
+    
     const root = document.documentElement;
     const rgb = hexToRgb(hexColor);
     
@@ -181,10 +197,24 @@ function changeGlassBackgroundColor(hexColor, opacity) {
     }
     
     const newRgbaColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity})`;
+    console.log('🌈 Setting CSS variable --glass-background-color to:', newRgbaColor);
     
     root.style.setProperty('--glass-background-color', newRgbaColor);
-    localStorage.setItem('zevi-glass-color', hexColor);
-    localStorage.setItem('zevi-glass-opacity', opacity.toString());
+    
+    // Verify the CSS variable was set
+    const setColor = getComputedStyle(root).getPropertyValue('--glass-background-color').trim();
+    console.log('🌈 CSS variable is now:', setColor);
+    
+    // Save to character-specific storage if available
+    if (window.app?.characterData?.setCharacterSpecificValue) {
+        window.app.characterData.setCharacterSpecificValue('zevi-glass-color', hexColor);
+        window.app.characterData.setCharacterSpecificValue('zevi-glass-opacity', opacity.toString());
+        console.log('🌈 Saved to character-specific storage');
+    } else {
+        localStorage.setItem('zevi-glass-color', hexColor);
+        localStorage.setItem('zevi-glass-opacity', opacity.toString());
+        console.log('🌈 Saved to localStorage');
+    }
   } catch (error) {
     console.error('Error changing glass background color:', error);
   }
@@ -224,18 +254,24 @@ function initializeCharacterDeletion() {
   const cancelCharDeleteBtn = document.getElementById('cancelCharacterDelete');
   const charDeleteModal = document.getElementById('characterDeleteModal');
   
-  deleteCharBtn.addEventListener('click', () => {
-      showCharacterDeleteModal();
-  });
+  if (deleteCharBtn) {
+    deleteCharBtn.addEventListener('click', () => {
+        showCharacterDeleteModal();
+    });
+  }
   
-  confirmCharDeleteBtn.addEventListener('click', () => {
-      deleteCharacterData();
-      hideCharacterDeleteModal();
-  });
-  
-  cancelCharDeleteBtn.addEventListener('click', () => {
-      hideCharacterDeleteModal();
-  });
+    if (confirmCharDeleteBtn) {
+    confirmCharDeleteBtn.addEventListener('click', () => {
+        deleteCharacterData();
+        hideCharacterDeleteModal();
+    });
+  }
+   
+  if (cancelCharDeleteBtn) {
+    cancelCharDeleteBtn.addEventListener('click', () => {
+        hideCharacterDeleteModal();
+    });
+  }
   
   // Close modal when clicking outside
   charDeleteModal.addEventListener('click', (event) => {
@@ -727,9 +763,12 @@ function initializeBackpackToggle() {
     return;
   }
   
-  // Load saved setting
-  const savedSetting = localStorage.getItem('zevi-backpack-enabled');
-  const isEnabled = savedSetting !== null ? savedSetting === 'true' : true; // Default to enabled
+  // Load saved setting from character-specific storage
+  let isEnabled = true; // Default to enabled
+  if (window.app?.characterData?.getCharacterSpecificValue) {
+    const savedSetting = window.app.characterData.getCharacterSpecificValue('zevi-backpack-enabled');
+    isEnabled = savedSetting !== null ? savedSetting === 'true' : true;
+  }
   
   backpackToggle.checked = isEnabled;
   applyBackpackToggle(isEnabled);
@@ -737,7 +776,15 @@ function initializeBackpackToggle() {
   // Handle toggle change
   backpackToggle.addEventListener('change', (event) => {
     const enabled = event.target.checked;
-    localStorage.setItem('zevi-backpack-enabled', enabled.toString());
+    
+    // Save to character-specific storage and trigger auto-save
+    if (window.app?.characterData?.setCharacterSpecificValue) {
+      window.app.characterData.setCharacterSpecificValue('zevi-backpack-enabled', enabled.toString());
+    }
+    
+    // Trigger auto-save to persist to database
+    }
+    
     applyBackpackToggle(enabled);
     showNotification(
       enabled ? 'Backpack & encumbrance system enabled!' : 'Backpack & encumbrance system disabled!',
@@ -776,8 +823,10 @@ function applyBackpackToggle(enabled) {
 
 // ===== INITIALIZATION =====
 function initializeSettings() {
+  console.log('⚙️ initializeSettings() called');
+  
   initializeAccentColorPicker();
-  initializeGlassColorPicker();
+  initializeGlassOpacitySlider();
   initializeCharacterCode();
   initializeBackpackToggle();
   initializeCharacterDeletion();
@@ -785,6 +834,8 @@ function initializeSettings() {
   
   // Apply saved custom colors on load
   applySavedCustomColors();
+  
+  console.log('⚙️ initializeSettings() completed');
 }
 
 function applySavedCustomColors() {

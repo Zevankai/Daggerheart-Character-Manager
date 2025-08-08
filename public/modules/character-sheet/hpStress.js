@@ -2,16 +2,19 @@
 
 // --- HP & STRESS TRACKER LOGIC ---
 // These are global variables and functions that main script.js and downtime.js need to access
-let hpCircles = JSON.parse(localStorage.getItem('zevi-hp-circles')) || Array(4).fill({ active: false });
-let stressCircles = JSON.parse(localStorage.getItem('zevi-stress-circles')) || Array(4).fill({ active: false });
-let armorCircles = JSON.parse(localStorage.getItem('zevi-armor-circles')) || Array(4).fill({ active: false });
+// Initialize with defaults - will be populated when character loads from cloud
+let hpCircles = Array(4).fill({ active: true }); // Default HP circles active
+let stressCircles = Array(4).fill({ active: false });
+let armorCircles = Array(4).fill({ active: false });
 
 function saveHPState() {
-    localStorage.setItem('zevi-hp-circles', JSON.stringify(hpCircles));
+    // Trigger auto-save instead of localStorage
+  }
 }
 
 function saveStressState() {
-    localStorage.setItem('zevi-stress-circles', JSON.stringify(stressCircles));
+    // Trigger auto-save instead of localStorage
+  }
 }
 
 function renderHPCircles() {
@@ -146,7 +149,8 @@ function updateDamageValue(element, type) {
     if (isNaN(value)) {
         value = 0; // Default to 0 if input is empty or invalid
     }
-    localStorage.setItem(`zevi-${type}-damage-value`, value);
+          // Trigger auto-save instead of localStorage
+      }
 }
 
 // Function to load damage values on page load
@@ -156,11 +160,12 @@ function loadDamageValues() {
     const majorDamageInput = document.getElementById('major-damage-value');
     // Removed severeDamageInput as its element is no longer in HTML
 
-    if (minorDamageInput) {
-        minorDamageInput.value = localStorage.getItem('zevi-minor-damage-value') || '1';
+    // Set defaults - will be overridden when character loads from cloud
+    if (minorDamageInput && !minorDamageInput.value) {
+        minorDamageInput.value = '1';
     }
-    if (majorDamageInput) {
-        majorDamageInput.value = localStorage.getItem('zevi-major-damage-value') || '2';
+    if (majorDamageInput && !majorDamageInput.value) {
+        majorDamageInput.value = '2';
     }
     // No longer loading severeDamageInput
 }
@@ -191,9 +196,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Initial rendering for HP and Stress circles
-    renderHPCircles();
-    renderStressCircles(); // This will now also create the label
-    renderArmorCircles(); // Initial render for armor circles
+    // Only render if CharacterStateManager is not available (fallback mode)
+    if (!window.CharacterStateManager) {
+        renderHPCircles();
+        renderStressCircles(); // This will now also create the label
+        renderArmorCircles(); // Initial render for armor circles
+    }
     loadDamageValues(); // Load saved damage values for the inputs
 });
 
@@ -218,7 +226,8 @@ window.addArmorCircle = addArmorCircle;
 window.removeArmorCircle = removeArmorCircle;
 
 function saveArmorState() {
-    localStorage.setItem('zevi-armor-circles', JSON.stringify(armorCircles));
+          // Trigger auto-save instead of localStorage
+      }
 }
 
 function renderArmorCircles() {

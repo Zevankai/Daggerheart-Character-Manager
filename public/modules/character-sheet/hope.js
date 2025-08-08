@@ -12,9 +12,9 @@ function renderHopeCircles() {
     }
     hopeTracker.innerHTML = ''; // Clear existing circles
 
-    let currentHope = parseInt(localStorage.getItem('zevi-hope')) || 0;
-    // Get the current maximum number of circles for Hope from localStorage, default to 6
-    let currentMaxHope = parseInt(localStorage.getItem('zevi-max-hope')) || 6;
+    // Initialize with defaults - will be populated when character loads from cloud
+    let currentHope = 0;
+    let currentMaxHope = 6;
 
     // Ensure currentMaxHope stays within global limits
     if (currentMaxHope < minHopeCircles) currentMaxHope = minHopeCircles;
@@ -24,8 +24,8 @@ function renderHopeCircles() {
     if (currentHope > currentMaxHope) currentHope = currentMaxHope;
     if (currentHope < 0) currentHope = 0; // Prevent negative hope
 
-    localStorage.setItem('zevi-hope', currentHope); // Update stored current hope in case it was capped
-    localStorage.setItem('zevi-max-hope', currentMaxHope); // Ensure updated max hope is stored
+    // Trigger auto-save instead of localStorage
+    }
 
     // Create circles up to the currentMaxHope
     for (let i = 0; i < currentMaxHope; i++) {
@@ -56,7 +56,8 @@ function updateActiveHope(value) {
     if (newHope > currentMaxHope) newHope = currentMaxHope; // Ensure it doesn't exceed current max circles
     if (newHope < 0) newHope = 0; // Ensure it doesn't go below zero
 
-    localStorage.setItem('zevi-hope', newHope);
+            // Trigger auto-save instead of localStorage
+        }
     renderHopeCircles(); // Re-render to reflect changes
 }
 
@@ -69,7 +70,8 @@ function updateMaxHopeCircles(change) {
     if (newMaxHope < minHopeCircles) newMaxHope = minHopeCircles;
     if (newMaxHope > globalMaxHopeCircles) newMaxHope = globalMaxHopeCircles;
 
-    localStorage.setItem('zevi-max-hope', newMaxHope);
+            // Trigger auto-save instead of localStorage
+        }
     renderHopeCircles(); // Re-render to reflect changes in total circles
 }
 
@@ -82,7 +84,10 @@ window.updateMaxHopeCircles = updateMaxHopeCircles;
 
 // Initialize hope circles and attach button listeners when hope.js is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    renderHopeCircles(); // Initial render based on stored values
+    // Only render if CharacterStateManager is not available (fallback mode)
+    if (!window.CharacterStateManager) {
+        renderHopeCircles(); // Initial render based on stored values
+    }
 
     const hopeIncrementBtn = document.getElementById('hope-increment');
     const hopeDecrementBtn = document.getElementById('hope-decrement');

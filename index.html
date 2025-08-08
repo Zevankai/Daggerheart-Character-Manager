@@ -708,6 +708,14 @@
         renderJournalEntries: typeof window.renderJournalEntries
       });
       
+      // Check if module scripts actually loaded
+      console.log('🔍 Testing script loading...');
+      const scripts = document.querySelectorAll('script[src*="modules"]');
+      console.log('📋 Module scripts found:', scripts.length);
+      scripts.forEach((script, index) => {
+        console.log(`  ${index + 1}. ${script.src} - loaded: ${script.readyState || 'unknown'}`);
+      });
+      
       if (window.initializeDomainVault) {
         try {
           window.initializeDomainVault();

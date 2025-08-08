@@ -32,9 +32,9 @@ function renderArmorCircles() {
     
     armorCirclesContainer.innerHTML = ''; // Clear existing circles
 
-    // Get total number of armor circles and active count
-    let totalArmorCircles = parseInt(localStorage.getItem('zevi-total-armor-circles') || '4');
-    let activeArmorCount = parseInt(localStorage.getItem('zevi-active-armor-count') || '0');
+    // Get total number of armor circles and active count from global variables
+    let totalArmorCircles = window.totalArmorCircles || 4;
+    let activeArmorCount = window.activeArmorCount || 0;
     
     // Ensure values are within reasonable bounds
     totalArmorCircles = Math.max(1, Math.min(totalArmorCircles, 10));
@@ -63,7 +63,8 @@ function renderArmorCircles() {
             }
 
             // Update active count and save
-            localStorage.setItem('zevi-active-armor-count', targetActiveCount);
+            // Trigger auto-save instead of localStorage
+    }
             renderArmorCircles(); // Re-render to update UI
         });
         
@@ -82,28 +83,32 @@ function setupArmorTrackerButtons() {
     
     if (addArmorBtn) {
         addArmorBtn.addEventListener('click', () => {
-            let totalArmorCircles = parseInt(localStorage.getItem('zevi-total-armor-circles') || '4');
+            let totalArmorCircles = window.totalArmorCircles || 4;
             totalArmorCircles++;
             totalArmorCircles = Math.max(1, Math.min(totalArmorCircles, 10)); // Min 1, Max 10
-            localStorage.setItem('zevi-total-armor-circles', totalArmorCircles);
+            window.totalArmorCircles = totalArmorCircles;
+            // Trigger auto-save instead of localStorage
+            }
             renderArmorCircles();
         });
     }
     
     if (removeArmorBtn) {
         removeArmorBtn.addEventListener('click', () => {
-            let totalArmorCircles = parseInt(localStorage.getItem('zevi-total-armor-circles') || '4');
-            let activeArmorCount = parseInt(localStorage.getItem('zevi-active-armor-count') || '0');
+            let totalArmorCircles = window.totalArmorCircles || 4;
+            let activeArmorCount = window.activeArmorCount || 0;
             
             totalArmorCircles--;
             // If we remove circles, make sure active count doesn't exceed total
             if (activeArmorCount > totalArmorCircles) {
                 activeArmorCount = Math.max(0, totalArmorCircles);
-                localStorage.setItem('zevi-active-armor-count', activeArmorCount);
+                window.activeArmorCount = activeArmorCount;
             }
             
             totalArmorCircles = Math.max(1, Math.min(totalArmorCircles, 10)); // Min 1, Max 10
-            localStorage.setItem('zevi-total-armor-circles', totalArmorCircles);
+            window.totalArmorCircles = totalArmorCircles;
+            // Trigger auto-save instead of localStorage
+            }
             renderArmorCircles();
         });
     }

@@ -98,8 +98,13 @@ class CharacterNameEditor {
         const newSize = Math.max(1, Math.min(4, currentSize + delta)); // Limit between 1rem and 4rem
         this.editor.style.fontSize = newSize + 'rem';
         
-        // Save font size preference
-        localStorage.setItem('zevi-character-name-font-size', newSize + 'rem');
+        // Save font size preference to character-specific storage
+        if (window.app?.characterData?.setCharacterSpecificValue) {
+            window.app.characterData.setCharacterSpecificValue('zevi-character-name-font-size', newSize + 'rem');
+            
+            // Trigger auto-save to persist to database
+            }
+        }
     }
 
     autoAdjustFontSize() {
@@ -137,7 +142,11 @@ class CharacterNameEditor {
     }
 
     loadFontSizePreference() {
-        const savedSize = localStorage.getItem('zevi-character-name-font-size');
+        let savedSize;
+        if (window.app?.characterData?.getCharacterSpecificValue) {
+            savedSize = window.app.characterData.getCharacterSpecificValue('zevi-character-name-font-size');
+        }
+        
         if (savedSize && this.editor) {
             this.editor.style.fontSize = savedSize;
             if (this.sizeDisplay) {
