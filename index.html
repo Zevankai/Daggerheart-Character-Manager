@@ -699,6 +699,14 @@
     // Initialize all tab modules
     setTimeout(() => {
       console.log('🎯 Initializing all tab modules...');
+      console.log('🔍 Available functions:', {
+        initializeDomainVault: typeof window.initializeDomainVault,
+        initializeEffectsFeatures: typeof window.initializeEffectsFeatures,
+        initializeEquipment: typeof window.initializeEquipment,
+        initializeDetailsTab: typeof window.initializeDetailsTab,
+        renderExperiences: typeof window.renderExperiences,
+        renderJournalEntries: typeof window.renderJournalEntries
+      });
       
       if (window.initializeDomainVault) {
         try {
@@ -707,6 +715,8 @@
         } catch (error) {
           console.error('❌ Domain Vault initialization failed:', error);
         }
+      } else {
+        console.warn('⚠️ initializeDomainVault function not found');
       }
       
       if (window.initializeEffectsFeatures) {
@@ -716,6 +726,8 @@
         } catch (error) {
           console.error('❌ Effects & Features initialization failed:', error);
         }
+      } else {
+        console.warn('⚠️ initializeEffectsFeatures function not found');
       }
       
       if (window.initializeEquipment) {
@@ -725,15 +737,19 @@
         } catch (error) {
           console.error('❌ Equipment initialization failed:', error);
         }
+      } else {
+        console.warn('⚠️ initializeEquipment function not found');
       }
       
-      if (window.initializeDetails) {
+      if (window.initializeDetailsTab) {
         try {
-          window.initializeDetails();
+          window.initializeDetailsTab();
           console.log('✅ Details initialized');
         } catch (error) {
           console.error('❌ Details initialization failed:', error);
         }
+      } else {
+        console.warn('⚠️ initializeDetailsTab function not found');
       }
       
       if (window.renderExperiences) {
@@ -743,6 +759,8 @@
         } catch (error) {
           console.error('❌ Experiences initialization failed:', error);
         }
+      } else {
+        console.warn('⚠️ renderExperiences function not found');
       }
       
       if (window.renderJournalEntries) {
@@ -752,6 +770,8 @@
         } catch (error) {
           console.error('❌ Journal initialization failed:', error);
         }
+      } else {
+        console.warn('⚠️ renderJournalEntries function not found');
       }
     }, 500); // Small delay to ensure all modules are loaded
     
