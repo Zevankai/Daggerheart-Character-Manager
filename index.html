@@ -1144,15 +1144,20 @@
         // GLASSMORPHIC DEBUG TEST
         console.log('🔍 GLASSMORPHIC DEBUG: index.html JavaScript is working!');
         
-                 // Test if glass elements exist and manually attach event listener
-         setTimeout(() => {
-           const glassOpacitySlider = document.getElementById('glassOpacitySlider');
-           const glassOpacityValue = document.getElementById('glassOpacityValue');
-           console.log('🔍 GLASSMORPHIC DEBUG: Glass elements check:', {
-             glassOpacitySlider: !!glassOpacitySlider,
-             glassOpacityValue: !!glassOpacityValue,
-             settingsTab: !!document.querySelector('[data-target="settings-tab-content"]')
-           });
+                           // Test if glass and accent elements exist and manually attach event listeners
+          setTimeout(() => {
+            const glassOpacitySlider = document.getElementById('glassOpacitySlider');
+            const glassOpacityValue = document.getElementById('glassOpacityValue');
+            const accentColorPicker = document.getElementById('accentColorPicker');
+            const accentColorPreview = document.getElementById('accentColorPreview');
+            
+            console.log('🔍 MANUAL DEBUG: Elements check:', {
+              glassOpacitySlider: !!glassOpacitySlider,
+              glassOpacityValue: !!glassOpacityValue,
+              accentColorPicker: !!accentColorPicker,
+              accentColorPreview: !!accentColorPreview,
+              settingsTab: !!document.querySelector('[data-target="settings-tab-content"]')
+            });
            
                        // MANUAL TEST: Try to attach event listener directly
             if (glassOpacitySlider) {
@@ -1184,10 +1189,40 @@
                 }
                 
                 console.log('🌈 MANUAL: Set CSS to:', rgbaColor);
-              });
-              console.log('🔍 MANUAL TEST: Event listener attached!');
+                            });
+              console.log('🔍 MANUAL GLASS TEST: Event listener attached!');
             }
-         }, 3000);
+            
+            // MANUAL ACCENT COLOR TEST
+            if (accentColorPicker) {
+              console.log('🔍 MANUAL ACCENT TEST: Attaching event listener directly to color picker');
+              accentColorPicker.addEventListener('input', (event) => {
+                console.log('🎨 MANUAL EVENT: Accent color changed to:', event.target.value);
+                const newColor = event.target.value;
+                
+                // Apply accent color directly to CSS variables
+                const root = document.documentElement;
+                root.style.setProperty('--accent-color', newColor);
+                
+                // Update preview
+                if (accentColorPreview) {
+                  accentColorPreview.style.backgroundColor = newColor;
+                }
+                
+                // Save accent color
+                if (window.app?.characterData?.setCharacterSpecificValue) {
+                  window.app.characterData.setCharacterSpecificValue('zevi-accent-color', newColor);
+                  console.log('🎨 MANUAL: Saved accent color to character-specific storage');
+                } else {
+                  localStorage.setItem('zevi-custom-accent-base', newColor);
+                  console.log('🎨 MANUAL: Saved accent color to localStorage');
+                }
+                
+                console.log('🎨 MANUAL: Set accent color CSS to:', newColor);
+              });
+              console.log('🔍 MANUAL ACCENT TEST: Event listener attached!');
+            }
+          }, 3000);
 
  </script>
 </html>

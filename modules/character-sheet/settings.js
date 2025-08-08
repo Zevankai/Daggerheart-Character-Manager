@@ -9,9 +9,22 @@ console.log('🔍 GLASSMORPHIC DEBUG: settings.js file loaded and executing!');
 
 // ===== ACCENT COLOR THEME MANAGEMENT =====
 function initializeAccentColorPicker() {
+  console.log('🎨 initializeAccentColorPicker() called');
+  
   const accentColorPicker = document.getElementById('accentColorPicker');
   const accentColorPreview = document.getElementById('accentColorPreview');
   const resetAccentBtn = document.getElementById('resetAccentColor');
+  
+  console.log('🎨 Accent color elements found:', {
+    accentColorPicker: !!accentColorPicker,
+    accentColorPreview: !!accentColorPreview,
+    resetAccentBtn: !!resetAccentBtn
+  });
+  
+  if (!accentColorPicker || !accentColorPreview || !resetAccentBtn) {
+    console.error('🚨 Accent color picker elements not found - accent controls will not work!');
+    return;
+  }
   
   // Load current accent color - prioritize saved custom color
   const savedAccentBase = localStorage.getItem('zevi-custom-accent-base');
@@ -37,6 +50,7 @@ function initializeAccentColorPicker() {
   
   // Handle color change
   accentColorPicker.addEventListener('input', (event) => {
+      console.log('🎨 Accent color picker changed!', event.target.value);
       const newColor = event.target.value;
       changeAccentColor(newColor);
       accentColorPreview.style.backgroundColor = newColor;
@@ -44,11 +58,14 @@ function initializeAccentColorPicker() {
   
   // Handle reset to default
   resetAccentBtn.addEventListener('click', () => {
+      console.log('🎨 Accent color reset clicked!');
       const defaultColor = '#ffd700'; // Default yellow
       changeAccentColor(defaultColor);
       accentColorPicker.value = defaultColor;
       accentColorPreview.style.backgroundColor = defaultColor;
   });
+  
+  console.log('🎨 Accent color event listeners attached successfully!');
 }
 
 function changeAccentColor(newColor) {
