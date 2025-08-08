@@ -74,13 +74,17 @@ class AppController {
             this.setUIValue('#domain2', data.domain2 || 'Domain 2', 'textContent');
             
             // Character image
-            if (data.imageUrl) {
-                const img = document.getElementById('charImage');
-                const placeholder = document.getElementById('charPlaceholder');
-                if (img && placeholder) {
+            const img = document.getElementById('charImage');
+            const placeholder = document.getElementById('charPlaceholder');
+            if (img && placeholder) {
+                if (data.imageUrl) {
                     img.src = data.imageUrl;
                     img.style.display = 'block';
                     placeholder.style.display = 'none';
+                } else {
+                    img.src = '';
+                    img.style.display = 'none';
+                    placeholder.style.display = 'block';
                 }
             }
 

@@ -32,7 +32,7 @@ class CharacterData {
         data.level = parseInt(this.getUIValue('#charLevel', 'textContent')) || 1;
         data.domain1 = this.getUIValue('#domain1', 'textContent') || 'Domain 1';
         data.domain2 = this.getUIValue('#domain2', 'textContent') || 'Domain 2';
-        data.imageUrl = this.getUIValue('.character-image', 'src') || '';
+        data.imageUrl = this.getUIValue('#charImage', 'src') || '';
 
         // Parse subtitle into components
         const components = this.parseSubtitleIntoComponents(data.subtitle);
