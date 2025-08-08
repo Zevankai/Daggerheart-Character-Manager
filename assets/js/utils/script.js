@@ -132,11 +132,34 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function uploadBackground(event) {
+    const file = event.target.files[0];
+    if (!file) {
+        console.log('❌ No background file selected');
+        return;
+    }
+
+    console.log('🏞️ Background file selected:', file.name, file.type, file.size);
+
     const reader = new FileReader();
     reader.onload = function(){
-      document.body.style.backgroundImage = `url('${reader.result}')`;
+        const backgroundImageUrl = reader.result;
+        
+        // Apply background image immediately
+        document.body.style.backgroundImage = `url('${backgroundImageUrl}')`;
+        
+        // Save to character-specific storage
+        if (window.app?.characterData?.setCharacterSpecificValue) {
+            window.app.characterData.setCharacterSpecificValue('zevi-background-image', backgroundImageUrl);
+            console.log('💾 Background image saved per character');
+        } else {
+            // Fallback to global localStorage (for backwards compatibility)
+            localStorage.setItem('zevi-background-image', backgroundImageUrl);
+            console.log('💾 Background image saved globally (fallback)');
+        }
+        
+        console.log('✅ Background image updated and saved');
     };
-    reader.readAsDataURL(event.target.files[0]);
+    reader.readAsDataURL(file);
 }
 
 function toggleTextColor() {

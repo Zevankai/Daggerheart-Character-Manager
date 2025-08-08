@@ -893,6 +893,9 @@
         evasion: 10,
         damage: { minor: 1, major: 2 },
         equipment: {},
+        appearanceSettings: {
+          backgroundImage: null
+        },
         journal: { entries: [] },
         details: {},
         experiences: [],
@@ -963,6 +966,11 @@
         domainVault: {},
         effectsFeatures: {},
         
+        // Appearance settings
+        appearanceSettings: {
+          backgroundImage: localStorage.getItem('zevi-background-image') || null
+        },
+        
         lastModified: new Date().toISOString(),
         version: '2.0'
       };
@@ -1001,7 +1009,7 @@
     console.log('window.app.characterData exists:', !!window.app?.characterData);
     
     if (characterData) {
-      alert(`Character Sheet Debug:\n\nCharacter Name: ${characterName}\nLevel: ${characterData.level}\nSubtitle: ${characterData.subtitle}\nDomain 1: ${characterData.domain1}\nDomain 2: ${characterData.domain2}\nImage: ${characterData.imageUrl ? 'Yes' : 'No'}\nData Source: ${dataSource}\n\nData collection: SUCCESS\nReady to save: ${characterName && characterName !== 'Character Name' ? 'YES' : 'NO (enter character name first)'}`);
+      alert(`Character Sheet Debug:\n\nCharacter Name: ${characterName}\nLevel: ${characterData.level}\nSubtitle: ${characterData.subtitle}\nDomain 1: ${characterData.domain1}\nDomain 2: ${characterData.domain2}\nImage: ${characterData.imageUrl ? 'Yes' : 'No'}\nBackground: ${characterData.appearanceSettings?.backgroundImage ? 'Yes' : 'No'}\nData Source: ${dataSource}\n\nData collection: SUCCESS\nReady to save: ${characterName && characterName !== 'Character Name' ? 'YES' : 'NO (enter character name first)'}`);
     } else {
       alert('❌ Failed to collect character data from sheet');
     }

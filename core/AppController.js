@@ -88,6 +88,15 @@ class AppController {
                 }
             }
 
+            // Background image
+            if (data.appearanceSettings?.backgroundImage) {
+                document.body.style.backgroundImage = `url('${data.appearanceSettings.backgroundImage}')`;
+                console.log('🏞️ Background image applied from character data');
+            } else {
+                document.body.style.backgroundImage = '';
+                console.log('🏞️ Background image cleared (character has none)');
+            }
+
             // Ability scores
             if (data.attributes) {
                 Object.entries(data.attributes).forEach(([attr, value]) => {
