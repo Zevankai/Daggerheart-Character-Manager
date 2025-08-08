@@ -644,7 +644,7 @@
   let indexPageInitialized = false;
   
   // Simplified initialization for single character mode
-  function initializeIndexPage() {
+  async function initializeIndexPage() {
     if (indexPageInitialized) {
       console.log('Index page already initialized, skipping...');
       return;
@@ -671,9 +671,20 @@
     }
     
     // Initialize the app controller for single character mode
-    if (window.app && window.app.init) {
-      window.app.init();
-      console.log('App controller initialized');
+    try {
+      if (!window.app) {
+        console.log('Creating AppController instance...');
+        window.app = new AppController();
+      }
+      
+      if (window.app && window.app.initialize) {
+        await window.app.initialize();
+        console.log('✅ App controller initialized successfully');
+      } else {
+        console.error('❌ AppController or initialize method not found');
+      }
+    } catch (error) {
+      console.error('❌ Failed to initialize app controller:', error);
     }
     
     console.log('Single character sheet ready');
@@ -714,7 +725,18 @@
       }
 
       // Collect current character data from the sheet
-      const characterData = window.app?.characterData?.collectAllCharacterData();
+      let characterData = null;
+      
+      // Try to collect data via app controller
+      if (window.app?.characterData?.collectAllCharacterData) {
+        characterData = window.app.characterData.collectAllCharacterData();
+        console.log('✅ Collected data via app controller');
+      } else {
+        console.warn('❌ App controller not available, using simple data collection');
+        // Fallback: collect basic data directly from DOM
+        characterData = collectBasicCharacterData();
+      }
+      
       if (!characterData) {
         alert('❌ Failed to collect character data from sheet');
         return;
@@ -891,21 +913,86 @@
     }
   }
 
+  // Fallback function to collect basic character data directly from DOM
+  function collectBasicCharacterData() {
+    try {
+      console.log('📊 Collecting basic character data from DOM...');
+      
+      const data = {
+        // Basic character info
+        name: document.querySelector('.character-name-editor')?.textContent || 'New Character',
+        subtitle: document.querySelector('.subtitle')?.textContent || 'Community Ancestry Class (Subclass)',
+        level: parseInt(document.querySelector('.level')?.textContent) || 1,
+        imageUrl: document.getElementById('charImage')?.src || '',
+        
+        // Ability scores
+        attributes: {
+          might: parseInt(document.getElementById('might')?.textContent) || 0,
+          agility: parseInt(document.getElementById('agility')?.textContent) || 0,
+          instinct: parseInt(document.getElementById('instinct')?.textContent) || 0,
+          presence: parseInt(document.getElementById('presence')?.textContent) || 0,
+          knowledge: parseInt(document.getElementById('knowledge')?.textContent) || 0
+        },
+        
+        // Combat stats
+        evasion: parseInt(document.getElementById('evasionValue')?.textContent) || 10,
+        damage: {
+          minor: parseInt(document.getElementById('minor-damage-value')?.value) || 1,
+          major: parseInt(document.getElementById('major-damage-value')?.value) || 2
+        },
+        
+        // Basic defaults for other data
+        hope: { current: 0, max: 6 },
+        hp: { circles: Array(4).fill({active: true}) },
+        stress: { circles: Array(4).fill({active: false}) },
+        armor: { circles: Array(4).fill({active: false}), totalCircles: 4, activeCount: 0 },
+        equipment: {},
+        journal: { entries: [] },
+        details: {},
+        experiences: [],
+        downtime: { projects: [] },
+        domainVault: {},
+        effectsFeatures: {},
+        
+        lastModified: new Date().toISOString(),
+        version: '2.0'
+      };
+      
+      console.log('✅ Basic character data collected:', data);
+      return data;
+      
+    } catch (error) {
+      console.error('❌ Error collecting basic character data:', error);
+      return null;
+    }
+  }
+
   // Debug function to check current character sheet data
   function debugCurrentCharacter() {
     console.log('🔍 === CURRENT CHARACTER SHEET DEBUG ===');
     
-    // Get current character data from the sheet
-    const characterData = window.app?.characterData?.collectAllCharacterData();
+    // Try to get current character data from the sheet
+    let characterData = null;
+    let dataSource = '';
+    
+    if (window.app?.characterData?.collectAllCharacterData) {
+      characterData = window.app.characterData.collectAllCharacterData();
+      dataSource = 'App Controller';
+    } else {
+      characterData = collectBasicCharacterData();
+      dataSource = 'DOM Fallback';
+    }
+    
     const characterName = characterData?.name;
     
     console.log('Character Name from sheet:', characterName);
     console.log('Full character data:', characterData);
+    console.log('Data source:', dataSource);
     console.log('window.app exists:', !!window.app);
     console.log('window.app.characterData exists:', !!window.app?.characterData);
     
     if (characterData) {
-      alert(`Character Sheet Debug:\n\nCharacter Name: ${characterName}\nLevel: ${characterData.level}\nSubtitle: ${characterData.subtitle}\n\nData collection: SUCCESS\nReady to save: ${characterName && characterName !== 'Character Name' ? 'YES' : 'NO (enter character name first)'}`);
+      alert(`Character Sheet Debug:\n\nCharacter Name: ${characterName}\nLevel: ${characterData.level}\nSubtitle: ${characterData.subtitle}\nData Source: ${dataSource}\n\nData collection: SUCCESS\nReady to save: ${characterName && characterName !== 'Character Name' ? 'YES' : 'NO (enter character name first)'}`);
     } else {
       alert('❌ Failed to collect character data from sheet');
     }
