@@ -5,6 +5,8 @@
 // 3. Character data deletion
 // 4. Account deletion
 
+console.log('🔍 GLASSMORPHIC DEBUG: settings.js file loaded and executing!');
+
 // ===== ACCENT COLOR THEME MANAGEMENT =====
 function initializeAccentColorPicker() {
   const accentColorPicker = document.getElementById('accentColorPicker');

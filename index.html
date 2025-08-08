@@ -1148,6 +1148,20 @@
         window.createNewCharacter = createNewCharacter;
         window.debugCurrentCharacter = debugCurrentCharacter;
         window.testDatabaseSave = testDatabaseSave;
+        
+        // GLASSMORPHIC DEBUG TEST
+        console.log('🔍 GLASSMORPHIC DEBUG: index.html JavaScript is working!');
+        
+        // Test if glass elements exist
+        setTimeout(() => {
+          const glassColorPicker = document.getElementById('glassColorPicker');
+          const glassOpacitySlider = document.getElementById('glassOpacitySlider');
+          console.log('🔍 GLASSMORPHIC DEBUG: Glass elements check:', {
+            glassColorPicker: !!glassColorPicker,
+            glassOpacitySlider: !!glassOpacitySlider,
+            settingsTab: !!document.querySelector('[data-target="settings-tab-content"]')
+          });
+        }, 2000);
 
  </script>
 </html>
