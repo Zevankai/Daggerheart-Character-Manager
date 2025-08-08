@@ -103,11 +103,23 @@ class CharacterData {
         };
 
         // Appearance settings
+        const accentColor = this.getCharacterSpecificValue('zevi-accent-color') || '#ffd700';
+        const glassColor = this.getCharacterSpecificValue('zevi-glass-color') || '#ffffff';
+        const glassOpacity = parseInt(this.getCharacterSpecificValue('zevi-glass-opacity')) || 10;
+        const backgroundImage = this.getCharacterSpecificValue('zevi-background-image') || null;
+        
+        console.log('🔍 CharacterData collecting appearance settings:', {
+            accentColor: accentColor,
+            glassColor: glassColor, 
+            glassOpacity: glassOpacity,
+            backgroundImage: backgroundImage ? 'YES (length: ' + backgroundImage.length + ')' : 'NO'
+        });
+        
         data.appearanceSettings = {
-            accentColor: this.getCharacterSpecificValue('zevi-accent-color') || '#ffd700',
-            glassColor: this.getCharacterSpecificValue('zevi-glass-color') || '#ffffff',
-            glassOpacity: parseInt(this.getCharacterSpecificValue('zevi-glass-opacity')) || 10,
-            backgroundImage: this.getCharacterSpecificValue('zevi-background-image') || null
+            accentColor: accentColor,
+            glassColor: glassColor,
+            glassOpacity: glassOpacity,
+            backgroundImage: backgroundImage
         };
 
         data.lastModified = new Date().toISOString();

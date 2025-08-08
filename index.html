@@ -1243,6 +1243,15 @@
                 if (window.app?.characterData?.setCharacterSpecificValue) {
                   window.app.characterData.setCharacterSpecificValue('zevi-accent-color', newColor);
                   console.log('🎨 MANUAL: Saved accent color to character-specific storage');
+                  
+                  // IMPORTANT: Also trigger a character save to database to persist this change
+                  console.log('🎨 MANUAL: Triggering character save to database...');
+                  setTimeout(() => {
+                    if (window.saveCharacter) {
+                      window.saveCharacter();
+                      console.log('🎨 MANUAL: Auto-save triggered for accent color change');
+                    }
+                  }, 500);
                 } else {
                   localStorage.setItem('zevi-custom-accent-base', newColor);
                   console.log('🎨 MANUAL: Saved accent color to localStorage');
