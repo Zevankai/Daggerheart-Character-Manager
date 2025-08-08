@@ -97,25 +97,19 @@ class AppController {
                 console.log('🏞️ Background image cleared (character has none)');
             }
 
-            // Glassmorphic settings
+            // Glassmorphic settings (opacity only)
             if (data.appearanceSettings) {
-                const glassColor = data.appearanceSettings.glassColor || '#ffffff';
                 const glassOpacity = data.appearanceSettings.glassOpacity || 10;
                 
-                console.log('🌈 AppController loading glass settings:', { color: glassColor, opacity: glassOpacity });
+                console.log('🌈 AppController loading glass opacity:', glassOpacity);
                 
-                // Apply glassmorphic settings
-                this.applyGlassmorphicSettings(glassColor, glassOpacity);
+                // Apply glassmorphic opacity (fixed white color)
+                this.applyGlassOpacity(glassOpacity);
                 
                 // Update UI controls
-                const glassColorPicker = document.getElementById('glassColorPicker');
                 const glassOpacitySlider = document.getElementById('glassOpacitySlider');
                 const glassOpacityValue = document.getElementById('glassOpacityValue');
                 
-                if (glassColorPicker) {
-                    glassColorPicker.value = glassColor;
-                    console.log('🌈 Updated glassColorPicker to:', glassColor);
-                }
                 if (glassOpacitySlider) {
                     glassOpacitySlider.value = glassOpacity;
                     console.log('🌈 Updated glassOpacitySlider to:', glassOpacity);
@@ -125,7 +119,7 @@ class AppController {
                     console.log('🌈 Updated glassOpacityValue to:', `${glassOpacity}%`);
                 }
                 
-                console.log('🌈 Glassmorphic settings applied:', { color: glassColor, opacity: glassOpacity });
+                console.log('🌈 Glass opacity applied:', glassOpacity);
             }
 
             // Ability scores
@@ -228,32 +222,16 @@ class AppController {
         }
     }
 
-    // Apply glassmorphic settings (color and opacity)
-    applyGlassmorphicSettings(glassColor, glassOpacity) {
+    // Apply glass opacity (fixed white color)
+    applyGlassOpacity(glassOpacity) {
         try {
-            console.log('🌈 AppController.applyGlassmorphicSettings called:', { glassColor, glassOpacity });
+            console.log('🌈 AppController.applyGlassOpacity called:', glassOpacity);
             
             const root = document.documentElement;
             
-            // Convert hex to RGB
-            const hexToRgb = (hex) => {
-                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-                return result ? {
-                    r: parseInt(result[1], 16),
-                    g: parseInt(result[2], 16),
-                    b: parseInt(result[3], 16)
-                } : null;
-            };
-            
-            const rgb = hexToRgb(glassColor);
-            if (!rgb) {
-                console.error('Invalid glass color:', glassColor);
-                return;
-            }
-            
-            // Convert opacity percentage to decimal
-            const opacity = glassOpacity / 100;
-            const rgbaColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity})`;
+            // Fixed white color with variable opacity
+            const opacityDecimal = glassOpacity / 100;
+            const rgbaColor = `rgba(255, 255, 255, ${opacityDecimal})`;
             
             console.log('🌈 AppController setting CSS variable to:', rgbaColor);
             
@@ -265,7 +243,7 @@ class AppController {
             console.log('🌈 AppController CSS variable is now:', appliedColor);
             
         } catch (error) {
-            console.error('Error applying glassmorphic settings:', error);
+            console.error('Error applying glass opacity:', error);
         }
     }
 

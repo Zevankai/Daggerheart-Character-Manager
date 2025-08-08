@@ -86,110 +86,85 @@ function updateAccentColorTransparencies(accentColor) {
   root.style.setProperty('--accent-color-80', `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)`);
 }
 
-// ===== GLASSMORPHIC BACKGROUND TINT MANAGEMENT =====
-function initializeGlassColorPicker() {
-  console.log('🌈 initializeGlassColorPicker() called');
+// ===== GLASSMORPHIC BACKGROUND OPACITY MANAGEMENT =====
+function initializeGlassOpacitySlider() {
+  console.log('🌈 initializeGlassOpacitySlider() called');
   
-  const glassColorPicker = document.getElementById('glassColorPicker');
-  const glassColorPreview = document.getElementById('glassColorPreview');
   const glassOpacitySlider = document.getElementById('glassOpacitySlider');
   const glassOpacityValue = document.getElementById('glassOpacityValue');
-  const resetGlassBtn = document.getElementById('resetGlassColor');
   
   console.log('🌈 Glass elements found:', {
-    glassColorPicker: !!glassColorPicker,
-    glassColorPreview: !!glassColorPreview,
     glassOpacitySlider: !!glassOpacitySlider,
-    glassOpacityValue: !!glassOpacityValue,
-    resetGlassBtn: !!resetGlassBtn
+    glassOpacityValue: !!glassOpacityValue
   });
   
   // Check if elements exist
-  if (!glassColorPicker || !glassColorPreview || !glassOpacitySlider || !glassOpacityValue || !resetGlassBtn) {
-      console.error('🚨 Glass color picker elements not found - glassmorphic controls will not work!');
+  if (!glassOpacitySlider || !glassOpacityValue) {
+      console.error('🚨 Glass opacity slider elements not found - glassmorphic controls will not work!');
       return;
   }
   
-  // Check if required functions exist
-  if (typeof hexToRgb !== 'function' || typeof rgbToHex !== 'function') {
-      console.error('Required color conversion functions not found');
-      return;
-  }
-  
-  // Load saved values first, then use computed values as fallback
-  let savedGlassColor, savedGlassOpacity;
+  // Load saved opacity value
+  let savedGlassOpacity;
   if (window.app?.characterData?.getCharacterSpecificValue) {
-      savedGlassColor = window.app.characterData.getCharacterSpecificValue('zevi-glass-color');
       savedGlassOpacity = window.app.characterData.getCharacterSpecificValue('zevi-glass-opacity');
   } else {
-      savedGlassColor = localStorage.getItem('zevi-glass-color');
       savedGlassOpacity = localStorage.getItem('zevi-glass-opacity');
   }
   
-  let currentColor = '#ffffff';
-  let currentOpacity = 0.1;
+  // Use saved opacity or default to 10%
+  let currentOpacity = savedGlassOpacity ? parseFloat(savedGlassOpacity) : 10;
   
-  if (savedGlassColor && savedGlassOpacity) {
-      // Use saved values
-      currentColor = savedGlassColor;
-      currentOpacity = parseFloat(savedGlassOpacity);
-  } else {
-      // Parse current computed style as fallback
-      const root = document.documentElement;
-      const currentGlassColor = getComputedStyle(root).getPropertyValue('--glass-background-color').trim();
-      
-      // Enhanced regex pattern for RGBA parsing
-      const rgbaMatch = currentGlassColor.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d\.]+))?\s*\)/);
-      
-      if (rgbaMatch) {
-          const r = parseInt(rgbaMatch[1]);
-          const g = parseInt(rgbaMatch[2]);
-          const b = parseInt(rgbaMatch[3]);
-          currentOpacity = rgbaMatch[4] ? parseFloat(rgbaMatch[4]) : 0.1;
-          currentColor = rgbToHex(`rgb(${r}, ${g}, ${b})`);
-      }
-  }
+  // Set initial values (fixed white color)
+  glassOpacitySlider.value = currentOpacity;
+  glassOpacityValue.textContent = Math.round(currentOpacity) + '%';
   
-  // Set initial values
-  glassColorPicker.value = currentColor;
-  glassOpacitySlider.value = Math.round(currentOpacity * 100);
-  glassOpacityValue.textContent = Math.round(currentOpacity * 100) + '%';
-  updateGlassPreview(currentColor, currentOpacity);
-  
-  // Apply the current values to make sure they're set
-  changeGlassBackgroundColor(currentColor, currentOpacity);
-  
-  // Handle color change
-  glassColorPicker.addEventListener('input', (event) => {
-      console.log('🌈 Glass color picker changed!', event.target.value);
-      const newColor = event.target.value;
-      const opacity = parseFloat(glassOpacitySlider.value) / 100;
-      changeGlassBackgroundColor(newColor, opacity);
-      updateGlassPreview(newColor, opacity);
-  });
+  // Apply the current values
+  changeGlassBackgroundOpacity(currentOpacity);
   
   // Handle opacity change
   glassOpacitySlider.addEventListener('input', (event) => {
       console.log('🌈 Glass opacity slider changed!', event.target.value);
-      const opacity = parseFloat(event.target.value) / 100;
-      const color = glassColorPicker.value;
-      glassOpacityValue.textContent = Math.round(opacity * 100) + '%';
-      changeGlassBackgroundColor(color, opacity);
-      updateGlassPreview(color, opacity);
+      const opacity = parseFloat(event.target.value);
+      glassOpacityValue.textContent = Math.round(opacity) + '%';
+      changeGlassBackgroundOpacity(opacity);
   });
   
-  console.log('🌈 Glass event listeners attached successfully!');
-  
-  // Handle reset to default
-  resetGlassBtn.addEventListener('click', () => {
-      const defaultColor = '#ffffff';
-      const defaultOpacity = 0.1;
-      changeGlassBackgroundColor(defaultColor, defaultOpacity);
-      glassColorPicker.value = defaultColor;
-      glassOpacitySlider.value = defaultOpacity * 100;
-      glassOpacityValue.textContent = Math.round(defaultOpacity * 100) + '%';
-      updateGlassPreview(defaultColor, defaultOpacity);
-  });
+  console.log('🌈 Glass opacity slider initialized successfully!');
+}
+
+// Simple function to change glass opacity (fixed white color)
+function changeGlassBackgroundOpacity(opacity) {
+  try {
+    console.log('🌈 changeGlassBackgroundOpacity called:', opacity);
+    
+    const root = document.documentElement;
+    
+    // Fixed white color with variable opacity
+    const opacityDecimal = opacity / 100;
+    const rgbaColor = `rgba(255, 255, 255, ${opacityDecimal})`;
+    
+    console.log('🌈 Setting CSS variable --glass-background-color to:', rgbaColor);
+    
+    root.style.setProperty('--glass-background-color', rgbaColor);
+    
+    // Verify it was applied
+    const appliedColor = getComputedStyle(root).getPropertyValue('--glass-background-color').trim();
+    console.log('🌈 CSS variable is now:', appliedColor);
+    
+    // Save to character-specific storage
+    if (window.app?.characterData?.setCharacterSpecificValue) {
+        window.app.characterData.setCharacterSpecificValue('zevi-glass-color', '#ffffff');
+        window.app.characterData.setCharacterSpecificValue('zevi-glass-opacity', opacity.toString());
+        console.log('🌈 Saved to character-specific storage');
+    } else {
+        localStorage.setItem('zevi-glass-color', '#ffffff');
+        localStorage.setItem('zevi-glass-opacity', opacity.toString());
+        console.log('🌈 Saved to localStorage');
+    }
+  } catch (error) {
+    console.error('Error changing glass background opacity:', error);
+  }
 }
 
 function changeGlassBackgroundColor(hexColor, opacity) {
@@ -834,7 +809,7 @@ function initializeSettings() {
   console.log('⚙️ initializeSettings() called');
   
   initializeAccentColorPicker();
-  initializeGlassColorPicker();
+  initializeGlassOpacitySlider();
   initializeCharacterCode();
   initializeBackpackToggle();
   initializeCharacterDeletion();
