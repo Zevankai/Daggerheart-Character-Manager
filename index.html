@@ -64,6 +64,10 @@
                  <button onclick="testBackgroundStorage()" style="margin-top: 10px; padding: 5px 10px; background: #9C27B0; color: white; border: none; border-radius: 4px; font-size: 0.8rem;">
                   🏞️ Test Background Storage
                  </button>
+                 <br>
+                 <button onclick="testBackgroundLossIssue()" style="margin-top: 10px; padding: 5px 10px; background: #FF5722; color: white; border: none; border-radius: 4px; font-size: 0.8rem;">
+                  🔥 Test Background Loss Issue
+                 </button>
    </div>
    
    <div class="header-bottom-center">
@@ -957,19 +961,72 @@
             const testBackground = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
             
             if (window.app?.characterData?.setCharacterSpecificValue) {
+              // Step 1: Save test background
               window.app.characterData.setCharacterSpecificValue('zevi-background-image', testBackground);
               console.log('🧪 Test background saved');
               
+              // Step 2: Immediately retrieve it
               const retrieved = window.app.characterData.getCharacterSpecificValue('zevi-background-image');
               console.log('🧪 Test background retrieved:', retrieved ? 'YES' : 'NO');
               
-              alert(`Background storage test:\nSaved: YES\nRetrieved: ${retrieved ? 'YES' : 'NO'}`);
+              // Step 3: Test if it appears in collectAllCharacterData
+              const collectedData = window.app.characterData.collectAllCharacterData();
+              const backgroundInData = collectedData.appearanceSettings?.backgroundImage;
+              console.log('🧪 Background in collected data:', backgroundInData ? 'YES' : 'NO');
+              
+              // Step 4: Test localStorage directly
+              const lsKey = `zevi-character-${window.app.getCurrentCharacterId()}-zevi-background-image`;
+              const lsValue = localStorage.getItem(lsKey);
+              console.log('🧪 Background in localStorage:', lsValue ? 'YES' : 'NO');
+              
+              alert(`Background storage test:\nSaved: YES\nRetrieved: ${retrieved ? 'YES' : 'NO'}\nIn collected data: ${backgroundInData ? 'YES' : 'NO'}\nIn localStorage: ${lsValue ? 'YES' : 'NO'}`);
             } else {
               alert('❌ Character data not available for testing');
             }
           } catch (error) {
             console.error('❌ Background storage test failed:', error);
             alert(`❌ Background storage test failed: ${error.message}`);
+          }
+        }
+
+        // Test the exact issue: save background, change accent, save, reload
+        async function testBackgroundLossIssue() {
+          try {
+            console.log('🔥 Testing background loss issue...');
+            
+            if (!window.app?.characterData || !window.zeviAPI?.isLoggedIn()) {
+              alert('❌ Please log in first');
+              return;
+            }
+            
+            const testBackground = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+            
+            // Step 1: Set background image
+            window.app.characterData.setCharacterSpecificValue('zevi-background-image', testBackground);
+            console.log('🔥 Step 1: Background set');
+            
+            // Step 2: Save character to database
+            await window.saveCharacter();
+            console.log('🔥 Step 2: Character saved to database');
+            
+            // Step 3: Change accent color (this triggers auto-save)
+            window.app.characterData.setCharacterSpecificValue('zevi-accent-color', '#ff0000');
+            console.log('🔥 Step 3: Accent color changed');
+            
+            // Step 4: Wait for auto-save
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            console.log('🔥 Step 4: Auto-save should have triggered');
+            
+            // Step 5: Check if background is still there
+            const currentData = window.app.characterData.collectAllCharacterData();
+            const backgroundStillThere = currentData.appearanceSettings?.backgroundImage;
+            
+            console.log('🔥 Final check - Background still there:', backgroundStillThere ? 'YES' : 'NO');
+            alert(`Background loss test:\nBackground after accent change: ${backgroundStillThere ? 'YES' : 'NO'}`);
+            
+          } catch (error) {
+            console.error('❌ Background loss test failed:', error);
+            alert(`❌ Background loss test failed: ${error.message}`);
           }
         }
 
@@ -1170,6 +1227,7 @@
         window.debugCurrentCharacter = debugCurrentCharacter;
         window.testDatabaseSave = testDatabaseSave;
         window.testBackgroundStorage = testBackgroundStorage;
+        window.testBackgroundLossIssue = testBackgroundLossIssue;
         
         // GLASSMORPHIC DEBUG TEST
         console.log('🔍 GLASSMORPHIC DEBUG: index.html JavaScript is working!');
