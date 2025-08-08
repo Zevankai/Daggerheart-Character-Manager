@@ -97,6 +97,26 @@ class AppController {
                 console.log('🏞️ Background image cleared (character has none)');
             }
 
+            // Glassmorphic settings
+            if (data.appearanceSettings) {
+                const glassColor = data.appearanceSettings.glassColor || '#ffffff';
+                const glassOpacity = data.appearanceSettings.glassOpacity || 10;
+                
+                // Apply glassmorphic settings
+                this.applyGlassmorphicSettings(glassColor, glassOpacity);
+                
+                // Update UI controls
+                const glassColorPicker = document.getElementById('glassColorPicker');
+                const glassOpacitySlider = document.getElementById('glassOpacitySlider');
+                const glassOpacityValue = document.getElementById('glassOpacityValue');
+                
+                if (glassColorPicker) glassColorPicker.value = glassColor;
+                if (glassOpacitySlider) glassOpacitySlider.value = glassOpacity;
+                if (glassOpacityValue) glassOpacityValue.textContent = `${glassOpacity}%`;
+                
+                console.log('🌈 Glassmorphic settings applied:', { color: glassColor, opacity: glassOpacity });
+            }
+
             // Ability scores
             if (data.attributes) {
                 Object.entries(data.attributes).forEach(([attr, value]) => {
@@ -194,6 +214,39 @@ class AppController {
             console.log('✅ All modules re-rendered');
         } catch (error) {
             console.error('Error re-rendering modules:', error);
+        }
+    }
+
+    // Apply glassmorphic settings (color and opacity)
+    applyGlassmorphicSettings(glassColor, glassOpacity) {
+        try {
+            const root = document.documentElement;
+            
+            // Convert hex to RGB
+            const hexToRgb = (hex) => {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : null;
+            };
+            
+            const rgb = hexToRgb(glassColor);
+            if (!rgb) {
+                console.error('Invalid glass color:', glassColor);
+                return;
+            }
+            
+            // Convert opacity percentage to decimal
+            const opacity = glassOpacity / 100;
+            const rgbaColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity})`;
+            
+            // Apply CSS variable
+            root.style.setProperty('--glass-background-color', rgbaColor);
+            
+        } catch (error) {
+            console.error('Error applying glassmorphic settings:', error);
         }
     }
 

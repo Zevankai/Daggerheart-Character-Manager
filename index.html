@@ -894,7 +894,9 @@
         damage: { minor: 1, major: 2 },
         equipment: {},
         appearanceSettings: {
-          backgroundImage: null
+          backgroundImage: null,
+          glassColor: '#ffffff',
+          glassOpacity: 10
         },
         journal: { entries: [] },
         details: {},
@@ -968,7 +970,9 @@
         
         // Appearance settings
         appearanceSettings: {
-          backgroundImage: localStorage.getItem('zevi-background-image') || null
+          backgroundImage: localStorage.getItem('zevi-background-image') || null,
+          glassColor: localStorage.getItem('zevi-glass-color') || '#ffffff',
+          glassOpacity: parseInt(localStorage.getItem('zevi-glass-opacity')) || 10
         },
         
         lastModified: new Date().toISOString(),
@@ -1009,7 +1013,7 @@
     console.log('window.app.characterData exists:', !!window.app?.characterData);
     
     if (characterData) {
-      alert(`Character Sheet Debug:\n\nCharacter Name: ${characterName}\nLevel: ${characterData.level}\nSubtitle: ${characterData.subtitle}\nDomain 1: ${characterData.domain1}\nDomain 2: ${characterData.domain2}\nImage: ${characterData.imageUrl ? 'Yes' : 'No'}\nBackground: ${characterData.appearanceSettings?.backgroundImage ? 'Yes' : 'No'}\nData Source: ${dataSource}\n\nData collection: SUCCESS\nReady to save: ${characterName && characterName !== 'Character Name' ? 'YES' : 'NO (enter character name first)'}`);
+      alert(`Character Sheet Debug:\n\nCharacter Name: ${characterName}\nLevel: ${characterData.level}\nSubtitle: ${characterData.subtitle}\nDomain 1: ${characterData.domain1}\nDomain 2: ${characterData.domain2}\nImage: ${characterData.imageUrl ? 'Yes' : 'No'}\nBackground: ${characterData.appearanceSettings?.backgroundImage ? 'Yes' : 'No'}\nGlass: ${characterData.appearanceSettings?.glassColor || '#ffffff'} @ ${characterData.appearanceSettings?.glassOpacity || 10}%\nData Source: ${dataSource}\n\nData collection: SUCCESS\nReady to save: ${characterName && characterName !== 'Character Name' ? 'YES' : 'NO (enter character name first)'}`);
     } else {
       alert('❌ Failed to collect character data from sheet');
     }
