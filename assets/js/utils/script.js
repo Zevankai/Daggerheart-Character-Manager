@@ -207,7 +207,11 @@ function uploadBackground(event) {
         // Save to character-specific storage
         if (window.app?.characterData?.setCharacterSpecificValue) {
             window.app.characterData.setCharacterSpecificValue('zevi-background-image', backgroundImageUrl);
-            console.log('💾 Background image saved per character');
+            console.log('💾 Background image saved per character (length:', backgroundImageUrl.length, ')');
+            
+            // Verify it was saved
+            const savedValue = window.app.characterData.getCharacterSpecificValue('zevi-background-image');
+            console.log('💾 Background verify saved:', savedValue ? 'YES (length: ' + savedValue.length + ')' : 'NO');
         } else {
             // Fallback to global localStorage (for backwards compatibility)
             localStorage.setItem('zevi-background-image', backgroundImageUrl);

@@ -89,8 +89,14 @@ class AppController {
             }
 
             // Background image
-            if (data.appearanceSettings?.backgroundImage) {
-                document.body.style.backgroundImage = `url('${data.appearanceSettings.backgroundImage}')`;
+            const backgroundImage = data.appearanceSettings?.backgroundImage;
+            console.log('🏞️ Background image data:', {
+                hasAppearanceSettings: !!data.appearanceSettings,
+                backgroundImage: backgroundImage ? 'YES (length: ' + backgroundImage.length + ')' : 'NO'
+            });
+            
+            if (backgroundImage) {
+                document.body.style.backgroundImage = `url('${backgroundImage}')`;
                 console.log('🏞️ Background image applied from character data');
             } else {
                 document.body.style.backgroundImage = '';

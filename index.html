@@ -1154,28 +1154,39 @@
              settingsTab: !!document.querySelector('[data-target="settings-tab-content"]')
            });
            
-           // MANUAL TEST: Try to attach event listener directly
-           if (glassOpacitySlider) {
-             console.log('🔍 MANUAL TEST: Attaching event listener directly to slider');
-             glassOpacitySlider.addEventListener('input', (event) => {
-               console.log('🌈 MANUAL EVENT: Slider changed to:', event.target.value);
-               const opacity = parseFloat(event.target.value);
-               
-               // Apply CSS directly
-               const root = document.documentElement;
-               const opacityDecimal = opacity / 100;
-               const rgbaColor = `rgba(255, 255, 255, ${opacityDecimal})`;
-               root.style.setProperty('--glass-background-color', rgbaColor);
-               
-               // Update display
-               if (glassOpacityValue) {
-                 glassOpacityValue.textContent = Math.round(opacity) + '%';
-               }
-               
-               console.log('🌈 MANUAL: Set CSS to:', rgbaColor);
-             });
-             console.log('🔍 MANUAL TEST: Event listener attached!');
-           }
+                       // MANUAL TEST: Try to attach event listener directly
+            if (glassOpacitySlider) {
+              console.log('🔍 MANUAL TEST: Attaching event listener directly to slider');
+              glassOpacitySlider.addEventListener('input', (event) => {
+                console.log('🌈 MANUAL EVENT: Slider changed to:', event.target.value);
+                const opacity = parseFloat(event.target.value);
+                
+                // Apply CSS directly
+                const root = document.documentElement;
+                const opacityDecimal = opacity / 100;
+                const rgbaColor = `rgba(255, 255, 255, ${opacityDecimal})`;
+                root.style.setProperty('--glass-background-color', rgbaColor);
+                
+                // Update display
+                if (glassOpacityValue) {
+                  glassOpacityValue.textContent = Math.round(opacity) + '%';
+                }
+                
+                // Save to character-specific storage
+                if (window.app?.characterData?.setCharacterSpecificValue) {
+                  window.app.characterData.setCharacterSpecificValue('zevi-glass-color', '#ffffff');
+                  window.app.characterData.setCharacterSpecificValue('zevi-glass-opacity', opacity.toString());
+                  console.log('🌈 MANUAL: Saved to character-specific storage');
+                } else {
+                  localStorage.setItem('zevi-glass-color', '#ffffff');
+                  localStorage.setItem('zevi-glass-opacity', opacity.toString());
+                  console.log('🌈 MANUAL: Saved to localStorage');
+                }
+                
+                console.log('🌈 MANUAL: Set CSS to:', rgbaColor);
+              });
+              console.log('🔍 MANUAL TEST: Event listener attached!');
+            }
          }, 3000);
 
  </script>
