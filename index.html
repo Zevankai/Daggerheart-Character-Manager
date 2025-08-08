@@ -1144,16 +1144,39 @@
         // GLASSMORPHIC DEBUG TEST
         console.log('🔍 GLASSMORPHIC DEBUG: index.html JavaScript is working!');
         
-        // Test if glass elements exist
-        setTimeout(() => {
-          const glassColorPicker = document.getElementById('glassColorPicker');
-          const glassOpacitySlider = document.getElementById('glassOpacitySlider');
-          console.log('🔍 GLASSMORPHIC DEBUG: Glass elements check:', {
-            glassColorPicker: !!glassColorPicker,
-            glassOpacitySlider: !!glassOpacitySlider,
-            settingsTab: !!document.querySelector('[data-target="settings-tab-content"]')
-          });
-        }, 2000);
+                 // Test if glass elements exist and manually attach event listener
+         setTimeout(() => {
+           const glassOpacitySlider = document.getElementById('glassOpacitySlider');
+           const glassOpacityValue = document.getElementById('glassOpacityValue');
+           console.log('🔍 GLASSMORPHIC DEBUG: Glass elements check:', {
+             glassOpacitySlider: !!glassOpacitySlider,
+             glassOpacityValue: !!glassOpacityValue,
+             settingsTab: !!document.querySelector('[data-target="settings-tab-content"]')
+           });
+           
+           // MANUAL TEST: Try to attach event listener directly
+           if (glassOpacitySlider) {
+             console.log('🔍 MANUAL TEST: Attaching event listener directly to slider');
+             glassOpacitySlider.addEventListener('input', (event) => {
+               console.log('🌈 MANUAL EVENT: Slider changed to:', event.target.value);
+               const opacity = parseFloat(event.target.value);
+               
+               // Apply CSS directly
+               const root = document.documentElement;
+               const opacityDecimal = opacity / 100;
+               const rgbaColor = `rgba(255, 255, 255, ${opacityDecimal})`;
+               root.style.setProperty('--glass-background-color', rgbaColor);
+               
+               // Update display
+               if (glassOpacityValue) {
+                 glassOpacityValue.textContent = Math.round(opacity) + '%';
+               }
+               
+               console.log('🌈 MANUAL: Set CSS to:', rgbaColor);
+             });
+             console.log('🔍 MANUAL TEST: Event listener attached!');
+           }
+         }, 3000);
 
  </script>
 </html>
