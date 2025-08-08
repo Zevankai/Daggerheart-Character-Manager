@@ -54,7 +54,7 @@
     </button>
     <br>
     <button onclick="debugCurrentCharacter()" style="margin-top: 10px; padding: 5px 10px; background: #666; color: white; border: none; border-radius: 4px; font-size: 0.8rem;">
-     🔍 Debug Current Character
+     🔍 Check Character Sheet
     </button>
    </div>
    
@@ -713,58 +713,65 @@
         return;
       }
 
-      // Check if we have a current character ID (try multiple sources)
-      let characterId = null;
-      
-      // Method 1: Try app controller
-      if (window.app?.getCurrentCharacterId) {
-        characterId = window.app.getCurrentCharacterId();
-        console.log('🔍 Character ID from app:', characterId);
-      }
-      
-      // Method 2: Try direct localStorage if app method failed
-      if (!characterId) {
-        characterId = localStorage.getItem('zevi-current-character-id');
-        console.log('🔍 Character ID from localStorage:', characterId);
-      }
-      
-      // Method 3: Try characterData if available
-      if (!characterId && window.app?.characterData?.getCurrentCharacterId) {
-        characterId = window.app.characterData.getCurrentCharacterId();
-        console.log('🔍 Character ID from characterData:', characterId);
-      }
-      
-      if (!characterId) {
-        console.error('❌ No character ID found in any source');
-        alert('❌ No character selected. Please create a new character first.');
+      // Collect current character data from the sheet
+      const characterData = window.app?.characterData?.collectAllCharacterData();
+      if (!characterData) {
+        alert('❌ Failed to collect character data from sheet');
         return;
       }
-      
-      console.log('✅ Using character ID for save:', characterId);
+
+      console.log('💾 Collected character data:', characterData);
+
+      // Get character name from the sheet
+      const characterName = characterData.name;
+      if (!characterName || characterName === 'Character Name' || characterName === 'New Character') {
+        alert('❌ Please enter a character name before saving');
+        return;
+      }
+
+      console.log('💾 Saving character with name:', characterName);
 
       // Disable button and show saving state
       saveBtn.disabled = true;
       saveBtn.textContent = '💾 Saving...';
 
-      // Collect all character data
-      const characterData = window.app?.characterData?.collectAllCharacterData();
-      if (!characterData) {
-        throw new Error('Failed to collect character data');
+      // Try to find existing character with this name, or create new one
+      let characterId = null;
+      let existingCharacter = null;
+      
+      try {
+        // First, try to get all characters and find one with matching name
+        const response = await window.zeviAPI.getCharacters();
+        existingCharacter = response.characters?.find(char => 
+          char.character_data?.name === characterName
+        );
+        
+        if (existingCharacter) {
+          // Update existing character
+          characterId = existingCharacter.id;
+          console.log('📝 Updating existing character:', characterId, characterName);
+          await window.zeviAPI.saveCharacter(characterId, characterData);
+        } else {
+          // Create new character
+          console.log('➕ Creating new character:', characterName);
+          const createResponse = await window.zeviAPI.createCharacter(characterName, characterData);
+          characterId = createResponse.character.id;
+          console.log('✅ New character created with ID:', characterId);
+        }
+      } catch (error) {
+        console.error('❌ Error during save/create:', error);
+        throw error;
       }
 
-      console.log('💾 Saving character:', characterId, characterData);
-
-      // Save to database
-      await window.zeviAPI.saveCharacter(characterId, characterData);
-
       // Success feedback
-      saveBtn.textContent = '✅ Saved!';
+      const action = existingCharacter ? 'Updated' : 'Created';
+      saveBtn.textContent = `✅ ${action}!`;
       setTimeout(() => {
         saveBtn.textContent = '💾 Save Character';
         saveBtn.disabled = false;
       }, 2000);
 
-      console.log('✅ Character saved successfully');
+      console.log(`✅ Character ${action.toLowerCase()} successfully:`, characterName);
 
     } catch (error) {
       console.error('❌ Save failed:', error);
@@ -884,22 +891,24 @@
     }
   }
 
-  // Debug function to check current character state
+  // Debug function to check current character sheet data
   function debugCurrentCharacter() {
-    console.log('🔍 === CURRENT CHARACTER DEBUG ===');
+    console.log('🔍 === CURRENT CHARACTER SHEET DEBUG ===');
     
-    // Check all possible sources
-    const appId = window.app?.getCurrentCharacterId?.();
-    const localStorageId = localStorage.getItem('zevi-current-character-id');
-    const characterDataId = window.app?.characterData?.getCurrentCharacterId?.();
+    // Get current character data from the sheet
+    const characterData = window.app?.characterData?.collectAllCharacterData();
+    const characterName = characterData?.name;
     
-    console.log('App Controller ID:', appId);
-    console.log('localStorage ID:', localStorageId);
-    console.log('CharacterData ID:', characterDataId);
+    console.log('Character Name from sheet:', characterName);
+    console.log('Full character data:', characterData);
     console.log('window.app exists:', !!window.app);
     console.log('window.app.characterData exists:', !!window.app?.characterData);
     
-    alert(`Debug Info:\n\nApp Controller ID: ${appId}\nlocalStorage ID: ${localStorageId}\nCharacterData ID: ${characterDataId}\n\nwindow.app exists: ${!!window.app}\nwindow.app.characterData exists: ${!!window.app?.characterData}`);
+    if (characterData) {
+      alert(`Character Sheet Debug:\n\nCharacter Name: ${characterName}\nLevel: ${characterData.level}\nSubtitle: ${characterData.subtitle}\n\nData collection: SUCCESS\nReady to save: ${characterName && characterName !== 'Character Name' ? 'YES' : 'NO (enter character name first)'}`);
+    } else {
+      alert('❌ Failed to collect character data from sheet');
+    }
   }
 
   // Make functions globally available
