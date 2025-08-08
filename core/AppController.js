@@ -102,6 +102,8 @@ class AppController {
                 const glassColor = data.appearanceSettings.glassColor || '#ffffff';
                 const glassOpacity = data.appearanceSettings.glassOpacity || 10;
                 
+                console.log('🌈 AppController loading glass settings:', { color: glassColor, opacity: glassOpacity });
+                
                 // Apply glassmorphic settings
                 this.applyGlassmorphicSettings(glassColor, glassOpacity);
                 
@@ -110,9 +112,18 @@ class AppController {
                 const glassOpacitySlider = document.getElementById('glassOpacitySlider');
                 const glassOpacityValue = document.getElementById('glassOpacityValue');
                 
-                if (glassColorPicker) glassColorPicker.value = glassColor;
-                if (glassOpacitySlider) glassOpacitySlider.value = glassOpacity;
-                if (glassOpacityValue) glassOpacityValue.textContent = `${glassOpacity}%`;
+                if (glassColorPicker) {
+                    glassColorPicker.value = glassColor;
+                    console.log('🌈 Updated glassColorPicker to:', glassColor);
+                }
+                if (glassOpacitySlider) {
+                    glassOpacitySlider.value = glassOpacity;
+                    console.log('🌈 Updated glassOpacitySlider to:', glassOpacity);
+                }
+                if (glassOpacityValue) {
+                    glassOpacityValue.textContent = `${glassOpacity}%`;
+                    console.log('🌈 Updated glassOpacityValue to:', `${glassOpacity}%`);
+                }
                 
                 console.log('🌈 Glassmorphic settings applied:', { color: glassColor, opacity: glassOpacity });
             }
@@ -220,6 +231,8 @@ class AppController {
     // Apply glassmorphic settings (color and opacity)
     applyGlassmorphicSettings(glassColor, glassOpacity) {
         try {
+            console.log('🌈 AppController.applyGlassmorphicSettings called:', { glassColor, glassOpacity });
+            
             const root = document.documentElement;
             
             // Convert hex to RGB
@@ -242,8 +255,14 @@ class AppController {
             const opacity = glassOpacity / 100;
             const rgbaColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity})`;
             
+            console.log('🌈 AppController setting CSS variable to:', rgbaColor);
+            
             // Apply CSS variable
             root.style.setProperty('--glass-background-color', rgbaColor);
+            
+            // Verify it was applied
+            const appliedColor = getComputedStyle(root).getPropertyValue('--glass-background-color').trim();
+            console.log('🌈 AppController CSS variable is now:', appliedColor);
             
         } catch (error) {
             console.error('Error applying glassmorphic settings:', error);

@@ -178,6 +178,8 @@ function initializeGlassColorPicker() {
 
 function changeGlassBackgroundColor(hexColor, opacity) {
   try {
+    console.log('🌈 changeGlassBackgroundColor called:', { hexColor, opacity });
+    
     const root = document.documentElement;
     const rgb = hexToRgb(hexColor);
     
@@ -187,16 +189,23 @@ function changeGlassBackgroundColor(hexColor, opacity) {
     }
     
     const newRgbaColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity})`;
+    console.log('🌈 Setting CSS variable --glass-background-color to:', newRgbaColor);
     
     root.style.setProperty('--glass-background-color', newRgbaColor);
+    
+    // Verify the CSS variable was set
+    const setColor = getComputedStyle(root).getPropertyValue('--glass-background-color').trim();
+    console.log('🌈 CSS variable is now:', setColor);
     
     // Save to character-specific storage if available
     if (window.app?.characterData?.setCharacterSpecificValue) {
         window.app.characterData.setCharacterSpecificValue('zevi-glass-color', hexColor);
         window.app.characterData.setCharacterSpecificValue('zevi-glass-opacity', opacity.toString());
+        console.log('🌈 Saved to character-specific storage');
     } else {
         localStorage.setItem('zevi-glass-color', hexColor);
         localStorage.setItem('zevi-glass-opacity', opacity.toString());
+        console.log('🌈 Saved to localStorage');
     }
   } catch (error) {
     console.error('Error changing glass background color:', error);
