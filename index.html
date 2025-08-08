@@ -729,6 +729,13 @@
         resolve(imageUrl); // Not a base64 image, return as-is
         return;
       }
+      
+      // Skip compression for small images (under 5KB) to prevent corruption
+      if (imageUrl.length < 5120) {
+        console.log(`🖼️ Image too small to compress (${Math.round(imageUrl.length / 1024)}KB), keeping original`);
+        resolve(imageUrl);
+        return;
+      }
 
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
@@ -747,7 +754,15 @@
         
         // Draw and compress
         ctx.drawImage(img, 0, 0, width, height);
-        const compressedUrl = canvas.toDataURL('image/jpeg', quality);
+        
+        // Preserve format for PNG/GIF (maintain transparency), use JPEG for others
+        let outputFormat = 'image/jpeg';
+        if (imageUrl.includes('data:image/png') || imageUrl.includes('data:image/gif')) {
+          outputFormat = 'image/png';
+          quality = 1.0; // PNG doesn't use quality, always lossless
+        }
+        
+        const compressedUrl = canvas.toDataURL(outputFormat, quality);
         
         console.log(`🖼️ Image compressed: ${Math.round(imageUrl.length / 1024)}KB → ${Math.round(compressedUrl.length / 1024)}KB`);
         resolve(compressedUrl);
