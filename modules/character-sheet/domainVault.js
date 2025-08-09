@@ -29,8 +29,7 @@ const savedData = null; // Don't load from localStorage
 // Ensure equipped cards array always has exactly 5 slots
 if (!window.domainVaultData.equippedCards || window.domainVaultData.equippedCards.length !== 5) {
     window.domainVaultData.equippedCards = [null, null, null, null, null];
-    // Trigger auto-save instead of localStorage
-    }
+    // Trigger auto-save instead of localStorage - TODO: implement auto-save trigger
 }
 
 // Card types available for selection
@@ -43,8 +42,8 @@ const DEFAULT_COLOR = '#3498db';
 function saveDomainVaultData() {
     try {
         const dataString = JSON.stringify(window.domainVaultData);
-        // Trigger auto-save instead of localStorage
-        }
+        // Trigger auto-save instead of localStorage - TODO: implement auto-save trigger
+        console.log('Domain vault data ready to save:', dataString.length, 'characters');
     } catch (error) {
         console.error('Error saving domain vault data:', error);
     }
