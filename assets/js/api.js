@@ -9,9 +9,20 @@ class ZeviAPI {
   getBaseURL() {
     // In production, this will be your Vercel domain
     // In development, it might be localhost:3000 or your dev server
+    
+    // Check if we're running with vercel dev
+    if (window.location.port === '3000') {
+      return window.location.origin;
+    }
+    
+    // Check if we're running with servor or other dev server
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      // If running servor, we need to use the vercel dev server
+      // You might need to run 'npm run dev' in a separate terminal
+      console.log('Development mode detected. Make sure to run "npm run dev" for API.');
       return 'http://localhost:3000';
     }
+    
     return window.location.origin;
   }
 
@@ -47,11 +58,15 @@ class ZeviAPI {
       },
     };
 
+    console.log(`API Request: ${options.method || 'GET'} ${url}`);
+    
     try {
       const response = await fetch(url, config);
       
       if (!response.ok) {
         const errorText = await response.text();
+        console.error(`API Error: ${response.status} ${response.statusText}`);
+        console.error('Response:', errorText);
         throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
       

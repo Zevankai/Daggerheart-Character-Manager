@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Debug</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #444;
+            border-radius: 5px;
+        }
+        .success { border-color: #4CAF50; }
+        .error { border-color: #f44336; }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        pre {
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>API Debug Tool</h1>
+    
+    <div class="test">
+        <h2>Environment Info</h2>
+        <p>Current URL: <span id="current-url"></span></p>
+        <p>API Base URL: <span id="api-base"></span></p>
+    </div>
+    
+    <div class="test">
+        <h2>Test Endpoints</h2>
+        <button onclick="testEndpoint('/api/test')">Test /api/test</button>
+        <button onclick="testEndpoint('/api/health')">Test /api/health</button>
+        <button onclick="testEndpoint('/api/auth/login', 'POST', {email: 'test@test.com', password: 'test123'})">Test Login</button>
+        <button onclick="testEndpoint('/api/auth/register', 'OPTIONS')">Test Register OPTIONS</button>
+    </div>
+    
+    <div class="test">
+        <h2>Results</h2>
+        <pre id="results"></pre>
+    </div>
+
+    <script>
+        // Display environment info
+        document.getElementById('current-url').textContent = window.location.href;
+        
+        // Determine API base URL
+        function getAPIBase() {
+            if (window.location.port === '3000') {
+                return window.location.origin;
+            }
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                return 'http://localhost:3000';
+            }
+            return window.location.origin;
+        }
+        
+        const apiBase = getAPIBase();
+        document.getElementById('api-base').textContent = apiBase;
+        
+        // Test endpoint function
+        async function testEndpoint(path, method = 'GET', body = null) {
+            const results = document.getElementById('results');
+            const url = apiBase + path;
+            
+            results.textContent = `Testing ${method} ${url}...\n\n`;
+            
+            try {
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                };
+                
+                if (body && method !== 'GET') {
+                    options.body = JSON.stringify(body);
+                }
+                
+                const response = await fetch(url, options);
+                const responseText = await response.text();
+                
+                results.textContent += `Status: ${response.status} ${response.statusText}\n`;
+                results.textContent += `Headers:\n${JSON.stringify(Object.fromEntries(response.headers), null, 2)}\n\n`;
+                results.textContent += `Response:\n`;
+                
+                // Try to parse as JSON for pretty printing
+                try {
+                    const json = JSON.parse(responseText);
+                    results.textContent += JSON.stringify(json, null, 2);
+                } catch {
+                    results.textContent += responseText;
+                }
+                
+                if (response.ok) {
+                    results.parentElement.className = 'test success';
+                } else {
+                    results.parentElement.className = 'test error';
+                }
+                
+            } catch (error) {
+                results.textContent += `Error: ${error.message}\n`;
+                results.textContent += `\nThis might mean:\n`;
+                results.textContent += `- The API server is not running (try 'npm run dev')\n`;
+                results.textContent += `- CORS is blocking the request\n`;
+                results.textContent += `- Network connectivity issue\n`;
+                results.parentElement.className = 'test error';
+            }
+        }
+    </script>
+</body>
+</html>

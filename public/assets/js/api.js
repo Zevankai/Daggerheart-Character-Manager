@@ -8,9 +8,20 @@ class ZeviAPI {
   getBaseURL() {
     // In production, this will be your Vercel domain
     // In development, it might be localhost:3000 or your dev server
+    
+    // Check if we're running with vercel dev
+    if (window.location.port === '3000') {
+      return window.location.origin;
+    }
+    
+    // Check if we're running with servor or other dev server
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      // If running servor, we need to use the vercel dev server
+      // You might need to run 'npm run dev' in a separate terminal
+      console.log('Development mode detected. Make sure to run "npm run dev" for API.');
       return 'http://localhost:3000';
     }
+    
     return window.location.origin;
   }
 
@@ -46,19 +57,32 @@ class ZeviAPI {
       },
     };
 
+    console.log(`API Request: ${options.method || 'GET'} ${url}`);
+    
     try {
       const response = await fetch(url, config);
-      const data = await response.json();
-
+      
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`API Error: ${response.status} ${response.statusText}`);
+        console.error('Response:', errorText);
+        
         if (response.status === 401) {
           // Token expired or invalid
           this.setToken(null);
           throw new Error('Authentication required. Please log in again.');
         }
-        throw new Error(data.error || `HTTP error! status: ${response.status}`);
+        
+        // Try to parse as JSON, otherwise use text
+        try {
+          const errorData = JSON.parse(errorText);
+          throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        } catch {
+          throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
       }
-
+      
+      const data = await response.json();
       return data;
     } catch (error) {
       console.error('API request failed:', error);
