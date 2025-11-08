@@ -6,9 +6,9 @@
     <title>Zevi Character Sheet</title>
     <!-- Cache bust: v2.0 - 2025-07-30 -->
     <link rel="stylesheet" href="assets/css/main.css">
-    <!-- API and Authentication Scripts -->
+    <!-- API Scripts -->
     <script src="assets/js/api.js"></script>
-    <script src="assets/js/auth.js"></script>
+    <!-- Authentication removed - auth.js no longer loaded -->
 </head>
 <body>
  <div class="glass" data-color-target="main-glass">
@@ -325,13 +325,10 @@
       async function loadSimpleCharactersList() {
         const grid = document.getElementById('simple-characters-grid');
         if (!grid) return;
-        
+
         try {
-          if (!window.zeviAPI || !window.zeviAPI.isLoggedIn()) {
-            grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #999;">Please log in to view characters</div>';
-            return;
-          }
-          
+          // Authentication check removed
+
           grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #999;">Loading characters...</div>';
           
           const response = await window.zeviAPI.getCharacters();
@@ -487,22 +484,7 @@
       </div>
      </div>
      
-     <!-- Account Section -->
-     <div class="settings-section">
-      <h3>Account</h3>
-      <p>Manage your account settings and session.</p>
-      <div id="account-info" style="margin: 15px 0;">
-        <!-- Account info will be populated by auth system -->
-      </div>
-      <button type="button" id="logoutBtn" class="logout-btn">Logout</button>
-     </div>
-
-     <!-- Account Deletion Section -->
-     <div class="settings-section danger-section">
-      <h3>Account Data</h3>
-      <p>Delete all account data including character information and settings.</p>
-      <button type="button" id="deleteAccountBtn" class="danger-btn">Delete Account</button>
-     </div>
+     <!-- Account Section - Removed (authentication disabled) -->
     </div>
    </div>
    
@@ -811,25 +793,10 @@
     console.log('Single character sheet ready');
   }
   
-  // Check if user has a current character loaded
+  // Initialize character sheet directly (authentication removed)
   document.addEventListener('DOMContentLoaded', () => {
-    // Wait for auth system to initialize first
-    setTimeout(() => {
-      // Check if auth system is available and handle authentication flow
-      if (window.zeviAuth) {
-        // If user is logged in, proceed with character sheet
-        if (window.zeviAuth.api.isLoggedIn()) {
-          initializeIndexPage();
-        } else {
-          // Hide character sheet and show login
-          document.querySelector('.glass').style.display = 'none';
-          window.zeviAuth.showAuthModal();
-        }
-      } else {
-        // Fallback: initialize normally if auth system not available
-        initializeIndexPage();
-      }
-    }, 100); // Slightly longer delay to ensure auth is ready
+    // Initialize the character sheet without auth check
+    initializeIndexPage();
   });
 
   // === SIMPLE SAVE/LOAD FUNCTIONS ===
@@ -907,13 +874,9 @@
   // Simple save character function
   async function saveCharacter() {
     const saveBtn = document.getElementById('save-character-btn');
-    
+
     try {
-      // Check if logged in
-      if (!window.zeviAPI || !window.zeviAPI.isLoggedIn()) {
-        alert('❌ Please log in to save your character');
-        return;
-      }
+      // Authentication check removed - save functionality now available without login
 
       // Collect current character data from the sheet
       let characterData = null;
@@ -1035,11 +998,7 @@
     try {
       console.log('📂 Loading character:', characterId);
 
-      // Check if logged in
-      if (!window.zeviAPI || !window.zeviAPI.isLoggedIn()) {
-        alert('❌ Please log in to load characters');
-        return;
-      }
+      // Authentication check removed - load functionality now available without login
 
       // Get character data from API
       const response = await window.zeviAPI.getCharacter(characterId);
@@ -1120,12 +1079,13 @@
         async function testBackgroundLossIssue() {
           try {
             console.log('🔥 Testing background loss issue...');
-            
-            if (!window.app?.characterData || !window.zeviAPI?.isLoggedIn()) {
-              alert('❌ Please log in first');
+
+            // Authentication check removed
+            if (!window.app?.characterData) {
+              alert('❌ App not initialized');
               return;
             }
-            
+
             const testBackground = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
             
             // Step 1: Set background image
@@ -1160,11 +1120,8 @@
         // Test database save function
         async function testDatabaseSave() {
           try {
-            if (!window.zeviAPI || !window.zeviAPI.isLoggedIn()) {
-              alert('❌ Please log in first');
-              return;
-            }
-            
+            // Authentication check removed
+
             console.log('🧪 Testing database save...');
             
             // Test data
@@ -1196,11 +1153,7 @@
     try {
       console.log('➕ Creating new character');
 
-      // Check if logged in
-      if (!window.zeviAPI || !window.zeviAPI.isLoggedIn()) {
-        alert('❌ Please log in to create characters');
-        return;
-      }
+      // Authentication check removed
 
       // Get character name
       const name = prompt('Enter character name:');
