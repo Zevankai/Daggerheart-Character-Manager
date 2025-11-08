@@ -1,22 +1,26 @@
-const { requireAuth } = require('../lib/auth.js');
+// NO AUTHENTICATION - Using default user
 const { getDb } = require('../lib/database.js');
 const { v4: uuidv4 } = require('uuid');
+
+// Default user ID for all operations (no authentication)
+const DEFAULT_USER_ID = 1;
 
 async function getCharacter(req, res) {
   try {
     const sql = getDb();
+    const userId = DEFAULT_USER_ID;
     const { id } = req.query;
-    
+
     const result = await sql`
       SELECT id, name, character_data, is_shared, share_token, created_at, updated_at
       FROM characters
-      WHERE id = ${id} AND user_id = ${req.user.id}
+      WHERE id = ${id} AND user_id = ${userId}
     `;
-    
+
     if (result.length === 0) {
       return res.status(404).json({ error: 'Character not found' });
     }
-    
+
     res.status(200).json({ character: result[0] });
   } catch (error) {
     console.error('Error fetching character:', error);
@@ -27,54 +31,55 @@ async function getCharacter(req, res) {
 async function updateCharacter(req, res) {
   try {
     const sql = getDb();
+    const userId = DEFAULT_USER_ID;
     const { id } = req.query;
     const { name, characterData } = req.body;
-    
+
     // Check if character exists and belongs to user
     const existingResult = await sql`
       SELECT id FROM characters
-      WHERE id = ${id} AND user_id = ${req.user.id}
+      WHERE id = ${id} AND user_id = ${userId}
     `;
-    
+
     if (existingResult.length === 0) {
       return res.status(404).json({ error: 'Character not found' });
     }
-    
+
     // Build update query dynamically based on provided fields
     let result;
-    
+
     if (name !== undefined && characterData !== undefined) {
       // Update both name and character data
       result = await sql`
-        UPDATE characters 
-        SET name = ${name.trim()}, 
-            character_data = ${JSON.stringify(characterData)}, 
+        UPDATE characters
+        SET name = ${name.trim()},
+            character_data = ${JSON.stringify(characterData)},
             updated_at = CURRENT_TIMESTAMP
-        WHERE id = ${id} AND user_id = ${req.user.id}
+        WHERE id = ${id} AND user_id = ${userId}
         RETURNING id, name, character_data, is_shared, share_token, created_at, updated_at
       `;
     } else if (name !== undefined) {
       // Update only name
       result = await sql`
-        UPDATE characters 
-        SET name = ${name.trim()}, 
+        UPDATE characters
+        SET name = ${name.trim()},
             updated_at = CURRENT_TIMESTAMP
-        WHERE id = ${id} AND user_id = ${req.user.id}
+        WHERE id = ${id} AND user_id = ${userId}
         RETURNING id, name, character_data, is_shared, share_token, created_at, updated_at
       `;
     } else if (characterData !== undefined) {
       // Update only character data
       result = await sql`
-        UPDATE characters 
-        SET character_data = ${JSON.stringify(characterData)}, 
+        UPDATE characters
+        SET character_data = ${JSON.stringify(characterData)},
             updated_at = CURRENT_TIMESTAMP
-        WHERE id = ${id} AND user_id = ${req.user.id}
+        WHERE id = ${id} AND user_id = ${userId}
         RETURNING id, name, character_data, is_shared, share_token, created_at, updated_at
       `;
     } else {
       return res.status(400).json({ error: 'No valid fields to update' });
     }
-    
+
     res.status(200).json({ character: result[0] });
   } catch (error) {
     console.error('Error updating character:', error);
@@ -85,18 +90,19 @@ async function updateCharacter(req, res) {
 async function deleteCharacter(req, res) {
   try {
     const sql = getDb();
+    const userId = DEFAULT_USER_ID;
     const { id } = req.query;
-    
+
     const result = await sql`
       DELETE FROM characters
-      WHERE id = ${id} AND user_id = ${req.user.id}
+      WHERE id = ${id} AND user_id = ${userId}
       RETURNING id
     `;
-    
+
     if (result.length === 0) {
       return res.status(404).json({ error: 'Character not found' });
     }
-    
+
     res.status(200).json({ message: 'Character deleted successfully' });
   } catch (error) {
     console.error('Error deleting character:', error);
@@ -107,38 +113,39 @@ async function deleteCharacter(req, res) {
 async function shareCharacter(req, res) {
   try {
     const sql = getDb();
+    const userId = DEFAULT_USER_ID;
     const { id } = req.query;
     const { isShared } = req.body;
-    
+
     // Check if character exists and belongs to user
     const existingResult = await sql`
       SELECT id, is_shared, share_token FROM characters
-      WHERE id = ${id} AND user_id = ${req.user.id}
+      WHERE id = ${id} AND user_id = ${userId}
     `;
-    
+
     if (existingResult.length === 0) {
       return res.status(404).json({ error: 'Character not found' });
     }
-    
+
     let shareToken = existingResult[0].share_token;
-    
+
     // Generate share token if enabling sharing and none exists
     if (isShared && !shareToken) {
       shareToken = uuidv4();
     }
-    
+
     // Clear share token if disabling sharing
     if (!isShared) {
       shareToken = null;
     }
-    
+
     const result = await sql`
-      UPDATE characters 
+      UPDATE characters
       SET is_shared = ${isShared}, share_token = ${shareToken}, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ${id} AND user_id = ${req.user.id}
+      WHERE id = ${id} AND user_id = ${userId}
       RETURNING id, name, character_data, is_shared, share_token, created_at, updated_at
     `;
-    
+
     res.status(200).json({ character: result[0] });
   } catch (error) {
     console.error('Error updating character sharing:', error);
@@ -150,7 +157,7 @@ const handler = async (req, res) => {
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
-  
+
   switch (req.method) {
     case 'GET':
       return getCharacter(req, res);
@@ -167,4 +174,5 @@ const handler = async (req, res) => {
   }
 };
 
-module.exports = requireAuth(handler);
+// Export handler without authentication middleware
+module.exports = handler;
