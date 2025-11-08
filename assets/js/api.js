@@ -1,20 +1,19 @@
-// Simple API Client - NO SAVE FUNCTIONALITY
-// Only handles authentication and basic character listing
+// Simple API Client - No Authentication
+// Handles basic character listing and management without login
 class ZeviAPI {
   constructor() {
     this.baseURL = this.getBaseURL();
-    this.token = localStorage.getItem('zevi-auth-token');
   }
 
   getBaseURL() {
     // In production, this will be your Vercel domain
     // In development, it might be localhost:3000 or your dev server
-    
+
     // Check if we're running with vercel dev
     if (window.location.port === '3000') {
       return window.location.origin;
     }
-    
+
     // Check if we're running with servor or other dev server
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       // If running servor, we need to use the vercel dev server
@@ -22,54 +21,33 @@ class ZeviAPI {
       console.log('Development mode detected. Make sure to run "npm run dev" for API.');
       return 'http://localhost:3000';
     }
-    
+
     return window.location.origin;
-  }
-
-  setToken(token) {
-    this.token = token;
-    if (token) {
-      localStorage.setItem('zevi-auth-token', token);
-    } else {
-      localStorage.removeItem('zevi-auth-token');
-    }
-  }
-
-  getAuthHeaders() {
-    const headers = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`;
-    }
-    
-    return headers;
   }
 
   async makeRequest(endpoint, options = {}) {
     const url = `${this.baseURL}/api${endpoint}`;
-    
+
     const config = {
       ...options,
       headers: {
-        ...this.getAuthHeaders(),
+        'Content-Type': 'application/json',
         ...options.headers,
       },
     };
 
     console.log(`API Request: ${options.method || 'GET'} ${url}`);
-    
+
     try {
       const response = await fetch(url, config);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`API Error: ${response.status} ${response.statusText}`);
         console.error('Response:', errorText);
         throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
-      
+
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
         return await response.json();
@@ -82,51 +60,8 @@ class ZeviAPI {
     }
   }
 
-  // === AUTHENTICATION METHODS ===
-  
-  async login(email, password) {
-    const response = await this.makeRequest('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    });
-    
-    if (response.token) {
-      this.setToken(response.token);
-    }
-    
-    return response;
-  }
+  // === CHARACTER METHODS ===
 
-  async register(email, password, username) {
-    const response = await this.makeRequest('/auth/register', {
-      method: 'POST',
-      body: JSON.stringify({ email, password, username }),
-    });
-    
-    if (response.token) {
-      this.setToken(response.token);
-    }
-    
-    return response;
-  }
-
-  async logout() {
-    this.setToken(null);
-    // Also remove current character
-    localStorage.removeItem('zevi-current-character-id');
-    localStorage.removeItem('zevi-current-user');
-  }
-
-  async getCurrentUser() {
-    return await this.makeRequest('/auth/me');
-  }
-
-  isLoggedIn() {
-    return !!this.token;
-  }
-
-  // === BASIC CHARACTER METHODS (READ ONLY) ===
-  
   async getCharacters() {
     return await this.makeRequest('/characters');
   }
@@ -139,8 +74,6 @@ class ZeviAPI {
     return await this.makeRequest('/characters?action=active');
   }
 
-  // === SIMPLE CHARACTER SAVE/LOAD METHODS ===
-  
   async createCharacter(name, characterData = {}) {
     return await this.makeRequest('/characters', {
       method: 'POST',
@@ -150,7 +83,7 @@ class ZeviAPI {
 
   async saveCharacter(characterId, characterData) {
     return await this.makeRequest(`/characters/${characterId}`, {
-      method: 'PUT', 
+      method: 'PUT',
       body: JSON.stringify({ characterData }),
     });
   }
